@@ -5,7 +5,4 @@ export default defineConfig({
     environment: 'jsdom',
     include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
   },
-  resolve: {
-    extensions: ['.ts', '.tsx', '.js'],
-  },
 })
