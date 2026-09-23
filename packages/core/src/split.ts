@@ -50,16 +50,13 @@ export function reconcile(
   const ids = sortByMemberOrder(Object.keys(out), memberOrder)
   if (ids.length === 0) return out
 
+  // 差額的分配規則跟均分完全一樣：每人先拿商，餘數依 memberOrder 給前面的人。
+  // 所以直接交給 splitEven，不要自己逐一 ±1 繞圈——那是 O(|diff|)，
+  // 在 splitExact 收到損壞或匯入的資料而差額很大時會讓整個 App 凍住。
   const current = ids.reduce((acc, id) => acc + (out[id] ?? 0), 0)
-  let diff = targetMinor - current
-  const step = diff > 0 ? 1 : -1
-
-  let i = 0
-  while (diff !== 0) {
-    const id = ids[i % ids.length]!
-    out[id] = (out[id] ?? 0) + step
-    diff -= step
-    i += 1
+  const spread = splitEven(targetMinor - current, ids)
+  for (const id of ids) {
+    out[id] = (out[id] ?? 0) + (spread[id] ?? 0)
   }
   return out
 }
