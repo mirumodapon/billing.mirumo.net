@@ -118,23 +118,33 @@ export function distribute(
     return out
   }
 
-  // 最大餘數法：先取整數部分，再把剩下的單位依小數部分由大到小分配
-  const exact = ids.map((id) => ({ id, value: ((out[id] ?? 0) / total) * diffMinor }))
-  const floored = exact.map((e) => ({ ...e, whole: Math.trunc(e.value), frac: Math.abs(e.value - Math.trunc(e.value)) }))
+  // 最大餘數法：先取整數部分，再把剩下的單位依餘數由大到小分配。
+  //
+  // 餘數一律用整數算（numerator - whole × total），不要用小數部分比大小。
+  // `(share / total) * diffMinor` 會帶進表示誤差：以 {a:4,b:1,c:1} 攤 −200 為例，
+  // 三人的精確餘數相等、該由 memberOrder 決勝，但浮點讓 b 與 c 的小數部分大了
+  // 約 1e-14，於是決勝依據從成員順序變成了表示誤差，結果不再可重現。
+  // 先乘後除也擋不住——比較本身必須離開浮點。
+  const rows = ids.map((id) => {
+    const numerator = (out[id] ?? 0) * diffMinor
+    const whole = Math.trunc(numerator / total)
+    return { id, whole, remainder: Math.abs(numerator - whole * total) }
+  })
 
-  let assigned = floored.reduce((acc, e) => acc + e.whole, 0)
+  let assigned = rows.reduce((acc, e) => acc + e.whole, 0)
   const step = diffMinor > 0 ? 1 : -1
-  const byFrac = [...floored].sort((x, y) => y.frac - x.frac)
+  // 穩定排序：餘數相同時維持 memberOrder 的先後，前面的人先拿
+  const byRemainder = [...rows].sort((x, y) => y.remainder - x.remainder)
 
   let i = 0
   while (assigned !== diffMinor) {
-    const target = byFrac[i % byFrac.length]!
+    const target = byRemainder[i % byRemainder.length]!
     target.whole += step
     assigned += step
     i += 1
   }
 
-  for (const e of floored) out[e.id] = (out[e.id] ?? 0) + e.whole
+  for (const e of rows) out[e.id] = (out[e.id] ?? 0) + e.whole
   return out
 }
 

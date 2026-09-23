@@ -179,6 +179,18 @@ describe('distribute', () => {
     })
   })
 
+  // 餘數比較若走浮點，決勝依據會從 memberOrder 變成表示誤差。
+  // 這組三人的精確餘數完全相等（都是 2），必須由 memberOrder 決勝、歸 a。
+  it('breaks exact ties by memberOrder, not by floating-point noise', () => {
+    // (4/6)×−200 在 IEEE 754 下是 −133.33333333333334，而 (1/6)×−200 是
+    // −33.333333333333336：b 與 c 的小數部分被誤差墊高約 1e-14，會搶走 a 的單位。
+    expect(distribute({ a: 4, b: 1, c: 1 }, -200, 'prorata', ORDER)).toEqual({
+      a: -130,
+      b: -32,
+      c: -32,
+    })
+  })
+
   it('gives the leftover unit to the largest fractional part, not the first member', () => {
     // 1/6、2/6、3/6 的 2 單位 → 商 0、0、1，餘 1 單位歸小數部分最大的 b（0.667）
     expect(distribute({ a: 1, b: 2, c: 3 }, 2, 'prorata', ORDER)).toEqual({ a: 1, b: 3, c: 4 })
@@ -239,6 +251,16 @@ describe('splitByItems', () => {
       b: 1306,
       c: 706,
     })
+  })
+
+  // 所有 items fixture 的 participants 都已經是 memberOrder 的順序，
+  // 所以它們分辨不出「有排序」和「照原陣列順序分」。這裡刻意倒著寫。
+  it('splits an item by memberOrder, not by the order its participants were listed', () => {
+    const shared: LineItem[] = [
+      { id: 'i1', name: '共享拼盤', amount: 1001, participants: ['c', 'a'] },
+    ]
+    // 1001 分兩人，餘數 1 必須歸 memberOrder 在前的 a；未排序的話會歸 c
+    expect(splitByItems(shared, 'prorata', 1, 1001, 'TWD', ORDER)).toEqual({ a: 501, c: 500 })
   })
 
   it('returns the discount in proportion to consumption', () => {
