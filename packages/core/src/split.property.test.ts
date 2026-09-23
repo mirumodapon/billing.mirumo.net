@@ -73,4 +73,43 @@ describe('reconcile invariants', () => {
       ),
     )
   })
+
+  /**
+   * 成員從旅程移除後，既有支出的分攤裡仍留著該成員的 id，但他已不在 memberOrder 中。
+   * 這條驗證那種情況下 reconcile 依然守住契約——加總精確、成員集合不變、
+   * 而且結果可重現（缺席的 id 穩定排在最後，餘數不會換人吸收）。
+   */
+  it('holds when shares contain ids missing from memberOrder', () => {
+    fc.assert(
+      fc.property(
+        fc.uniqueArray(fc.string({ minLength: 1, maxLength: 4 }), { minLength: 2, maxLength: 8 }),
+        fc.integer({ min: 1, max: 7 }),
+        // 差額必須直接生成在「小於名單人數」的範圍。從一個 ±10,000,000 的
+        // target 反推，命中這個區間的機率約 4e-7，守衛等於永遠不會成立。
+        fc.integer({ min: 1, max: 8 }),
+        (ids, dropCount, delta) => {
+          const shares = Object.fromEntries(ids.map((id, i) => [id, i * 10]))
+          // 只有前面一部分成員留在 memberOrder 裡，其餘是「已移除的成員」
+          const order = ids.slice(0, Math.max(1, ids.length - (dropCount % ids.length)))
+          const absent = ids.filter((id) => !order.includes(id))
+          const current = Object.values(shares).reduce((x, y) => x + y, 0)
+          const target = current + delta
+
+          const result = reconcile(shares, target, order)
+          expect(Object.values(result).reduce((x, y) => x + y, 0)).toBe(target)
+          expect(Object.keys(result).sort()).toEqual(ids.slice().sort())
+
+          // 名單內的成員優先吸收餘數：差額不超過名單人數時，已移除的成員一分不動。
+          // 這是「缺席 id 穩定排在最後」的實際契約——少了它，成員一被移除，
+          // 同一筆帳重算就會換人吸收零頭。
+          if (delta <= order.length) {
+            for (const id of absent) {
+              expect(result[id]).toBe(shares[id])
+            }
+          }
+        },
+      ),
+      { numRuns: 2000 },
+    )
+  })
 })
