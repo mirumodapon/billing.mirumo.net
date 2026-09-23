@@ -170,5 +170,9 @@ export function splitByItems(
 
   const subtotal = Object.values(shares).reduce((x, y) => x + y, 0)
   const withDiff = distribute(shares, totalMinor - subtotal, overflowRule, memberOrder)
+  // 這一步目前是 no-op，而且沒有任何輸入能讓它不是：distribute 保證恰好加上
+  // `totalMinor - subtotal`，所以加總必然已經等於 totalMinor。留著是為了在
+  // distribute 日後被改動時仍守住不變量——但不要把它當成這條路徑的保證來源，
+  // 真正的保證在 distribute 自己。因此也沒有測試能覆蓋這一行。
   return reconcile(withDiff, totalMinor, memberOrder)
 }

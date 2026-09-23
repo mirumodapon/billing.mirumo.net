@@ -162,6 +162,29 @@ describe('distribute', () => {
     const result = distribute({ a: 0, b: 0 }, 10, 'prorata', ORDER)
     expect(result.a! + result.b!).toBe(10)
   })
+
+  // 上面的 prorata 案例只斷言了排序（a > b > c），而 even 也滿足那個排序，
+  // 所以它分辨不出兩種規則。這兩條釘住完整分佈。
+  it('distributes prorata in proportion, not evenly', () => {
+    expect(distribute({ a: 1700, b: 1000, c: 700 }, 400, 'prorata', ORDER)).toEqual({
+      a: 1900,
+      b: 1118,
+      c: 782,
+    })
+    // 同一筆差額用 even 規則會得到完全不同的分佈
+    expect(distribute({ a: 1700, b: 1000, c: 700 }, 400, 'even', ORDER)).toEqual({
+      a: 1834,
+      b: 1133,
+      c: 833,
+    })
+  })
+
+  it('gives the leftover unit to the largest fractional part, not the first member', () => {
+    // 1/6、2/6、3/6 的 2 單位 → 商 0、0、1，餘 1 單位歸小數部分最大的 b（0.667）
+    expect(distribute({ a: 1, b: 2, c: 3 }, 2, 'prorata', ORDER)).toEqual({ a: 1, b: 3, c: 4 })
+    // 反向排列，確認不是碰巧：這次餘數歸 a
+    expect(distribute({ a: 5, b: 3, c: 1 }, 2, 'prorata', ORDER)).toEqual({ a: 6, b: 4, c: 1 })
+  })
 })
 
 describe('splitByItems', () => {
@@ -191,6 +214,39 @@ describe('splitByItems', () => {
   it('handles a discount (items exceed the paid total)', () => {
     const result = splitByItems(items, 'prorata', 1, 3000, 'TWD', ORDER)
     expect(Object.values(result).reduce((x, y) => x + y, 0)).toBe(3000)
+  })
+
+  // 上面幾條只斷言加總，而加總光靠 reconcile 就會對——就算 distribute 什麼都沒做。
+  // 以下釘住完整分佈，這樣「跳過 distribute」或「把 prorata 當 even」都會被抓到。
+  it('spreads the service charge in proportion to what each member consumed', () => {
+    // 明細分攤：a 1654、b 1173、c 573，小計 3400；實付 3800 的差額 400 按比例攤回
+    expect(splitByItems(items, 'prorata', 1, 3400, 'TWD', ORDER)).toEqual({
+      a: 1654,
+      b: 1173,
+      c: 573,
+    })
+    expect(splitByItems(items, 'prorata', 1, 3800, 'TWD', ORDER)).toEqual({
+      a: 1849,
+      b: 1311,
+      c: 640,
+    })
+  })
+
+  it('spreads the difference evenly under the even rule', () => {
+    // 同一筆差額，even 規則的分佈與 prorata 明顯不同
+    expect(splitByItems(items, 'even', 1, 3800, 'TWD', ORDER)).toEqual({
+      a: 1788,
+      b: 1306,
+      c: 706,
+    })
+  })
+
+  it('returns the discount in proportion to consumption', () => {
+    expect(splitByItems(items, 'prorata', 1, 3000, 'TWD', ORDER)).toEqual({
+      a: 1459,
+      b: 1035,
+      c: 506,
+    })
   })
 
   it('applies the exchange rate to item amounts', () => {
