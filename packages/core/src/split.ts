@@ -1,3 +1,5 @@
+import { decimalsOf, toMinor } from './money'
+
 /**
  * 依 memberOrder 的順序排序 id。
  * memberOrder 中沒有的 id 排在最後，並維持原本的相對順序。
@@ -59,4 +61,29 @@ export function reconcile(
     out[id] = (out[id] ?? 0) + (spread[id] ?? 0)
   }
   return out
+}
+
+/**
+ * 指定金額分攤。amounts 的值是**原始幣別**金額。
+ *
+ * 逐筆換算後各自取整，加總不保證等於 totalMinor（誤差會累積），
+ * 所以最後一定要過 reconcile。UI 層已擋掉「加總 ≠ 總額」的輸入，
+ * 這裡處理的純粹是換算取整的 ±1 級誤差。
+ */
+export function splitExact(
+  amounts: Record<string, number>,
+  exchangeRate: number,
+  totalMinor: number,
+  baseCurrency: string,
+  memberOrder: string[],
+): Record<string, number> {
+  const entries = Object.entries(amounts)
+  if (entries.length === 0) return {}
+
+  const decimals = decimalsOf(baseCurrency)
+  const shares: Record<string, number> = {}
+  for (const [id, amount] of entries) {
+    shares[id] = toMinor(amount * exchangeRate, decimals)
+  }
+  return reconcile(shares, totalMinor, memberOrder)
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { reconcile, sortByMemberOrder, splitEven } from './split'
+import { reconcile, sortByMemberOrder, splitEven, splitExact } from './split'
 
 const ORDER = ['a', 'b', 'c', 'd']
 
@@ -73,5 +73,34 @@ describe('reconcile', () => {
 
   it('returns an empty record when there are no shares', () => {
     expect(reconcile({}, 500, ORDER)).toEqual({})
+  })
+})
+
+describe('splitExact', () => {
+  it('converts each member amount to base minor units', () => {
+    // 各 ¥1,900，匯率 0.21 → NT$399 各自
+    const result = splitExact({ a: 1900, b: 1900 }, 0.21, 798, 'TWD', ORDER)
+    expect(result).toEqual({ a: 399, b: 399 })
+  })
+
+  it('reconciles rounding drift so the shares still sum to the total', () => {
+    // 三人各 ¥1,266.67，逐筆換算後加總可能少於或多於總額
+    const result = splitExact(
+      { a: 1266.67, b: 1266.67, c: 1266.66 },
+      0.21,
+      798,
+      'TWD',
+      ORDER,
+    )
+    expect(Object.values(result).reduce((x, y) => x + y, 0)).toBe(798)
+  })
+
+  it('supports a member paying nothing', () => {
+    const result = splitExact({ a: 3800, b: 0 }, 0.21, 798, 'TWD', ORDER)
+    expect(result).toEqual({ a: 798, b: 0 })
+  })
+
+  it('returns an empty record when there are no amounts', () => {
+    expect(splitExact({}, 0.21, 798, 'TWD', ORDER)).toEqual({})
   })
 })
