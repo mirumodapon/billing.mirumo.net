@@ -95,6 +95,24 @@ describe('splitExact', () => {
     expect(Object.values(result).reduce((x, y) => x + y, 0)).toBe(798)
   })
 
+  // 上面那組數字剛好無漂移，所以它無法證明 reconcile 是必要的。
+  // 以下兩組是實際會漂移的輸入：拿掉 reconcile 就會失敗。
+  it('absorbs positive drift, where per-member conversion undershoots the total', () => {
+    // 173.58×0.21 → 36，3739.91×0.21 → 785，逐筆加總 821；
+    // 整筆 3913.49×0.21 → 822。差額 +1 要落在 memberOrder 的第一人身上。
+    const result = splitExact({ a: 173.58, b: 3739.91 }, 0.21, 822, 'TWD', ORDER)
+    expect(result).toEqual({ a: 37, b: 785 })
+    expect(sum(result)).toBe(822)
+  })
+
+  it('absorbs negative drift, where per-member conversion overshoots the total', () => {
+    // 3907.26×0.21 → 821，3154.78×0.21 → 663，逐筆加總 1484；
+    // 整筆 7062.04×0.21 → 1483。差額 −1 同樣從第一人身上扣。
+    const result = splitExact({ a: 3907.26, b: 3154.78 }, 0.21, 1483, 'TWD', ORDER)
+    expect(sum(result)).toBe(1483)
+    expect(result).toEqual({ a: 820, b: 663 })
+  })
+
   it('supports a member paying nothing', () => {
     const result = splitExact({ a: 3800, b: 0 }, 0.21, 798, 'TWD', ORDER)
     expect(result).toEqual({ a: 798, b: 0 })
