@@ -6,7 +6,7 @@
     "dev": "pnpm --filter web dev",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
-    "typecheck": "tsc -b",
+    "typecheck": "tsc -b && tsc -p tsconfig.tests.json",
     "lint": "eslint ."
   },
   "packageManager": "pnpm@10.33.2",
