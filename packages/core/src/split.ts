@@ -1,4 +1,5 @@
 import { decimalsOf, toMinor } from './money'
+import type { LineItem, OverflowRule } from './types'
 
 /**
  * 依 memberOrder 的順序排序 id。
@@ -86,4 +87,88 @@ export function splitExact(
     shares[id] = toMinor(amount * exchangeRate, decimals)
   }
   return reconcile(shares, totalMinor, memberOrder)
+}
+
+/**
+ * 把差額攤回既有的 shares。
+ *
+ * - `prorata`：按各人現有分攤額的比例分配。服務費、稅、折價券都隨消費金額成長，
+ *   按比例才公平。用最大餘數法確保加總精確且結果可重現。
+ * - `even`：全員均分。適合停車費這類與消費額無關的附加費用。
+ *
+ * 所有 shares 皆為 0 時無法按比例分配（會除以零），退回均分。
+ */
+export function distribute(
+  shares: Record<string, number>,
+  diffMinor: number,
+  rule: OverflowRule,
+  memberOrder: string[],
+): Record<string, number> {
+  const out = { ...shares }
+  if (diffMinor === 0) return out
+
+  const ids = sortByMemberOrder(Object.keys(out), memberOrder)
+  if (ids.length === 0) return out
+
+  const total = ids.reduce((acc, id) => acc + (out[id] ?? 0), 0)
+
+  if (rule === 'even' || total === 0) {
+    const even = splitEven(diffMinor, ids)
+    for (const id of ids) out[id] = (out[id] ?? 0) + (even[id] ?? 0)
+    return out
+  }
+
+  // 最大餘數法：先取整數部分，再把剩下的單位依小數部分由大到小分配
+  const exact = ids.map((id) => ({ id, value: ((out[id] ?? 0) / total) * diffMinor }))
+  const floored = exact.map((e) => ({ ...e, whole: Math.trunc(e.value), frac: Math.abs(e.value - Math.trunc(e.value)) }))
+
+  let assigned = floored.reduce((acc, e) => acc + e.whole, 0)
+  const step = diffMinor > 0 ? 1 : -1
+  const byFrac = [...floored].sort((x, y) => y.frac - x.frac)
+
+  let i = 0
+  while (assigned !== diffMinor) {
+    const target = byFrac[i % byFrac.length]!
+    target.whole += step
+    assigned += step
+    i += 1
+  }
+
+  for (const e of floored) out[e.id] = (out[e.id] ?? 0) + e.whole
+  return out
+}
+
+/**
+ * 明細分帳：每個品項在自己的參與者之間均分，累加後把差額攤回。
+ *
+ * 差額 = 實付總額 − 明細小計。收據上的品項小計與實付金額之間夾著
+ * 服務費、稅、折價券、湊整，硬性要求相等會讓使用者第一次用就卡住。
+ */
+export function splitByItems(
+  items: LineItem[],
+  overflowRule: OverflowRule,
+  exchangeRate: number,
+  totalMinor: number,
+  baseCurrency: string,
+  memberOrder: string[],
+): Record<string, number> {
+  if (items.length === 0) return {}
+
+  const decimals = decimalsOf(baseCurrency)
+  const shares: Record<string, number> = {}
+
+  for (const item of items) {
+    const itemMinor = toMinor(item.amount * exchangeRate, decimals)
+    const ordered = sortByMemberOrder(item.participants, memberOrder)
+    const itemShares = splitEven(itemMinor, ordered)
+    for (const [id, value] of Object.entries(itemShares)) {
+      shares[id] = (shares[id] ?? 0) + value
+    }
+  }
+
+  if (Object.keys(shares).length === 0) return {}
+
+  const subtotal = Object.values(shares).reduce((x, y) => x + y, 0)
+  const withDiff = distribute(shares, totalMinor - subtotal, overflowRule, memberOrder)
+  return reconcile(withDiff, totalMinor, memberOrder)
 }

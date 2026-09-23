@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { reconcile, sortByMemberOrder, splitEven, splitExact } from './split'
+import { distribute, reconcile, sortByMemberOrder, splitByItems, splitEven, splitExact } from './split'
+import type { LineItem } from './types'
 
 const ORDER = ['a', 'b', 'c', 'd']
 
@@ -128,5 +129,77 @@ describe('splitExact', () => {
 
   it('returns an empty record when there are no amounts', () => {
     expect(splitExact({}, 0.21, 798, 'TWD', ORDER)).toEqual({})
+  })
+})
+
+describe('distribute', () => {
+  it('spreads a positive difference proportionally to existing shares', () => {
+    // 服務費 400：a 佔 50%、b 佔 29%、c 佔 21%
+    const result = distribute({ a: 1700, b: 1000, c: 700 }, 400, 'prorata', ORDER)
+    expect(result.a! + result.b! + result.c!).toBe(3800)
+    expect(result.a).toBeGreaterThan(result.b!)
+    expect(result.b).toBeGreaterThan(result.c!)
+  })
+
+  it('spreads a difference evenly when the rule is even', () => {
+    const result = distribute({ a: 1700, b: 1000, c: 700 }, 300, 'even', ORDER)
+    expect(result).toEqual({ a: 1800, b: 1100, c: 800 })
+  })
+
+  it('handles a negative difference (a discount) proportionally', () => {
+    const result = distribute({ a: 2000, b: 1000 }, -300, 'prorata', ORDER)
+    expect(result.a! + result.b!).toBe(2700)
+    // 折扣依消費比例回饋：a 拿到較多折扣
+    expect(2000 - result.a!).toBeGreaterThan(1000 - result.b!)
+  })
+
+  it('is a no-op when the difference is zero', () => {
+    expect(distribute({ a: 100, b: 200 }, 0, 'prorata', ORDER)).toEqual({ a: 100, b: 200 })
+  })
+
+  it('falls back to even distribution when all shares are zero', () => {
+    // 無法按比例分配，否則會除以零
+    const result = distribute({ a: 0, b: 0 }, 10, 'prorata', ORDER)
+    expect(result.a! + result.b!).toBe(10)
+  })
+})
+
+describe('splitByItems', () => {
+  const items: LineItem[] = [
+    { id: 'i1', name: '豚骨拉麵', amount: 1200, participants: ['a', 'b'] },
+    { id: 'i2', name: '煎餃', amount: 480, participants: ['a'] },
+    { id: 'i3', name: '生啤 x3', amount: 1720, participants: ['a', 'b', 'c'] },
+  ]
+
+  it('splits each item among its own participants and sums to the total', () => {
+    // 小計 3400，實付 3800，差額 400 按比例攤回
+    const result = splitByItems(items, 'prorata', 1, 3800, 'TWD', ORDER)
+    expect(Object.values(result).reduce((x, y) => x + y, 0)).toBe(3800)
+  })
+
+  it('charges a member only for the items they participated in', () => {
+    const result = splitByItems(items, 'prorata', 1, 3400, 'TWD', ORDER)
+    // c 只參與生啤：1720 / 3 人
+    expect(result.c).toBe(573)
+  })
+
+  it('excludes members who participated in nothing', () => {
+    const result = splitByItems(items, 'prorata', 1, 3400, 'TWD', ORDER)
+    expect(result.d).toBeUndefined()
+  })
+
+  it('handles a discount (items exceed the paid total)', () => {
+    const result = splitByItems(items, 'prorata', 1, 3000, 'TWD', ORDER)
+    expect(Object.values(result).reduce((x, y) => x + y, 0)).toBe(3000)
+  })
+
+  it('applies the exchange rate to item amounts', () => {
+    const one: LineItem[] = [{ id: 'i1', name: '', amount: 1000, participants: ['a', 'b'] }]
+    const result = splitByItems(one, 'prorata', 0.21, 210, 'TWD', ORDER)
+    expect(result).toEqual({ a: 105, b: 105 })
+  })
+
+  it('returns an empty record for no items', () => {
+    expect(splitByItems([], 'prorata', 1, 0, 'TWD', ORDER)).toEqual({})
   })
 })
