@@ -1,0 +1,12 @@
+node_modules/
+dist/
+dev-dist/
+storybook-static/
+coverage/
+*.tsbuildinfo
+.DS_Store
+.env
+.env.local
+
+# 規格與實作計畫等工作文件不進版控
+docs/superpowers/
