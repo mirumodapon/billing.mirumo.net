@@ -118,6 +118,14 @@ describe('splitExact', () => {
     expect(result).toEqual({ a: 798, b: 0 })
   })
 
+  // 其他案例的 amounts 鍵序剛好與 ORDER 一致，所以它們無法分辨
+  // 「有把 memberOrder 傳下去」和「用了物件自己的鍵序」。這裡刻意倒著寫。
+  it('settles drift by memberOrder, not by the key order of the amounts object', () => {
+    // 與上面的正向漂移同一組數字，只是 b 先寫。差額 +1 仍必須落在 a 身上。
+    const result = splitExact({ b: 3739.91, a: 173.58 }, 0.21, 822, 'TWD', ORDER)
+    expect(result).toEqual({ a: 37, b: 785 })
+  })
+
   it('returns an empty record when there are no amounts', () => {
     expect(splitExact({}, 0.21, 798, 'TWD', ORDER)).toEqual({})
   })
