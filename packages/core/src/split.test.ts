@@ -314,6 +314,9 @@ describe('sharesOf', () => {
     const e = makeExpense({ mode: 'exact', amounts: { a: 2000, b: 1800 } })
     const result = sharesOf(e, 'TWD', ORDER)
     expect(Object.values(result).reduce((x, y) => x + y, 0)).toBe(798)
+    // 只斷言加總分辨不出模式——均分兩人也是 798。要釘住分佈：
+    // ¥2,000×0.21 = 420、¥1,800×0.21 = 378，而均分會是 {a:399, b:399}。
+    expect(result).toEqual({ a: 420, b: 378 })
   })
 
   it('dispatches to splitByItems', () => {
@@ -327,6 +330,8 @@ describe('sharesOf', () => {
     })
     const result = sharesOf(e, 'TWD', ORDER)
     expect(Object.values(result).reduce((x, y) => x + y, 0)).toBe(798)
+    // a 獨享拉麵又分了啤酒，b 只分啤酒，所以差距遠大於均分
+    expect(result).toEqual({ a: 634, b: 164 })
   })
 
   it('sorts even-split participants into member order regardless of input order', () => {

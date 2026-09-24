@@ -125,6 +125,10 @@ export function distribute(
   // 三人的精確餘數相等、該由 memberOrder 決勝，但浮點讓 b 與 c 的小數部分大了
   // 約 1e-14，於是決勝依據從成員順序變成了表示誤差，結果不再可重現。
   // 先乘後除也擋不住——比較本身必須離開浮點。
+  //
+  // 前提：|share × diffMinor| < 2^53。超過的話 numerator 本身就不精確，
+  // 整數比較的保證跟著失效。實務上兩者都要達到千萬級才會撞到，單筆收據不可能，
+  // 但若日後拿掉金額上限，這裡要重新檢查。
   const rows = ids.map((id) => {
     const numerator = (out[id] ?? 0) * diffMinor
     const whole = Math.trunc(numerator / total)
