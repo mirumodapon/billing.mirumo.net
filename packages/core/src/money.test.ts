@@ -80,4 +80,14 @@ describe('convertToBaseMinor', () => {
   it('returns the same amount when the rate is 1', () => {
     expect(convertToBaseMinor(500, 1, 'TWD')).toBe(500)
   })
+
+  // 沒有這道守衛，NaN 會一路傳到最糟的終點：每個人淨額都是 NaN，而
+  // NaN > 0 與 NaN < 0 同時為 false，最少轉帳回傳空陣列，結算畫面就在
+  // 資料全壞的情況下顯示「大家都結清了」。
+  it('refuses non-finite input rather than letting NaN propagate', () => {
+    expect(() => convertToBaseMinor(Number.NaN, 0.21, 'TWD')).toThrow(/finite/)
+    expect(() => convertToBaseMinor(500, Number.NaN, 'TWD')).toThrow(/finite/)
+    expect(() => convertToBaseMinor(500, Number.POSITIVE_INFINITY, 'TWD')).toThrow(/finite/)
+    expect(() => convertToBaseMinor(undefined as unknown as number, 1, 'TWD')).toThrow(/finite/)
+  })
 })

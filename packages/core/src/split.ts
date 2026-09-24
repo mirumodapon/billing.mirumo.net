@@ -213,6 +213,11 @@ export function splitByItems(
  *
  * 三種模式最後都收斂到同一個輸出，且 **加總恆等於該筆的本位幣總額**。
  * settle 與 stats 只透過這個函式取得分攤，不需要知道模式的差異。
+ *
+ * 分攤設定是空的（沒有參與者、沒有金額、沒有品項）時，全額歸付款人。
+ * 那是型別合法但無意義的狀態——UI 不該產生，匯入的備份卻可能帶進來。
+ * 回傳空物件會讓這筆錢從結算裡消失、Σ net 不再為零；歸給付款人則語意清楚
+ * （「我付了但沒人跟我分」）、不變量保住，使用者也看得到那筆帳而能自行修正。
  */
 export function sharesOf(
   expense: Expense,
@@ -220,6 +225,16 @@ export function sharesOf(
   memberOrder: string[],
 ): Record<string, number> {
   const totalMinor = convertToBaseMinor(expense.amount, expense.exchangeRate, baseCurrency)
+  const shares = splitOf(expense, totalMinor, baseCurrency, memberOrder)
+  return Object.keys(shares).length === 0 ? { [expense.paidBy]: totalMinor } : shares
+}
+
+function splitOf(
+  expense: Expense,
+  totalMinor: number,
+  baseCurrency: string,
+  memberOrder: string[],
+): Record<string, number> {
   const { split } = expense
 
   switch (split.mode) {

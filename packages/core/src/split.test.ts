@@ -360,6 +360,21 @@ describe('sharesOf', () => {
     expect(result).toEqual({ a: 634, b: 164 })
   })
 
+  // 型別合法但無意義的分攤設定。UI 不該產生，匯入的備份可能帶進來。
+  // 回傳 {} 會讓這筆錢從結算裡消失、Σ net 不再為零。
+  it('charges the whole total to the payer when the split names nobody', () => {
+    for (const split of [
+      { mode: 'even', participants: [] },
+      { mode: 'exact', amounts: {} },
+      { mode: 'items', overflowRule: 'prorata', items: [] },
+      { mode: 'items', overflowRule: 'prorata', items: [{ id: 'i', name: '', amount: 1000, participants: [] }] },
+    ] satisfies Split[]) {
+      const e = makeExpense(split)
+      // 3800 × 0.21 = 798，付款人是 a
+      expect(sharesOf(e, 'TWD', ORDER)).toEqual({ a: 798 })
+    }
+  })
+
   it('sorts even-split participants into member order regardless of input order', () => {
     const e = makeExpense({ mode: 'even', participants: ['d', 'b', 'a', 'c'] })
     expect(sharesOf(e, 'TWD', ORDER)).toEqual({ a: 200, b: 200, c: 199, d: 199 })

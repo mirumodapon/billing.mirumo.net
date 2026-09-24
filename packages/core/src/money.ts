@@ -29,15 +29,35 @@ export function toMinor(value: number, decimals: number): number {
   return Math.round(Number((value * 10 ** decimals).toPrecision(12)))
 }
 
+/**
+ * 最小單位整數 → 十進位金額。回傳原始浮點數，刻意不取整。
+ *
+ * 從這裡衍生出來的浮點數若要變回最小單位，**必須走回 `toMinor`**，
+ * 不可以在別處另開 `Math.round` 或 `toFixed`——那會是第二條取整路徑，
+ * 而「金額對不上」的 bug 就會多一個藏身處。
+ */
 export function fromMinor(minor: number, decimals: number): number {
   return minor / 10 ** decimals
 }
 
-/** 原始幣別金額 × 匯率 → 本位幣最小單位整數 */
+/**
+ * 原始幣別金額 × 匯率 → 本位幣最小單位整數。
+ *
+ * 這是全專案唯一的換算入口，所以非有限數的守衛放在這裡就夠了。
+ * 沒有它的話 NaN 會一路傳到最糟的地方：每個人的淨額都是 NaN，而
+ * `NaN > 0` 與 `NaN < 0` 同時為 false，於是最少轉帳回傳空陣列，
+ * 結算畫面在資料全壞的情況下顯示「大家都結清了」。
+ * 寧可在來源大聲失敗，也不要在終點給出自信的錯誤答案。
+ */
 export function convertToBaseMinor(
   amount: number,
   exchangeRate: number,
   baseCurrency: string,
 ): number {
+  if (!Number.isFinite(amount) || !Number.isFinite(exchangeRate)) {
+    throw new Error(
+      `convertToBaseMinor: amount and exchangeRate must be finite, got ${amount} and ${exchangeRate}`,
+    )
+  }
   return toMinor(amount * exchangeRate, decimalsOf(baseCurrency))
 }
