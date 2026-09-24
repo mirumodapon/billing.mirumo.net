@@ -9,3 +9,5 @@ export * from './split'
 export * from './settle'
 
 export * from './fx'
+
+export * from './stats'
