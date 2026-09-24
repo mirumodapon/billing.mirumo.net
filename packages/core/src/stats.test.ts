@@ -118,6 +118,21 @@ describe('byCategory', () => {
     expect(result.find((r) => r.categoryId === 'cat.other')!.totalMinor).toBe(-30)
   })
 
+  // 上面那筆退款夠小，帶號比較和絕對值比較都判定該合併，所以分辨不出兩者。
+  // 大額退款才分得開：帶號比較下 −1.0 < 0.05 恆成立，會把一個佔比 100% 的
+  // 類別當成零碎項併走。
+  it('does not merge a large refund category just because its ratio is negative', () => {
+    const result = byCategory(
+      [
+        expense({ id: '1', categoryId: 'cat.food', amount: 1000 }),
+        expense({ id: '2', categoryId: 'cat.refund', amount: -500 }),
+      ],
+      { ...opts, mergeThreshold: 0.05 },
+    )
+    expect(result.map((r) => r.categoryId)).toEqual(['cat.food', 'cat.refund'])
+    expect(result.find((r) => r.categoryId === 'cat.refund')!.totalMinor).toBe(-500)
+  })
+
   it('ignores soft-deleted expenses', () => {
     const result = byCategory([expense({ deletedAt: '2026-03-16T00:00:00Z' })], opts)
     expect(result).toEqual([])
