@@ -129,10 +129,18 @@ export function distribute(
   // 前提：|share × diffMinor| < 2^53。超過的話 numerator 本身就不精確，
   // 整數比較的保證跟著失效。實務上兩者都要達到千萬級才會撞到，單筆收據不可能，
   // 但若日後拿掉金額上限，這裡要重新檢查。
-  const rows = ids.map((id) => {
-    const numerator = (out[id] ?? 0) * diffMinor
-    const whole = Math.trunc(numerator / total)
-    return { id, whole, remainder: Math.abs(numerator - whole * total) }
+  // 權重取絕對值。混正負的 shares（收據上同時有商品與退貨/優惠券）下，
+  // Math.trunc 朝零取整會把負項往上抬，讓 assigned 越過 diffMinor，而 step
+  // 仍朝原方向走——迴圈就再也回不到終止條件，整個 App 同步凍結。
+  // 用 |share| 當權重後，每個 value 都與 diffMinor 同號，|Σ trunc| ≤ |diffMinor|，
+  // step 必然朝目標前進。shares 全正或全負時結果與先前完全相同。
+  const weights = ids.map((id) => Math.abs(out[id] ?? 0))
+  const weightTotal = weights.reduce((acc, w) => acc + w, 0)
+
+  const rows = ids.map((id, index) => {
+    const numerator = (weights[index] ?? 0) * diffMinor
+    const whole = Math.trunc(numerator / weightTotal)
+    return { id, whole, remainder: Math.abs(numerator - whole * weightTotal) }
   })
 
   let assigned = rows.reduce((acc, e) => acc + e.whole, 0)
@@ -140,8 +148,17 @@ export function distribute(
   // 穩定排序：餘數相同時維持 memberOrder 的先後，前面的人先拿
   const byRemainder = [...rows].sort((x, y) => y.remainder - x.remainder)
 
+  // 上界：每個 trunc 損失不到一單位，所以最多補 ids.length 次。多留一輪的餘裕，
+  // 超過就是前提被破壞了（非整數或 NaN 的 diffMinor），寧可拋錯也不要卡住。
+  const maxSteps = rows.length + 1
   let i = 0
   while (assigned !== diffMinor) {
+    if (i >= maxSteps) {
+      throw new Error(
+        `distribute: cannot reach ${diffMinor} from ${assigned} in ${maxSteps} steps; ` +
+          'diffMinor and shares must be finite integers',
+      )
+    }
     const target = byRemainder[i % byRemainder.length]!
     target.whole += step
     assigned += step

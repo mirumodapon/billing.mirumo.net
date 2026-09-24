@@ -191,6 +191,20 @@ describe('distribute', () => {
     })
   })
 
+  // 收據上同時有商品與退貨／優惠券時，shares 會混正負。權重若不取絕對值，
+  // Math.trunc 朝零取整會把負項抬高，assigned 越過 diffMinor 而 step 仍朝原方向走，
+  // 迴圈永遠回不到終止條件——整個 App 同步凍結，不是算錯而是當掉。
+  it('terminates and sums correctly when shares have mixed signs', () => {
+    const result = distribute({ a: -1, b: -1, c: 5 }, 2, 'prorata', ORDER)
+    expect(sum(result)).toBe(5)
+    expect(result).toEqual({ a: -1, b: -1, c: 7 })
+  })
+
+  it('terminates for a large mixed-sign difference', () => {
+    const result = distribute({ a: -393, b: -1, c: 398 }, 246, 'prorata', ORDER)
+    expect(sum(result)).toBe(250)
+  })
+
   it('gives the leftover unit to the largest fractional part, not the first member', () => {
     // 1/6、2/6、3/6 的 2 單位 → 商 0、0、1，餘 1 單位歸小數部分最大的 b（0.667）
     expect(distribute({ a: 1, b: 2, c: 3 }, 2, 'prorata', ORDER)).toEqual({ a: 1, b: 3, c: 4 })
@@ -275,6 +289,18 @@ describe('splitByItems', () => {
     const one: LineItem[] = [{ id: 'i1', name: '', amount: 1000, participants: ['a', 'b'] }]
     const result = splitByItems(one, 'prorata', 0.21, 210, 'TWD', ORDER)
     expect(result).toEqual({ a: 105, b: 105 })
+  })
+
+  // 一張「退貨 + 折扣 + 新商品」的收據，負數品項是使用者輸入優惠券的自然方式。
+  // 修正前這個呼叫會讓公開 API sharesOf 永不返回。
+  it('handles a receipt mixing refunds and purchases without hanging', () => {
+    const mixed: LineItem[] = [
+      { id: 'i1', name: '退貨', amount: -393, participants: ['a'] },
+      { id: 'i2', name: '折扣', amount: -1, participants: ['b'] },
+      { id: 'i3', name: '新商品', amount: 398, participants: ['c'] },
+    ]
+    const result = splitByItems(mixed, 'prorata', 1, 250, 'TWD', ORDER)
+    expect(sum(result)).toBe(250)
   })
 
   it('returns an empty record for no items', () => {
