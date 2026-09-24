@@ -211,6 +211,9 @@ export function itemBreakdown(
 
     let itemised = 0
     for (const item of e.split.items) {
+      // 提前退出，不是正確性守衛：沒參與的話下面的 splitEven 查不到自己、
+      // `?? 0` 會給 0，再被 `share === 0` 接住，結果完全一樣（實測 50,000 組
+      // 有無這行都相同）。因此沒有測試能覆蓋它——拿掉只會變慢，不會變錯。
       if (!item.participants.includes(selfMemberId)) continue
       const itemMinor = toMinor(item.amount * e.exchangeRate, decimals)
       const ordered = sortByMemberOrder(item.participants, memberOrder)
