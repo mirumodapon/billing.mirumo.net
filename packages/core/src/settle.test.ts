@@ -79,6 +79,42 @@ describe('netBalances', () => {
     expect(balances.reduce((acc, b) => acc + b.netMinor, 0)).toBe(0)
   })
 
+  // 其他案例每個付款人都只付一次，所以「累加」和「覆寫」結果相同——
+  // 而 Σ net === 0 正是建立在這個累加上。這兩條讓同一個人出現兩次。
+  it('accumulates across multiple expenses paid by the same member', () => {
+    const balances = netBalances(
+      trip,
+      [
+        expense({ id: 'e1', paidBy: 'a', amount: 300 }),
+        expense({ id: 'e2', paidBy: 'a', amount: 600 }),
+      ],
+      [],
+    )
+    // a 墊了 900，三人各該負擔 300
+    expect(balances).toEqual([
+      { memberId: 'a', paidMinor: 900, owedMinor: 300, netMinor: 600 },
+      { memberId: 'b', paidMinor: 0, owedMinor: 300, netMinor: -300 },
+      { memberId: 'c', paidMinor: 0, owedMinor: 300, netMinor: -300 },
+    ])
+  })
+
+  it('accumulates across multiple transfers touching the same member', () => {
+    const balances = netBalances(
+      trip,
+      [],
+      [
+        transfer({ id: 't1', from: 'b', to: 'a', amount: 100 }),
+        transfer({ id: 't2', from: 'b', to: 'a', amount: 50 }),
+      ],
+    )
+    // b 總共給了 150，不是最後一筆的 50
+    expect(balances).toEqual([
+      { memberId: 'a', paidMinor: 0, owedMinor: 0, netMinor: -150 },
+      { memberId: 'b', paidMinor: 0, owedMinor: 0, netMinor: 150 },
+      { memberId: 'c', paidMinor: 0, owedMinor: 0, netMinor: 0 },
+    ])
+  })
+
   it('treats a transfer as money moving without changing spending', () => {
     const balances = netBalances(trip, [expense({ paidBy: 'a', amount: 300 })], [transfer({ from: 'b', to: 'a', amount: 100 })])
     const byId = Object.fromEntries(balances.map((b) => [b.memberId, b]))
