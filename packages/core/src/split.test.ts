@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { distribute, reconcile, sortByMemberOrder, splitByItems, splitEven, splitExact } from './split'
-import type { LineItem } from './types'
+import { distribute, reconcile, sharesOf, sortByMemberOrder, splitByItems, splitEven, splitExact } from './split'
+import type { Expense, LineItem, Split } from './types'
 
 const ORDER = ['a', 'b', 'c', 'd']
 
@@ -279,5 +279,58 @@ describe('splitByItems', () => {
 
   it('returns an empty record for no items', () => {
     expect(splitByItems([], 'prorata', 1, 0, 'TWD', ORDER)).toEqual({})
+  })
+})
+
+function makeExpense(split: Split, amount = 3800, exchangeRate = 0.21): Expense {
+  return {
+    id: 'e1',
+    tripId: 't1',
+    date: '2026-03-15',
+    description: '一蘭拉麵',
+    categoryId: 'cat.food',
+    paymentMethodId: 'pay.cash',
+    paidBy: 'a',
+    amount,
+    currency: 'JPY',
+    exchangeRate,
+    split,
+    attachments: [],
+    createdAt: '2026-03-15T00:00:00Z',
+    updatedAt: '2026-03-15T00:00:00Z',
+  }
+}
+
+describe('sharesOf', () => {
+  it('dispatches to splitEven and sums to the converted total', () => {
+    const e = makeExpense({ mode: 'even', participants: ['a', 'b', 'c', 'd'] })
+    const result = sharesOf(e, 'TWD', ORDER)
+    // 3800 × 0.21 = 798
+    expect(Object.values(result).reduce((x, y) => x + y, 0)).toBe(798)
+    expect(result).toEqual({ a: 200, b: 200, c: 199, d: 199 })
+  })
+
+  it('dispatches to splitExact', () => {
+    const e = makeExpense({ mode: 'exact', amounts: { a: 2000, b: 1800 } })
+    const result = sharesOf(e, 'TWD', ORDER)
+    expect(Object.values(result).reduce((x, y) => x + y, 0)).toBe(798)
+  })
+
+  it('dispatches to splitByItems', () => {
+    const e = makeExpense({
+      mode: 'items',
+      overflowRule: 'prorata',
+      items: [
+        { id: 'i1', name: '拉麵', amount: 2000, participants: ['a'] },
+        { id: 'i2', name: '啤酒', amount: 1400, participants: ['a', 'b'] },
+      ],
+    })
+    const result = sharesOf(e, 'TWD', ORDER)
+    expect(Object.values(result).reduce((x, y) => x + y, 0)).toBe(798)
+  })
+
+  it('sorts even-split participants into member order regardless of input order', () => {
+    const e = makeExpense({ mode: 'even', participants: ['d', 'b', 'a', 'c'] })
+    expect(sharesOf(e, 'TWD', ORDER)).toEqual({ a: 200, b: 200, c: 199, d: 199 })
   })
 })

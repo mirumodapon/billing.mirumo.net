@@ -1,5 +1,5 @@
-import { decimalsOf, toMinor } from './money'
-import type { LineItem, OverflowRule } from './types'
+import { convertToBaseMinor, decimalsOf, toMinor } from './money'
+import type { Expense, LineItem, OverflowRule } from './types'
 
 /**
  * 依 memberOrder 的順序排序 id。
@@ -185,4 +185,35 @@ export function splitByItems(
   // distribute 日後被改動時仍守住不變量——但不要把它當成這條路徑的保證來源，
   // 真正的保證在 distribute 自己。因此也沒有測試能覆蓋這一行。
   return reconcile(withDiff, totalMinor, memberOrder)
+}
+
+/**
+ * 一筆支出的各人分攤額（本位幣最小單位整數）。
+ *
+ * 三種模式最後都收斂到同一個輸出，且 **加總恆等於該筆的本位幣總額**。
+ * settle 與 stats 只透過這個函式取得分攤，不需要知道模式的差異。
+ */
+export function sharesOf(
+  expense: Expense,
+  baseCurrency: string,
+  memberOrder: string[],
+): Record<string, number> {
+  const totalMinor = convertToBaseMinor(expense.amount, expense.exchangeRate, baseCurrency)
+  const { split } = expense
+
+  switch (split.mode) {
+    case 'even':
+      return splitEven(totalMinor, sortByMemberOrder(split.participants, memberOrder))
+    case 'exact':
+      return splitExact(split.amounts, expense.exchangeRate, totalMinor, baseCurrency, memberOrder)
+    case 'items':
+      return splitByItems(
+        split.items,
+        split.overflowRule,
+        expense.exchangeRate,
+        totalMinor,
+        baseCurrency,
+        memberOrder,
+      )
+  }
 }
