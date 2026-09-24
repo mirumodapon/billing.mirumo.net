@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { netBalances } from './settle'
+import { minimalTransfers, netBalances } from './settle'
+import type { Balance } from './settle'
 import type { Expense, Transfer, Trip } from './types'
 
 const trip: Trip = {
@@ -116,5 +117,56 @@ describe('netBalances', () => {
   it('returns a row for every member, in trip member order', () => {
     const balances = netBalances(trip, [], [])
     expect(balances.map((b) => b.memberId)).toEqual(['a', 'b', 'c'])
+  })
+})
+
+const bal = (memberId: string, netMinor: number): Balance => ({
+  memberId,
+  paidMinor: 0,
+  owedMinor: 0,
+  netMinor,
+})
+
+describe('minimalTransfers', () => {
+  it('settles a simple two-person debt with one transfer', () => {
+    expect(minimalTransfers([bal('a', 100), bal('b', -100)])).toEqual([
+      { from: 'b', to: 'a', amountMinor: 100 },
+    ])
+  })
+
+  it('pairs the largest creditor with the largest debtor first', () => {
+    const result = minimalTransfers([bal('a', 8350), bal('b', -4050), bal('c', -4300)])
+    expect(result).toEqual([
+      { from: 'c', to: 'a', amountMinor: 4300 },
+      { from: 'b', to: 'a', amountMinor: 4050 },
+    ])
+  })
+
+  it('never needs more than n-1 transfers', () => {
+    const balances = [bal('a', 300), bal('b', 100), bal('c', -150), bal('d', -250)]
+    expect(minimalTransfers(balances).length).toBeLessThanOrEqual(balances.length - 1)
+  })
+
+  it('produces transfers that zero out every balance', () => {
+    const balances = [bal('a', 300), bal('b', 100), bal('c', -150), bal('d', -250)]
+    const net: Record<string, number> = Object.fromEntries(balances.map((b) => [b.memberId, b.netMinor]))
+    for (const t of minimalTransfers(balances)) {
+      net[t.from] = (net[t.from] ?? 0) + t.amountMinor
+      net[t.to] = (net[t.to] ?? 0) - t.amountMinor
+    }
+    expect(Object.values(net).every((v) => v === 0)).toBe(true)
+  })
+
+  it('returns nothing when everyone is settled', () => {
+    expect(minimalTransfers([bal('a', 0), bal('b', 0)])).toEqual([])
+  })
+
+  it('returns nothing for an empty balance list', () => {
+    expect(minimalTransfers([])).toEqual([])
+  })
+
+  it('is deterministic when amounts tie', () => {
+    const balances = [bal('a', 100), bal('b', 100), bal('c', -100), bal('d', -100)]
+    expect(minimalTransfers(balances)).toEqual(minimalTransfers(balances))
   })
 })

@@ -62,3 +62,48 @@ export function netBalances(
     }
   })
 }
+
+export interface TransferSuggestion {
+  from: string
+  to: string
+  amountMinor: number
+}
+
+/**
+ * 最少轉帳建議（貪婪法）。
+ *
+ * 每輪取淨額最大的債權人與欠最多的債務人配對，轉帳金額取兩者絕對值較小者。
+ *
+ * 最小化轉帳筆數在一般情況下是 NP-hard，貪婪法不保證絕對最少，
+ * 但保證不超過 n−1 筆，且在真實的旅遊分帳規模（3–8 人）幾乎總是最優。
+ * 同分時以 balances 的原始順序（= 旅程成員順序）決勝，確保輸出穩定不跳動。
+ */
+export function minimalTransfers(balances: Balance[]): TransferSuggestion[] {
+  const creditors = balances
+    .filter((b) => b.netMinor > 0)
+    .map((b) => ({ id: b.memberId, net: b.netMinor }))
+  const debtors = balances
+    .filter((b) => b.netMinor < 0)
+    .map((b) => ({ id: b.memberId, net: -b.netMinor }))
+
+  const out: TransferSuggestion[] = []
+
+  while (creditors.length > 0 && debtors.length > 0) {
+    // 穩定排序：值相同時維持原順序，所以結果可重現
+    creditors.sort((x, y) => y.net - x.net)
+    debtors.sort((x, y) => y.net - x.net)
+
+    const c = creditors[0]!
+    const d = debtors[0]!
+    const amountMinor = Math.min(c.net, d.net)
+
+    out.push({ from: d.id, to: c.id, amountMinor })
+    c.net -= amountMinor
+    d.net -= amountMinor
+
+    if (c.net === 0) creditors.shift()
+    if (d.net === 0) debtors.shift()
+  }
+
+  return out
+}
