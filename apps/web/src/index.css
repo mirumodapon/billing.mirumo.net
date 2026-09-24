@@ -1,0 +1,22 @@
+@import 'tailwindcss';
+@import '@billing/ui/styles.css';
+
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+body {
+  margin: 0;
+  background: var(--bi-bg);
+  color: var(--bi-text);
+  user-select: none;
+  overscroll-behavior: none;
+  font-family: system-ui, sans-serif;
+}
+
+input,
+textarea,
+[data-selectable] {
+  user-select: text;
+}

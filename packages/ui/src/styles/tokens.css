@@ -1,0 +1,57 @@
+:root {
+  /* palette 層 — 各主題覆寫這些 */
+  --bi-p-base: #1e1e2e;
+  --bi-p-mantle: #181825;
+  --bi-p-crust: #11111b;
+  --bi-p-surface0: #313244;
+  --bi-p-surface1: #45475a;
+  --bi-p-surface2: #585b70;
+  --bi-p-overlay0: #6c7086;
+  --bi-p-overlay1: #7f849c;
+  --bi-p-overlay2: #9399b2;
+  --bi-p-text: #cdd6f4;
+  --bi-p-subtext0: #a6adc8;
+  --bi-p-subtext1: #bac2de;
+  --bi-p-accent1: #f38ba8;
+  --bi-p-accent2: #fab387;
+  --bi-p-accent3: #f9e2af;
+  --bi-p-accent4: #a6e3a1;
+  --bi-p-accent5: #94e2d5;
+  --bi-p-accent6: #89dceb;
+  --bi-p-accent7: #74c7ec;
+  --bi-p-accent8: #89b4fa;
+  --bi-p-accent9: #b4befe;
+  --bi-p-accent10: #cba6f7;
+  --bi-p-accent11: #eba0ac;
+  --bi-p-accent12: #f5c2e7;
+
+  /* semantic 層 — 元件只用這一層 */
+  --bi-bg: var(--bi-p-base);
+  --bi-surface: var(--bi-p-surface0);
+  --bi-surface-raised: var(--bi-p-surface1);
+  --bi-border: var(--bi-p-surface2);
+  --bi-text: var(--bi-p-text);
+  --bi-text-muted: var(--bi-p-subtext0);
+  --bi-accent: var(--bi-p-accent8);
+  --bi-accent-fg: var(--bi-p-crust);
+  --bi-success: var(--bi-p-accent4);
+  --bi-warning: var(--bi-p-accent3);
+  --bi-danger: var(--bi-p-accent1);
+
+  /* 動效 */
+  --bi-dur-press: 120ms;
+  --bi-dur-collapse: 200ms;
+  --bi-dur-sheet: 280ms;
+  --bi-dur-page: 300ms;
+  --bi-ease-out: cubic-bezier(0.32, 0.72, 0, 1);
+  --bi-ease-in: cubic-bezier(0.4, 0, 1, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --bi-dur-press: 0ms;
+    --bi-dur-collapse: 0ms;
+    --bi-dur-sheet: 0ms;
+    --bi-dur-page: 0ms;
+  }
+}

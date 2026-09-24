@@ -1,5 +1,6 @@
 node_modules/
 dist/
+dist-types/
 dev-dist/
 storybook-static/
 coverage/
