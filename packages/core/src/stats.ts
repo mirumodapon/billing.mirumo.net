@@ -1,5 +1,5 @@
-import { convertToBaseMinor } from './money'
-import { sharesOf } from './split'
+import { convertToBaseMinor, decimalsOf, toMinor } from './money'
+import { sharesOf, sortByMemberOrder, splitEven } from './split'
 import type { Expense, Scope, Trip } from './types'
 
 const alive = <T extends { deletedAt?: string }>(x: T) => x.deletedAt === undefined
@@ -153,4 +153,82 @@ export function budgetStatus(usedMinor: number, budgetMinor: number): BudgetStat
     ratio,
     level,
   }
+}
+
+export interface ItemShare {
+  expenseId: string
+  /** 非明細支出為 null */
+  itemId: string | null
+  name: string
+  date: string
+  categoryId: string
+  shareMinor: number
+}
+
+export interface ItemBreakdown {
+  items: ItemShare[]
+  /** 不屬於任何品項的分攤額（服務費、稅、折扣的攤回部分） */
+  overflowMinor: number
+}
+
+export interface ItemBreakdownOptions {
+  selfMemberId: string
+  baseCurrency: string
+  memberOrder: string[]
+}
+
+/**
+ * 「我的消費明細」：列出我實際分攤到的每一項。
+ *
+ * 明細支出逐品項列出；非明細支出以整筆為一項，`itemId` 為 null。
+ * 服務費等攤回的金額不屬於任何品項，累計進 overflowMinor 單獨呈現——
+ * 把它硬塞進某個品項會讓數字對不上收據。
+ */
+export function itemBreakdown(
+  expenses: Expense[],
+  opts: ItemBreakdownOptions,
+): ItemBreakdown {
+  const { selfMemberId, baseCurrency, memberOrder } = opts
+  const decimals = decimalsOf(baseCurrency)
+  const items: ItemShare[] = []
+  let overflowMinor = 0
+
+  for (const e of expenses.filter(alive)) {
+    const myShare = sharesOf(e, baseCurrency, memberOrder)[selfMemberId] ?? 0
+    if (myShare === 0) continue
+
+    if (e.split.mode !== 'items') {
+      items.push({
+        expenseId: e.id,
+        itemId: null,
+        name: e.description,
+        date: e.date,
+        categoryId: e.categoryId,
+        shareMinor: myShare,
+      })
+      continue
+    }
+
+    let itemised = 0
+    for (const item of e.split.items) {
+      if (!item.participants.includes(selfMemberId)) continue
+      const itemMinor = toMinor(item.amount * e.exchangeRate, decimals)
+      const ordered = sortByMemberOrder(item.participants, memberOrder)
+      const share = splitEven(itemMinor, ordered)[selfMemberId] ?? 0
+      if (share === 0) continue
+      itemised += share
+      items.push({
+        expenseId: e.id,
+        itemId: item.id,
+        name: item.name,
+        date: e.date,
+        categoryId: e.categoryId,
+        shareMinor: share,
+      })
+    }
+    overflowMinor += myShare - itemised
+  }
+
+  items.sort((x, y) => y.shareMinor - x.shareMinor)
+  return { items, overflowMinor }
 }

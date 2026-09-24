@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { budgetStatus, byCategory, byDay, contributionOf } from './stats'
+import { budgetStatus, byCategory, byDay, contributionOf, itemBreakdown } from './stats'
 import type { Expense, Trip } from './types'
 
 const trip: Trip = {
@@ -177,5 +177,95 @@ describe('budgetStatus', () => {
   it('treats a zero budget as over once anything is spent', () => {
     expect(budgetStatus(1, 0).level).toBe('over')
     expect(budgetStatus(0, 0).level).toBe('normal')
+  })
+})
+
+describe('itemBreakdown', () => {
+  const opts = { selfMemberId: 'a', baseCurrency: 'TWD', memberOrder: ORDER }
+
+  it('lists one entry per line item I participated in', () => {
+    const e = expense({
+      id: 'e1',
+      amount: 3400,
+      split: {
+        mode: 'items',
+        overflowRule: 'prorata',
+        items: [
+          { id: 'i1', name: '拉麵', amount: 1200, participants: ['a', 'b'] },
+          { id: 'i2', name: '煎餃', amount: 480, participants: ['a'] },
+          { id: 'i3', name: '啤酒', amount: 1720, participants: ['b'] },
+        ],
+      },
+    })
+    const result = itemBreakdown([e], opts)
+    // 拉麵 1200 兩人分 → 600；煎餃 480 我獨享 → 480。降冪所以拉麵在前。
+    expect(result.items.map((i) => i.name)).toEqual(['拉麵', '煎餃'])
+    expect(result.items.find((i) => i.name === '拉麵')!.shareMinor).toBe(600)
+    expect(result.items.find((i) => i.name === '煎餃')!.shareMinor).toBe(480)
+  })
+
+  it('sorts entries by share amount descending', () => {
+    const e = expense({
+      id: 'e1',
+      amount: 300,
+      split: {
+        mode: 'items',
+        overflowRule: 'prorata',
+        items: [
+          { id: 'i1', name: '小', amount: 100, participants: ['a'] },
+          { id: 'i2', name: '大', amount: 200, participants: ['a'] },
+        ],
+      },
+    })
+    expect(itemBreakdown([e], opts).items.map((i) => i.name)).toEqual(['大', '小'])
+  })
+
+  it('accumulates the overflow that belongs to no item', () => {
+    // 明細小計 1680，實付 1800，差額 120 全數攤回
+    const e = expense({
+      id: 'e1',
+      amount: 1800,
+      split: {
+        mode: 'items',
+        overflowRule: 'prorata',
+        items: [
+          { id: 'i1', name: '拉麵', amount: 1200, participants: ['a'] },
+          { id: 'i2', name: '煎餃', amount: 480, participants: ['a'] },
+        ],
+      },
+    })
+    const result = itemBreakdown([e], opts)
+    expect(result.items.reduce((acc, i) => acc + i.shareMinor, 0)).toBe(1680)
+    expect(result.overflowMinor).toBe(120)
+  })
+
+  it('represents a non-itemized expense as a single entry with a null itemId', () => {
+    const e = expense({ id: 'e1', description: '淺草寺門票', amount: 400 })
+    const result = itemBreakdown([e], opts)
+    expect(result.items).toEqual([
+      {
+        expenseId: 'e1',
+        itemId: null,
+        name: '淺草寺門票',
+        date: '2026-03-15',
+        categoryId: 'cat.food',
+        shareMinor: 200,
+      },
+    ])
+    expect(result.overflowMinor).toBe(0)
+  })
+
+  it('skips expenses I did not participate in', () => {
+    const e = expense({ id: 'e1', split: { mode: 'even', participants: ['b'] } })
+    expect(itemBreakdown([e], opts)).toEqual({ items: [], overflowMinor: 0 })
+  })
+
+  it('ignores soft-deleted expenses', () => {
+    const e = expense({ id: 'e1', deletedAt: '2026-03-16T00:00:00Z' })
+    expect(itemBreakdown([e], opts)).toEqual({ items: [], overflowMinor: 0 })
+  })
+
+  it('returns an empty breakdown for no expenses', () => {
+    expect(itemBreakdown([], opts)).toEqual({ items: [], overflowMinor: 0 })
   })
 })
