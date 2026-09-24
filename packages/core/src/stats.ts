@@ -60,16 +60,24 @@ export function byCategory(expenses: Expense[], opts: ByCategoryOptions): Catego
   const kept: CategoryStat[] = []
   let mergedMinor = 0
 
+  // 合併判定看的是佔比的「大小」而非帶號值。退款類別的 ratio 必為負，
+  // 直接比 `ratio < threshold` 會讓它無條件被併走。
+  let merged = false
+
   for (const [categoryId, totalMinor] of Object.entries(totals)) {
     const ratio = totalMinor / grand
-    if (threshold > 0 && ratio < threshold && categoryId !== 'cat.other') {
+    if (threshold > 0 && Math.abs(ratio) < threshold && categoryId !== 'cat.other') {
       mergedMinor += totalMinor
+      merged = true
     } else {
       kept.push({ categoryId, totalMinor, ratio })
     }
   }
 
-  if (mergedMinor > 0) {
+  // 條件是「有沒有併過」，不是「併出來的金額是否為正」。用 `mergedMinor > 0`
+  // 的話，被併走的若是退款（或正負剛好抵銷），那筆錢就直接從結果裡消失，
+  // 各列加總不再等於總額，圓餅圖會畫出超過 100% 的扇形。
+  if (merged) {
     const existing = kept.find((k) => k.categoryId === 'cat.other')
     if (existing) {
       existing.totalMinor += mergedMinor
