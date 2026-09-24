@@ -39,6 +39,7 @@ export interface Trip {
   selfMemberId: string
   budget: TripBudget
   rates: ExchangeRateTable
+  /** ISO 8601 UTC，如 `2026-03-15T08:30:00.000Z`。儲存層與匯出格式都依賴這個形狀 */
   createdAt: string
   updatedAt: string
   deletedAt?: string
@@ -92,6 +93,7 @@ export interface Expense {
   split: Split
   attachments: AttachmentMeta[]
 
+  /** ISO 8601 UTC，如 `2026-03-15T08:30:00.000Z`。儲存層與匯出格式都依賴這個形狀 */
   createdAt: string
   updatedAt: string
   deletedAt?: string
@@ -113,6 +115,7 @@ export interface Transfer {
   exchangeRate: number
   kind: TransferKind
   note: string
+  /** ISO 8601 UTC，如 `2026-03-15T08:30:00.000Z`。儲存層與匯出格式都依賴這個形狀 */
   createdAt: string
   updatedAt: string
   deletedAt?: string
