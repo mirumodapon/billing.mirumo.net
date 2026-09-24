@@ -142,6 +142,17 @@ describe('minimalTransfers', () => {
     ])
   })
 
+  // 上面那組只有一位債權人，所以它驗不到債權人那側的排序；
+  // 其他案例的債權人又剛好已是降冪。這組刻意讓 a 少於 b。
+  it('pairs the largest creditor first even when the input lists a smaller one earlier', () => {
+    const result = minimalTransfers([bal('a', 100), bal('b', 300), bal('c', -400)])
+    // 先清掉 b 的 300，再清 a 的 100；不排序的話會反過來
+    expect(result).toEqual([
+      { from: 'c', to: 'b', amountMinor: 300 },
+      { from: 'c', to: 'a', amountMinor: 100 },
+    ])
+  })
+
   it('never needs more than n-1 transfers', () => {
     const balances = [bal('a', 300), bal('b', 100), bal('c', -150), bal('d', -250)]
     expect(minimalTransfers(balances).length).toBeLessThanOrEqual(balances.length - 1)
