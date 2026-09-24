@@ -1,5 +1,5 @@
-import { convertToBaseMinor, decimalsOf, toMinor } from './money'
-import { sharesOf, sortByMemberOrder, splitEven } from './split'
+import { convertToBaseMinor } from './money'
+import { itemShares, sharesOf } from './split'
 import type { Expense, Scope, Trip } from './types'
 
 const alive = <T extends { deletedAt?: string }>(x: T) => x.deletedAt === undefined
@@ -197,7 +197,6 @@ export function itemBreakdown(
   opts: ItemBreakdownOptions,
 ): ItemBreakdown {
   const { selfMemberId, baseCurrency, memberOrder } = opts
-  const decimals = decimalsOf(baseCurrency)
   const items: ItemShare[] = []
   let overflowMinor = 0
 
@@ -223,9 +222,8 @@ export function itemBreakdown(
       // `?? 0` 會給 0，再被 `share === 0` 接住，結果完全一樣（實測 50,000 組
       // 有無這行都相同）。因此沒有測試能覆蓋它——拿掉只會變慢，不會變錯。
       if (!item.participants.includes(selfMemberId)) continue
-      const itemMinor = toMinor(item.amount * e.exchangeRate, decimals)
-      const ordered = sortByMemberOrder(item.participants, memberOrder)
-      const share = splitEven(itemMinor, ordered)[selfMemberId] ?? 0
+      // 必須與 splitByItems 走同一個 itemShares，否則明細加總會悄悄對不上分攤額
+      const share = itemShares(item, e.exchangeRate, baseCurrency, memberOrder)[selfMemberId] ?? 0
       if (share === 0) continue
       itemised += share
       items.push({

@@ -175,6 +175,24 @@ export function distribute(
  * 差額 = 實付總額 − 明細小計。收據上的品項小計與實付金額之間夾著
  * 服務費、稅、折價券、湊整，硬性要求相等會讓使用者第一次用就卡住。
  */
+/**
+ * 單一品項在其參與者之間的分攤（本位幣最小單位整數）。
+ *
+ * `splitByItems` 與 `stats` 的 `itemBreakdown` 都要算這個：前者把結果加總成
+ * 每人一個數字，後者要保留逐品項的明細。兩邊各寫一次的話，只要取整規則
+ * 日後有任何調整，就會出現「明細加起來不等於分攤額」而沒有測試會紅——
+ * 差額會被 overflowMinor 靜靜吸收。所以這裡只能有一份。
+ */
+export function itemShares(
+  item: LineItem,
+  exchangeRate: number,
+  baseCurrency: string,
+  memberOrder: string[],
+): Record<string, number> {
+  const itemMinor = toMinor(item.amount * exchangeRate, decimalsOf(baseCurrency))
+  return splitEven(itemMinor, sortByMemberOrder(item.participants, memberOrder))
+}
+
 export function splitByItems(
   items: LineItem[],
   overflowRule: OverflowRule,
@@ -185,14 +203,10 @@ export function splitByItems(
 ): Record<string, number> {
   if (items.length === 0) return {}
 
-  const decimals = decimalsOf(baseCurrency)
   const shares: Record<string, number> = {}
 
   for (const item of items) {
-    const itemMinor = toMinor(item.amount * exchangeRate, decimals)
-    const ordered = sortByMemberOrder(item.participants, memberOrder)
-    const itemShares = splitEven(itemMinor, ordered)
-    for (const [id, value] of Object.entries(itemShares)) {
+    for (const [id, value] of Object.entries(itemShares(item, exchangeRate, baseCurrency, memberOrder))) {
       shares[id] = (shares[id] ?? 0) + value
     }
   }
