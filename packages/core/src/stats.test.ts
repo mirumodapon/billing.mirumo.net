@@ -76,6 +76,19 @@ describe('byCategory', () => {
     expect(result[0]!.ratio).toBeCloseTo(0.5)
   })
 
+  // 上面那組兩個類別剛好同為 500，穩定排序下順序不變，所以它分辨不出
+  // 「有排序」和「照插入順序」。這組讓先出現的類別金額較小。
+  it('sorts descending even when the first category encountered is smaller', () => {
+    const result = byCategory(
+      [
+        expense({ id: '1', categoryId: 'cat.food', amount: 100 }),
+        expense({ id: '2', categoryId: 'cat.transport', amount: 500 }),
+      ],
+      opts,
+    )
+    expect(result.map((r) => r.categoryId)).toEqual(['cat.transport', 'cat.food'])
+  })
+
   it('merges slices below the threshold into cat.other', () => {
     const result = byCategory(
       [
@@ -123,6 +136,17 @@ describe('byDay', () => {
     })
     expect(result.find((d) => d.date === '2026-03-15')!.overBudget).toBe(true)
     expect(result.find((d) => d.date === '2026-03-14')!.overBudget).toBe(false)
+  })
+
+  // 花掉剛好等於每日預算的金額不算超支。沒有這條的話，把 > 寫成 >=
+  // 不會有任何測試變紅，而使用者會在正好花完預算的那天看到警示色。
+  it('does not flag a day that spends exactly the daily budget', () => {
+    const result = byDay([expense({ date: '2026-03-15', amount: 500 })], {
+      ...opts,
+      trip,
+      dailyBudgetMinor: 500,
+    })
+    expect(result.find((d) => d.date === '2026-03-15')!.overBudget).toBe(false)
   })
 
   it('never flags anything when no daily budget is set', () => {
