@@ -98,6 +98,7 @@
   --bi-dur-collapse: 200ms;
   --bi-dur-sheet: 280ms;
   --bi-dur-page: 300ms;
+  --bi-dur-pulse: 1200ms;
   --bi-ease-out: cubic-bezier(0.32, 0.72, 0, 1);
   --bi-ease-in: cubic-bezier(0.4, 0, 1, 1);
 }
@@ -108,5 +109,6 @@
     --bi-dur-collapse: 0ms;
     --bi-dur-sheet: 0ms;
     --bi-dur-page: 0ms;
+    --bi-dur-pulse: 0ms;
   }
 }

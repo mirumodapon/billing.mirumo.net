@@ -17,3 +17,6 @@ export type { AvatarProps } from './primitives/Avatar'
 
 export { ProgressBar } from './primitives/ProgressBar'
 export type { ProgressBarProps } from './primitives/ProgressBar'
+
+export { Skeleton } from './primitives/Skeleton'
+export type { SkeletonProps } from './primitives/Skeleton'
