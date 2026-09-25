@@ -1,17 +1,31 @@
+/*
+ * 兩層 token。
+ *
+ * palette 層（--bi-p-*）由 styles/themes/*.css 覆寫，是每個主題的原料。
+ * semantic 層（--bi-*）是元件唯一該碰的東西。元件直接引用 palette 就等於
+ * 綁死在某個主題的色彩結構上，換主題時會有一處不跟著變——而那種 bug
+ * 只有在切到特定主題時才看得見。
+ *
+ * 命名刻意中性：原本沿用 Catppuccin 的 mantle / crust / overlay / subtext，
+ * 但那是一家的詞彙，Tokyo Night 沒有對應概念。
+ */
 :root {
-  /* palette 層 — 各主題覆寫這些 */
-  --bi-p-base: #1e1e2e;
-  --bi-p-mantle: #181825;
-  --bi-p-crust: #11111b;
-  --bi-p-surface0: #313244;
-  --bi-p-surface1: #45475a;
-  --bi-p-surface2: #585b70;
-  --bi-p-overlay0: #6c7086;
-  --bi-p-overlay1: #7f849c;
-  --bi-p-overlay2: #9399b2;
+  /* ── palette：背景層次，由淺到深或由深到淺依主題而定 ── */
+  --bi-p-bg: #1e1e2e;
+  --bi-p-bg-sunken: #181825;
+  --bi-p-bg-deepest: #11111b;
+
+  /* ── palette：表面層次，疊在背景上的卡片與控制項 ── */
+  --bi-p-surface1: #313244;
+  --bi-p-surface2: #45475a;
+  --bi-p-surface3: #585b70;
+
+  /* ── palette：文字，由強到弱 ── */
   --bi-p-text: #cdd6f4;
-  --bi-p-subtext0: #a6adc8;
-  --bi-p-subtext1: #bac2de;
+  --bi-p-text-muted: #bac2de;
+  --bi-p-text-subtle: #a6adc8;
+
+  /* ── palette：12 個 accent 槽位，對應 core 的 AccentKey ── */
   --bi-p-accent1: #f38ba8;
   --bi-p-accent2: #fab387;
   --bi-p-accent3: #f9e2af;
@@ -25,20 +39,64 @@
   --bi-p-accent11: #eba0ac;
   --bi-p-accent12: #f5c2e7;
 
-  /* semantic 層 — 元件只用這一層 */
-  --bi-bg: var(--bi-p-base);
-  --bi-surface: var(--bi-p-surface0);
-  --bi-surface-raised: var(--bi-p-surface1);
-  --bi-border: var(--bi-p-surface2);
+  /* ── semantic：元件只用這一層 ── */
+  --bi-bg: var(--bi-p-bg);
+  --bi-bg-sunken: var(--bi-p-bg-sunken);
+  --bi-surface: var(--bi-p-surface1);
+  --bi-surface-raised: var(--bi-p-surface2);
+  --bi-border: var(--bi-p-surface3);
   --bi-text: var(--bi-p-text);
-  --bi-text-muted: var(--bi-p-subtext0);
+  --bi-text-muted: var(--bi-p-text-muted);
+  --bi-text-subtle: var(--bi-p-text-subtle);
   --bi-accent: var(--bi-p-accent8);
-  --bi-accent-fg: var(--bi-p-crust);
+  --bi-accent-fg: var(--bi-p-bg-deepest);
   --bi-success: var(--bi-p-accent4);
   --bi-warning: var(--bi-p-accent3);
   --bi-danger: var(--bi-p-accent1);
 
-  /* 動效 */
+  /* ── 間距：4px 基準。元件不得寫死 px ── */
+  --bi-space-1: 4px;
+  --bi-space-2: 8px;
+  --bi-space-3: 12px;
+  --bi-space-4: 16px;
+  --bi-space-5: 20px;
+  --bi-space-6: 24px;
+  --bi-space-8: 32px;
+  --bi-space-12: 48px;
+
+  /* ── 圓角 ── */
+  --bi-radius-sm: 6px;
+  --bi-radius-md: 10px;
+  --bi-radius-lg: 16px;
+  --bi-radius-full: 9999px;
+
+  /* ── 字級：mobile only，不做響應式縮放 ── */
+  --bi-text-xs: 12px;
+  --bi-text-sm: 14px;
+  --bi-text-base: 16px;
+  --bi-text-lg: 20px;
+  --bi-text-xl: 28px;
+  --bi-text-2xl: 36px;
+  --bi-leading-tight: 1.25;
+  --bi-leading-normal: 1.5;
+  /* 金額欄位必用：等寬數字讓列表右對齊時位數垂直對齊 */
+  --bi-font-numeric: tabular-nums;
+
+  /* ── 疊層順序。散在各元件寫死會在第三個 overlay 出現時打架 ── */
+  --bi-z-sticky: 10;
+  --bi-z-fab: 20;
+  --bi-z-appbar: 30;
+  --bi-z-tabbar: 30;
+  --bi-z-overlay: 40;
+  --bi-z-sheet: 50;
+  --bi-z-dialog: 60;
+  --bi-z-snackbar: 70;
+  --bi-z-keypad: 80;
+
+  /* ── 觸控目標下限。視覺可更小，可點區域用 padding 撐滿 ── */
+  --bi-tap-min: 44px;
+
+  /* ── 動效 ── */
   --bi-dur-press: 120ms;
   --bi-dur-collapse: 200ms;
   --bi-dur-sheet: 280ms;
