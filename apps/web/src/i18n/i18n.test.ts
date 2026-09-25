@@ -84,6 +84,18 @@ describe('detectLocale', () => {
     expect(detectLocale()).toBe('zh-TW')
   })
 
+  /*
+   * 雙語使用者的清單裡兩種語言都支援，此時答案完全取決於使用者自己排的順序。
+   * 其他 fixture 都沒有這個性質——把清單反過來讀，它們的結果一樣，所以測不出
+   * 「照順序取第一個」有沒有被改壞。這一對正反都寫，就是為了釘住那件事。
+   */
+  it('honours the order the user put their languages in', () => {
+    stubLanguages(['en-US', 'zh-TW'])
+    expect(detectLocale()).toBe('en-US')
+    stubLanguages(['zh-TW', 'en-US'])
+    expect(detectLocale()).toBe('zh-TW')
+  })
+
   it('falls back to zh-TW when languages is empty', () => {
     stubLanguages([])
     expect(detectLocale()).toBe('zh-TW')
