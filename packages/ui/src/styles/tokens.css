@@ -1,4 +1,5 @@
 @import './themes/index.css';
+@import './primitives.css';
 
 /*
  * 兩層 token。
