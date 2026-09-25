@@ -34,6 +34,11 @@ function walk(dir: string, acc: string[] = []): string[] {
   return acc
 }
 
+/** 相對於 src/ 的所有檔案路徑 */
+function allSources(): string[] {
+  return walk(SRC).map((p) => p.slice(SRC.length + 1))
+}
+
 function componentSources(): string[] {
   return walk(SRC)
     .filter((p) => /\.(tsx?|css)$/.test(p))
@@ -73,6 +78,21 @@ describe('token layering', () => {
     const tokens = readFileSync(join(SRC, 'styles/tokens.css'), 'utf8')
     for (let i = 1; i <= 12; i += 1) {
       expect(tokens, `missing semantic --bi-accent${i}`).toContain(`--bi-accent${i}:`)
+    }
+  })
+
+  /**
+   * 豁免清單自己也要被驗證。檔案改名後留下一條指向不存在路徑的豁免，
+   * 看起來還在保護什麼，實際上既沒放行也沒擋住——而下一個人會以為
+   * 那個位置仍然可以寫色值。
+   */
+  it('every palette-source exemption still matches a real file', () => {
+    const files = allSources()
+    for (const source of PALETTE_SOURCES) {
+      expect(
+        files.some((f) => f.startsWith(source)),
+        `PALETTE_SOURCES lists "${source}" but nothing matches it`,
+      ).toBe(true)
     }
   })
 })
