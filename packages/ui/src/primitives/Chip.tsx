@@ -35,6 +35,10 @@ export function Chip({ label, selected = false, disabled = false, onSelect, colo
       data-selected={selected || undefined}
       aria-pressed={selected}
       disabled={disabled}
+      // 擋住點擊的是上面那個原生 disabled 屬性，不是這個三元式——拿掉它
+      // 行為完全不變（實測過）。留著只是與 Button 的形狀一致。
+      // 注意 Button 的 busy 不一樣：那不是原生屬性，它的守衛是真的承重的。
+      // 日後做非原生的停用狀態時，別以為照抄這一行就會擋住。
       onClick={disabled ? undefined : onSelect}
     >
       {dot}
