@@ -42,4 +42,18 @@ describe('theme files', () => {
       expect(nonPalette, `${file} declares semantic tokens: ${nonPalette.join(', ')}`).toEqual([])
     }
   })
+
+  /**
+   * 沒有 data-theme 的頁面必須仍然拿得到一份完整的 palette，否則所有語意
+   * token 解析成空值、整個畫面失去樣式。這條降級路徑是真的會走到的：
+   * index.html 的 inline script 在無痕模式下讀 localStorage 會拋錯，
+   * 它的 catch 什麼都不做，正是因為 :root 已經是預設主題。
+   */
+  it('exactly one theme doubles as the :root default', () => {
+    const defaults = themeFiles().filter((file) =>
+      /(^|\})\s*:root\s*[,{]/.test(readFileSync(join(THEME_DIR, file), 'utf8')),
+    )
+    expect(defaults, `expected one :root default, found: ${defaults.join(', ') || 'none'}`)
+      .toHaveLength(1)
+  })
 })
