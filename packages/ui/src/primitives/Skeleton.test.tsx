@@ -52,7 +52,10 @@ describe('Skeleton', () => {
   it('gives every variant its own rule', () => {
     const css = readFileSync(join(import.meta.dirname, 'Skeleton.css'), 'utf8')
     for (const v of ['text', 'circle', 'rect']) {
-      expect(css, `Skeleton.css has no rule for ${v}`).toContain(`[data-variant='${v}']`)
+      // 單雙引號在 CSS 屬性選擇器裡等價，formatter 換一種寫法不該讓這條變紅
+      expect(css, `Skeleton.css has no rule for ${v}`).toMatch(
+        new RegExp(`\\[data-variant=['"]${v}['"]\\]`),
+      )
     }
   })
 
