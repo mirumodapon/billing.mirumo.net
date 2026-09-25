@@ -18,7 +18,42 @@ function themeFiles(): string[] {
   return readdirSync(THEME_DIR).filter((f) => f.endsWith('.css') && f !== 'index.css')
 }
 
+/**
+ * 產生器該產出的八個主題，逐字釘住。
+ *
+ * 其餘測試都是「遍歷目錄裡的每個檔案，檢查它合格」——少一個檔案就只是少跑
+ * 一輪迴圈，全部照樣通過。所以必須另外有一條說「該有的都在」，否則產生器
+ * 靜靜少產一個主題不會有任何人發現。
+ */
+const EXPECTED_THEMES = [
+  'catppuccin-frappe',
+  'catppuccin-latte',
+  'catppuccin-macchiato',
+  'catppuccin-mocha',
+  'tokyo-night',
+  'tokyo-night-day',
+  'tokyo-night-moon',
+  'tokyo-night-storm',
+]
+
 describe('theme files', () => {
+  it('generates exactly the eight expected themes', () => {
+    const ids = themeFiles()
+      .map((f) => f.replace('.css', ''))
+      .sort()
+    expect(ids).toEqual(EXPECTED_THEMES)
+  })
+
+  /**
+   * 主題檔本身合格，但沒有被 index.css 匯入的話就永遠不會載入——
+   * 切到那個主題會什麼都沒有，而檔案看起來完全正常。
+   */
+  it('index.css imports every theme file', () => {
+    const index = readFileSync(join(THEME_DIR, 'index.css'), 'utf8')
+    const imported = [...index.matchAll(/@import\s+'\.\/(.+?)\.css'/g)].map((m) => m[1]!).sort()
+    expect(imported).toEqual(themeFiles().map((f) => f.replace('.css', '')).sort())
+  })
+
   it('every theme defines all 21 palette slots', () => {
     for (const file of themeFiles()) {
       const css = readFileSync(join(THEME_DIR, file), 'utf8')
