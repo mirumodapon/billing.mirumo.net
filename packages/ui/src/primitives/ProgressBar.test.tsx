@@ -54,4 +54,15 @@ describe('ProgressBar', () => {
     expect(css).toMatch(/\[data-level='warning'\]\s*{[^}]*background:\s*var\(--bi-warning\)/)
     expect(css).toMatch(/\[data-level='over'\]\s*{[^}]*background:\s*var\(--bi-danger\)/)
   })
+
+  /*
+   * 既有的 ratio（0.72、1.8、0.5…）乘 100 後都沒有小數，Math.round 換成
+   * Math.floor 一條測試都不會紅。0.725 才分得出來：四捨五入 73、無條件捨去 72。
+   * 釘住四捨五入這個選擇——順帶留意 0.999 會被讀成「100%」，條子也畫滿，
+   * 但其實還沒超支；如果哪天覺得那樣誤導，改成 floor 時這條會提醒你它是刻意的。
+   */
+  it('rounds the percentage rather than truncating it', () => {
+    render(<ProgressBar ratio={0.725} label="x" />)
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuetext', '73%')
+  })
 })
