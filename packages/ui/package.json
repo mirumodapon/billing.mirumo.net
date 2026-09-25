@@ -9,7 +9,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./styles.css": "./dist/index.css"
+    "./styles.css": {
+      "development": "./src/styles/tokens.css",
+      "default": "./dist/index.css"
+    }
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
