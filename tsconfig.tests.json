@@ -1,4 +1,8 @@
 {
+  // 測試專用：只做型別檢查，不產出任何東西。
+  //
+  // 各套件的建置 tsconfig 排除了 *.test.ts，避免測試的 .d.ts 混進 dist/，
+  // 所以測試的型別檢查改由這一份負責，一次涵蓋所有套件。
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "noEmit": true,
@@ -7,7 +11,15 @@
     "declarationMap": false,
     "emitDeclarationOnly": false,
     "jsx": "react-jsx",
-    "customConditions": ["development"]
+    // 讓 tsc 解析 @billing/* 時命中 exports 的 development 條件、直接讀原始碼，
+    // 與 Vite 的解析方式一致
+    "customConditions": ["development"],
+    // 必須顯式列出：自動納入 node_modules/@types 在 pnpm 的符號連結佈局下
+    // 不會生效。測試會用到 node:fs / node:path 來檢查產出的 CSS 資產。
+    //
+    // 這讓 Node 型別對「測試檔」可見，但不影響 core 的原始碼——
+    // packages/core/tsconfig.json 自己宣告了 types: []。
+    "types": ["node"]
   },
-  "include": ["packages/*/src/**/*", "apps/*/src/**/*"]
+  "include": ["packages/*/src/**/*", "apps/*/src/**/*", "packages/*/scripts/**/*"]
 }
