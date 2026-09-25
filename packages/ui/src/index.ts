@@ -14,3 +14,6 @@ export type { ChipProps } from './primitives/Chip'
 
 export { Avatar } from './primitives/Avatar'
 export type { AvatarProps } from './primitives/Avatar'
+
+export { ProgressBar } from './primitives/ProgressBar'
+export type { ProgressBarProps } from './primitives/ProgressBar'

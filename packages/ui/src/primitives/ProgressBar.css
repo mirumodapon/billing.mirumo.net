@@ -1,0 +1,26 @@
+.bi-progress {
+  width: 100%;
+  height: var(--bi-space-2);
+  border-radius: var(--bi-radius-full);
+  background: var(--bi-surface);
+  overflow: hidden;
+}
+
+.bi-progress__fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--bi-radius-full);
+  transition: width var(--bi-dur-collapse) var(--bi-ease-out);
+}
+
+.bi-progress__fill[data-level='normal'] {
+  background: var(--bi-accent);
+}
+
+.bi-progress__fill[data-level='warning'] {
+  background: var(--bi-warning);
+}
+
+.bi-progress__fill[data-level='over'] {
+  background: var(--bi-danger);
+}
