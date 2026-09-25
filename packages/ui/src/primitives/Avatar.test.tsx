@@ -24,6 +24,14 @@ describe('Avatar', () => {
     expect(screen.getByRole('img')).toBeInTheDocument()
   })
 
+  // 沒帶 colorKey 時必須落在一個真的槽位上。若預設值消失，這裡會算出
+  // var(--bi-) —— 一個無效的 custom property，背景整個不見，而且因為
+  // CSS 不會報錯，只有肉眼看得出來
+  it('falls back to a real accent slot when no colour is given', () => {
+    render(<Avatar name="阿明" />)
+    expect(screen.getByRole('img')).toHaveStyle({ '--bi-avatar-color': 'var(--bi-accent8)' })
+  })
+
   it('applies the colour slot', () => {
     render(<Avatar name="阿明" colorKey="accent5" />)
     expect(screen.getByRole('img')).toHaveStyle({ '--bi-avatar-color': 'var(--bi-accent5)' })
