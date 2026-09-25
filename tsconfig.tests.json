@@ -25,5 +25,5 @@
     // specifier，所以型別檢查這份腳本也要開這個選項。
     "allowImportingTsExtensions": true
   },
-  "include": ["packages/*/src/**/*", "apps/*/src/**/*", "packages/*/scripts/**/*"]
+  "include": ["packages/*/src/**/*", "apps/*/src/**/*", "packages/*/scripts/**/*", "packages/*/.storybook/**/*"]
 }
