@@ -1,0 +1,47 @@
+.bi-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bi-space-2);
+  min-height: var(--bi-tap-min);
+  padding: var(--bi-space-2) var(--bi-space-4);
+  border: 1px solid var(--bi-border);
+  border-radius: var(--bi-radius-full);
+  background: var(--bi-surface);
+  color: var(--bi-text);
+  font-size: var(--bi-text-sm);
+  font-family: inherit;
+  line-height: var(--bi-leading-tight);
+  white-space: nowrap;
+}
+
+button.bi-chip {
+  cursor: pointer;
+  transition: transform var(--bi-dur-press) var(--bi-ease-out);
+}
+
+button.bi-chip:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+button.bi-chip:focus-visible {
+  outline: 2px solid var(--bi-accent);
+  outline-offset: 2px;
+}
+
+button.bi-chip:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.bi-chip[data-selected] {
+  background: var(--bi-accent);
+  border-color: var(--bi-accent);
+  color: var(--bi-accent-fg);
+}
+
+.bi-chip__dot {
+  width: var(--bi-space-2);
+  height: var(--bi-space-2);
+  border-radius: var(--bi-radius-full);
+  flex: none;
+}

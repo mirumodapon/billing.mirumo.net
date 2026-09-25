@@ -8,3 +8,6 @@ export type { ThemeFamily, ThemeId, ThemeManifest } from './theme/manifest'
 
 export { Button } from './primitives/Button'
 export type { ButtonProps } from './primitives/Button'
+
+export { Chip } from './primitives/Chip'
+export type { ChipProps } from './primitives/Chip'
