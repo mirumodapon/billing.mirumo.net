@@ -50,9 +50,11 @@ describe('theme files', () => {
    * 它的 catch 什麼都不做，正是因為 :root 已經是預設主題。
    */
   it('exactly one theme doubles as the :root default', () => {
-    const defaults = themeFiles().filter((file) =>
-      /(^|\})\s*:root\s*[,{]/.test(readFileSync(join(THEME_DIR, file), 'utf8')),
-    )
+    const defaults = themeFiles().filter((file) => {
+      // 先去掉註解，否則說明文字裡提到 :root 也會被算進來
+      const css = readFileSync(join(THEME_DIR, file), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
+      return /:root\s*[,{]/.test(css)
+    })
     expect(defaults, `expected one :root default, found: ${defaults.join(', ') || 'none'}`)
       .toHaveLength(1)
   })
