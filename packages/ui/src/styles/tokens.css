@@ -1,3 +1,5 @@
+@import './themes/catppuccin-mocha.css';
+
 /*
  * 兩層 token。
  *
@@ -10,35 +12,6 @@
  * 但那是一家的詞彙，Tokyo Night 沒有對應概念。
  */
 :root {
-  /* ── palette：背景層次，由淺到深或由深到淺依主題而定 ── */
-  --bi-p-bg: #1e1e2e;
-  --bi-p-bg-sunken: #181825;
-  --bi-p-bg-deepest: #11111b;
-
-  /* ── palette：表面層次，疊在背景上的卡片與控制項 ── */
-  --bi-p-surface1: #313244;
-  --bi-p-surface2: #45475a;
-  --bi-p-surface3: #585b70;
-
-  /* ── palette：文字，由強到弱 ── */
-  --bi-p-text: #cdd6f4;
-  --bi-p-text-muted: #bac2de;
-  --bi-p-text-subtle: #a6adc8;
-
-  /* ── palette：12 個 accent 槽位，對應 core 的 AccentKey ── */
-  --bi-p-accent1: #f38ba8;
-  --bi-p-accent2: #fab387;
-  --bi-p-accent3: #f9e2af;
-  --bi-p-accent4: #a6e3a1;
-  --bi-p-accent5: #94e2d5;
-  --bi-p-accent6: #89dceb;
-  --bi-p-accent7: #74c7ec;
-  --bi-p-accent8: #89b4fa;
-  --bi-p-accent9: #b4befe;
-  --bi-p-accent10: #cba6f7;
-  --bi-p-accent11: #eba0ac;
-  --bi-p-accent12: #f5c2e7;
-
   /* ── semantic：元件只用這一層 ── */
   --bi-bg: var(--bi-p-bg);
   --bi-bg-sunken: var(--bi-p-bg-sunken);

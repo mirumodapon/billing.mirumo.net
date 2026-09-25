@@ -1,0 +1,30 @@
+/*
+ * Catppuccin Mocha — https://catppuccin.com/ （MIT）
+ * 由 scripts/generate-themes.ts 產生，不要手改。
+ */
+:root,
+[data-theme='catppuccin-mocha'] {
+  color-scheme: dark;
+
+  --bi-p-bg: #1e1e2e;
+  --bi-p-bg-sunken: #181825;
+  --bi-p-bg-deepest: #11111b;
+  --bi-p-surface1: #313244;
+  --bi-p-surface2: #45475a;
+  --bi-p-surface3: #585b70;
+  --bi-p-text: #cdd6f4;
+  --bi-p-text-muted: #bac2de;
+  --bi-p-text-subtle: #a6adc8;
+  --bi-p-accent1: #f38ba8;
+  --bi-p-accent2: #fab387;
+  --bi-p-accent3: #f9e2af;
+  --bi-p-accent4: #a6e3a1;
+  --bi-p-accent5: #94e2d5;
+  --bi-p-accent6: #89dceb;
+  --bi-p-accent7: #74c7ec;
+  --bi-p-accent8: #89b4fa;
+  --bi-p-accent9: #b4befe;
+  --bi-p-accent10: #cba6f7;
+  --bi-p-accent11: #eba0ac;
+  --bi-p-accent12: #f5c2e7;
+}
