@@ -1,0 +1,29 @@
+/*
+ * Catppuccin Macchiato — https://catppuccin.com/ （MIT）
+ * 由 scripts/generate-themes.ts 產生，不要手改。
+ */
+[data-theme='catppuccin-macchiato'] {
+  color-scheme: dark;
+
+  --bi-p-accent1: #ed8796;
+  --bi-p-accent2: #f5a97f;
+  --bi-p-accent3: #eed49f;
+  --bi-p-accent4: #a6da95;
+  --bi-p-accent5: #8bd5ca;
+  --bi-p-accent6: #91d7e3;
+  --bi-p-accent7: #7dc4e4;
+  --bi-p-accent8: #8aadf4;
+  --bi-p-accent9: #b7bdf8;
+  --bi-p-accent10: #c6a0f6;
+  --bi-p-accent11: #ee99a0;
+  --bi-p-accent12: #f5bde6;
+  --bi-p-bg: #24273a;
+  --bi-p-bg-sunken: #1e2030;
+  --bi-p-bg-deepest: #181926;
+  --bi-p-surface1: #363a4f;
+  --bi-p-surface2: #494d64;
+  --bi-p-surface3: #5b6078;
+  --bi-p-text: #cad3f5;
+  --bi-p-text-muted: #b8c0e0;
+  --bi-p-text-subtle: #a5adcb;
+}

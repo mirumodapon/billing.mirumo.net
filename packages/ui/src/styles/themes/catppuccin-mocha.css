@@ -6,15 +6,6 @@
 [data-theme='catppuccin-mocha'] {
   color-scheme: dark;
 
-  --bi-p-bg: #1e1e2e;
-  --bi-p-bg-sunken: #181825;
-  --bi-p-bg-deepest: #11111b;
-  --bi-p-surface1: #313244;
-  --bi-p-surface2: #45475a;
-  --bi-p-surface3: #585b70;
-  --bi-p-text: #cdd6f4;
-  --bi-p-text-muted: #bac2de;
-  --bi-p-text-subtle: #a6adc8;
   --bi-p-accent1: #f38ba8;
   --bi-p-accent2: #fab387;
   --bi-p-accent3: #f9e2af;
@@ -27,4 +18,13 @@
   --bi-p-accent10: #cba6f7;
   --bi-p-accent11: #eba0ac;
   --bi-p-accent12: #f5c2e7;
+  --bi-p-bg: #1e1e2e;
+  --bi-p-bg-sunken: #181825;
+  --bi-p-bg-deepest: #11111b;
+  --bi-p-surface1: #313244;
+  --bi-p-surface2: #45475a;
+  --bi-p-surface3: #585b70;
+  --bi-p-text: #cdd6f4;
+  --bi-p-text-muted: #bac2de;
+  --bi-p-text-subtle: #a6adc8;
 }

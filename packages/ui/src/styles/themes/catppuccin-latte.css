@@ -1,0 +1,29 @@
+/*
+ * Catppuccin Latte — https://catppuccin.com/ （MIT）
+ * 由 scripts/generate-themes.ts 產生，不要手改。
+ */
+[data-theme='catppuccin-latte'] {
+  color-scheme: light;
+
+  --bi-p-accent1: #d20f39;
+  --bi-p-accent2: #fe640b;
+  --bi-p-accent3: #df8e1d;
+  --bi-p-accent4: #40a02b;
+  --bi-p-accent5: #179299;
+  --bi-p-accent6: #04a5e5;
+  --bi-p-accent7: #209fb5;
+  --bi-p-accent8: #1e66f5;
+  --bi-p-accent9: #7287fd;
+  --bi-p-accent10: #8839ef;
+  --bi-p-accent11: #e64553;
+  --bi-p-accent12: #ea76cb;
+  --bi-p-bg: #eff1f5;
+  --bi-p-bg-sunken: #e6e9ef;
+  --bi-p-bg-deepest: #dce0e8;
+  --bi-p-surface1: #ccd0da;
+  --bi-p-surface2: #bcc0cc;
+  --bi-p-surface3: #acb0be;
+  --bi-p-text: #4c4f69;
+  --bi-p-text-muted: #5c5f77;
+  --bi-p-text-subtle: #6c6f85;
+}

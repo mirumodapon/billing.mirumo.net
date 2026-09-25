@@ -1,0 +1,29 @@
+/*
+ * Tokyo Night Day — https://github.com/folke/tokyonight.nvim （MIT）
+ * 由 scripts/generate-themes.ts 產生，不要手改。
+ */
+[data-theme='tokyo-night-day'] {
+  color-scheme: light;
+
+  --bi-p-accent1: #f52a65;
+  --bi-p-accent2: #b15c00;
+  --bi-p-accent3: #8c6c3e;
+  --bi-p-accent4: #587539;
+  --bi-p-accent5: #118c74;
+  --bi-p-accent6: #007197;
+  --bi-p-accent7: #2e7de9;
+  --bi-p-accent8: #7847bd;
+  --bi-p-accent9: #9854f1;
+  --bi-p-accent10: #d34333;
+  --bi-p-accent11: #2c7368;
+  --bi-p-accent12: #6369ed;
+  --bi-p-bg: #e1e2e7;
+  --bi-p-bg-sunken: #d0d5e3;
+  --bi-p-bg-deepest: #b4b5b9;
+  --bi-p-surface1: #c4c8da;
+  --bi-p-surface2: #a8aecb;
+  --bi-p-surface3: #a1a6c5;
+  --bi-p-text: #3760bf;
+  --bi-p-text-muted: #6172b0;
+  --bi-p-text-subtle: #848cb5;
+}

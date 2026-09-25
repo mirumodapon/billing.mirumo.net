@@ -25,6 +25,7 @@
   },
   "scripts": {
     "build": "tsc -b && tsup",
+    "gen:themes": "node scripts/generate-themes.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },

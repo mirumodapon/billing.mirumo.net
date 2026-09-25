@@ -13,7 +13,9 @@ const PALETTE_SLOTS = [
 ]
 
 function themeFiles(): string[] {
-  return readdirSync(THEME_DIR).filter((f) => f.endsWith('.css'))
+  // index.css 是 generate-themes.ts 產生的 @import 聚合檔，不是主題本身：
+  // 它既沒有 palette slots 也沒有 color-scheme，混進來掃會誤判成漏寫。
+  return readdirSync(THEME_DIR).filter((f) => f.endsWith('.css') && f !== 'index.css')
 }
 
 describe('theme files', () => {

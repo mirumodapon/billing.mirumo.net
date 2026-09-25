@@ -19,7 +19,11 @@
     //
     // 這讓 Node 型別對「測試檔」可見，但不影響 core 的原始碼——
     // packages/core/tsconfig.json 自己宣告了 types: []。
-    "types": ["node"]
+    "types": ["node"],
+    // 產生器（scripts/generate-themes.ts）以相對路徑 import .ts 檔——
+    // Node 24 原生執行 TypeScript 需要顯式副檔名，但 tsc 預設拒絕 .ts import
+    // specifier，所以型別檢查這份腳本也要開這個選項。
+    "allowImportingTsExtensions": true
   },
   "include": ["packages/*/src/**/*", "apps/*/src/**/*", "packages/*/scripts/**/*"]
 }
