@@ -12,8 +12,18 @@ import { describe, expect, it } from 'vitest'
 
 const SRC = join(import.meta.dirname, '..')
 
-/** palette 層唯一的合法歸屬：主題檔與定義 semantic 層的 tokens.css */
-const PALETTE_OWNERS = ['styles/tokens.css', 'styles/themes/']
+/**
+ * palette 層的合法歸屬——也就是「顏色可以是字面值」的地方。
+ *
+ * 這不是為了讓某些檔案免受檢查，而是因為它們本身**就是** palette：
+ *   - styles/tokens.css   定義 semantic 層，所以必須引用 palette
+ *   - styles/themes/      每個主題的原料
+ *   - theme/palettes.ts   Tokyo Night 的原料，只是用 TS 而非 CSS 表達
+ *                         （沒有 npm 調色盤套件，值只能 committed 在這裡）
+ *
+ * 刻意逐檔具名而不是豁免整個 theme/：mapping.ts 是邏輯，它不該出現任何色值。
+ */
+const PALETTE_SOURCES = ['styles/tokens.css', 'styles/themes/', 'theme/palettes.ts']
 
 function walk(dir: string, acc: string[] = []): string[] {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -30,7 +40,7 @@ function componentSources(): string[] {
     .filter((p) => !p.endsWith('.test.ts') && !p.endsWith('.test.tsx'))
     .filter((p) => {
       const rel = p.slice(SRC.length + 1)
-      return !PALETTE_OWNERS.some((owner) => rel.startsWith(owner))
+      return !PALETTE_SOURCES.some((owner) => rel.startsWith(owner))
     })
 }
 
