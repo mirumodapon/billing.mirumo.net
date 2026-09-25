@@ -31,3 +31,6 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+      - name: Build Storybook
+        run: pnpm --filter @billing/ui build-storybook
