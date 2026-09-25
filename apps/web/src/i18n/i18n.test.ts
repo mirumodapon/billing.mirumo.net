@@ -1,8 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { detectLocale, getLocale, setLocale, t, tPlural } from './index'
 
+/*
+ * active locale 是模組層級的一個 let，跨測試會留下來。目前每條測試都自己先
+ * 呼叫 setLocale 所以沒事，但那是慣例不是結構——哪天有人加一條假設預設語言
+ * 的測試，它的成敗就會取決於前面跑過什麼，而且是安靜地取決。
+ */
+beforeEach(() => setLocale('zh-TW'))
+
 describe('t', () => {
-  beforeEach(() => setLocale('zh-TW'))
 
   it('returns the string for the active locale', () => {
     expect(t('trip.new')).toBe('新增旅程')
