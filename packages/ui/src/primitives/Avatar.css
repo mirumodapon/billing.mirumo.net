@@ -1,4 +1,8 @@
 .bi-avatar {
+  /* outlined 會加 2px border。沒有這一行的話 content-box 讓它比 filled 大 4px，
+     Plan 3 的 AvatarToggleGroup 一切換選取狀態頭像就會跳動。
+     這個套件沒有全域 reset，所以每個固定尺寸的元件都得自己宣告 */
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   justify-content: center;

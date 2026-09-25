@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { Avatar } from './Avatar'
@@ -47,5 +49,15 @@ describe('Avatar', () => {
   it('marks the outlined variant for the toggle group to style', () => {
     render(<Avatar name="阿明" outlined />)
     expect(screen.getByRole('img')).toHaveAttribute('data-outlined', 'true')
+  })
+
+  /*
+   * jsdom 不做版面計算，所以這裡檢查的是 CSS 來源而非算出來的尺寸：
+   * 只證明宣告還在，不證明瀏覽器量出來一樣大。之所以值得測，是因為刪掉它
+   * 不會讓任何東西報錯——outlined 會靜靜地比 filled 大 4px。
+   */
+  it('keeps the outlined border inside the fixed size', () => {
+    const css = readFileSync(join(import.meta.dirname, 'Avatar.css'), 'utf8')
+    expect(css).toMatch(/\.bi-avatar\s*{[^}]*box-sizing:\s*border-box/)
   })
 })
