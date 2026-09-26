@@ -8,3 +8,19 @@ import { afterEach } from 'vitest'
 afterEach(() => {
   cleanup()
 })
+
+// jsdom does no layout, so the real offsetParent getter always returns null —
+// even for a plain visible <button>. Code that uses offsetParent as a
+// "is this actually rendered" check (useFocusTrap's focusableWithin, and any
+// future overlay code that does the same) would see every element as hidden
+// and silently do nothing. This approximates the real getter closely enough
+// for tests: null only for elements removed from the document or explicitly
+// display:none.
+Object.defineProperty(HTMLElement.prototype, 'offsetParent', {
+  configurable: true,
+  get(this: HTMLElement) {
+    if (!this.isConnected) return null
+    if (this.style.display === 'none') return null
+    return this.parentElement
+  },
+})
