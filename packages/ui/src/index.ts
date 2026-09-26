@@ -33,6 +33,9 @@ export type { AppBarAction, AppBarProps } from './layout/AppBar'
 export { TabBar } from './layout/TabBar'
 export type { TabBarProps, TabItem } from './layout/TabBar'
 
+export { Fab } from './layout/Fab'
+export type { FabProps } from './layout/Fab'
+
 export { Scrim } from './overlay/Scrim'
 export type { ScrimProps } from './overlay/Scrim'
 
