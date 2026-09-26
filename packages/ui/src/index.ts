@@ -26,3 +26,6 @@ export type { IconProps } from './icons/Icon'
 
 export { SafeArea } from './layout/SafeArea'
 export type { SafeAreaEdge, SafeAreaProps } from './layout/SafeArea'
+
+export { Scrim } from './overlay/Scrim'
+export type { ScrimProps } from './overlay/Scrim'
