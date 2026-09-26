@@ -29,3 +29,6 @@ export type { SafeAreaEdge, SafeAreaProps } from './layout/SafeArea'
 
 export { Scrim } from './overlay/Scrim'
 export type { ScrimProps } from './overlay/Scrim'
+
+export { Sheet } from './overlay/Sheet'
+export type { SheetProps } from './overlay/Sheet'
