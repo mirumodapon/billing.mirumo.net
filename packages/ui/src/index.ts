@@ -53,3 +53,6 @@ export type { SnackbarProps } from './overlay/Snackbar'
 
 export { SheetPicker } from './overlay/SheetPicker'
 export type { PickerOption, SheetPickerProps } from './overlay/SheetPicker'
+
+export { SwipeAction } from './interaction/SwipeAction'
+export type { SwipeActionProps } from './interaction/SwipeAction'

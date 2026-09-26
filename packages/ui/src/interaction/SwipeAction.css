@@ -1,0 +1,38 @@
+.bi-swipe {
+  position: relative;
+  overflow: hidden;
+}
+
+.bi-swipe__action {
+  box-sizing: border-box;
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: var(--bi-space-14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: var(--bi-danger);
+  color: var(--bi-accent-fg);
+  cursor: pointer;
+}
+
+.bi-swipe__action:focus-visible {
+  outline: 2px solid var(--bi-accent);
+  outline-offset: -2px;
+}
+
+.bi-swipe__surface {
+  position: relative;
+  /* 橫向手勢歸我們，直向捲動仍歸瀏覽器。少了這個，直式清單裡的橫滑
+     會被當成頁面捲動搶走 */
+  touch-action: pan-y;
+  background: var(--bi-bg);
+  transform: translateX(var(--bi-swipe-offset, 0px));
+  transition: transform var(--bi-dur-collapse) var(--bi-ease-out);
+}
+
+.bi-swipe__surface[data-dragging] {
+  transition: none;
+}
