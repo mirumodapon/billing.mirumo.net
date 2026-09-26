@@ -23,3 +23,6 @@ export type { SkeletonProps } from './primitives/Skeleton'
 
 export { Icon } from './icons/Icon'
 export type { IconProps } from './icons/Icon'
+
+export { SafeArea } from './layout/SafeArea'
+export type { SafeAreaEdge, SafeAreaProps } from './layout/SafeArea'

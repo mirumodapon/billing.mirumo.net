@@ -1,0 +1,20 @@
+.bi-safe {
+  /* 這個元件唯一的工作就是加 padding，所以固定尺寸的父層不該因它而變形 */
+  box-sizing: border-box;
+}
+
+.bi-safe[data-top] {
+  padding-top: var(--bi-safe-top);
+}
+
+.bi-safe[data-bottom] {
+  padding-bottom: var(--bi-safe-bottom);
+}
+
+.bi-safe[data-left] {
+  padding-left: var(--bi-safe-left);
+}
+
+.bi-safe[data-right] {
+  padding-right: var(--bi-safe-right);
+}
