@@ -6,9 +6,9 @@
   /*
    * 要同時讓開 home indicator 與分頁列。只算 safe area 的話，在有
    * home indicator 的機型上 FAB 會壓在分頁列上面，兩者都變難點。
-   * 56px 是 TabBar 的實際高度：44px 的 tap 目標加上下各 6px 的 padding。
+   * 高度讀 --bi-tabbar-height，與 TabBar 同一個來源——寫死的話兩者會各自漂移。
    */
-  bottom: calc(var(--bi-safe-bottom) + 56px + var(--bi-space-4));
+  bottom: calc(var(--bi-safe-bottom) + var(--bi-tabbar-height) + var(--bi-space-4));
   width: var(--bi-space-14);
   height: var(--bi-space-14);
   display: flex;

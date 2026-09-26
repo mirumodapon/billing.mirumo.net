@@ -94,6 +94,10 @@ describe('Accordion', () => {
     const css = readFileSync(join(import.meta.dirname, 'Accordion.css'), 'utf8')
     expect(css).toMatch(/grid-template-rows:\s*0fr/)
     expect(css).toMatch(/grid-template-rows:\s*1fr/)
-    expect(css).not.toMatch(/max-height/)
+    // 先去掉註解再檢查。不然解釋「為什麼不用 max-height」的那句話本身
+    // 就會讓這條測試變紅——而它要擋的是宣告，不是文字。
+    // 實作者已經因為這個把註解改掉繞過去了，那是在遷就測試而不是相反。
+    const declarations = css.replace(/\/\*[\s\S]*?\*\//g, '')
+    expect(declarations).not.toMatch(/max-height\s*:/)
   })
 })

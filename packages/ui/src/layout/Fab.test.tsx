@@ -33,7 +33,15 @@ describe('Fab', () => {
     const css = readFileSync(join(import.meta.dirname, 'Fab.css'), 'utf8')
     const bottom = css.match(/\.bi-fab\s*{[^}]*bottom:([^;]+);/)?.[1] ?? ''
     expect(bottom, 'the fab does not account for the safe area').toContain('--bi-safe-bottom')
-    expect(bottom, 'the fab does not clear the tab bar').toMatch(/calc\(/)
+    /*
+     * 原本這裡寫的是 toMatch(/calc\(/)，而那只要有一個 calc( 就通過，不管
+     * 裡面算什麼——把分頁列那一項換成 0px 照樣綠燈，Fab 就會壓在分頁列上，
+     * 兩個都變難點。
+     *
+     * 改成要求它引用共用的高度 token。分頁列的實際高度由 min-height、padding
+     * 與內容一起決定，寫死一個數字在猜的話，改任何一項兩者就不同步了。
+     */
+    expect(bottom, 'the fab does not clear the tab bar').toContain('--bi-tabbar-height')
   })
 
   it('sits on the fab layer with a raised shadow', () => {

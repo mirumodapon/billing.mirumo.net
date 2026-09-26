@@ -112,6 +112,12 @@
 
   /* ── 觸控目標下限。視覺可更小，可點區域用 padding 撐滿 ── */
   --bi-tap-min: 44px;
+  /*
+   * 底部分頁列的高度。Fab 必須讓開它，而原本 Fab.css 是直接寫死 56px 在猜——
+   * 分頁列的實際高度由 min-height、padding 與內容一起決定，改任何一項
+   * 兩者就會不同步，而 Fab 壓在分頁列上時兩個都會變難點。
+   */
+  --bi-tabbar-height: 56px;
 
   /* ── 動效 ── */
   --bi-dur-press: 120ms;

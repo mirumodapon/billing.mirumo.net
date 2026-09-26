@@ -9,6 +9,8 @@
 
 .bi-tabbar {
   display: flex;
+  /* 高度由 token 決定，Fab 讀同一個值來讓開，兩者就不會各自漂移 */
+  min-height: var(--bi-tabbar-height);
 }
 
 .bi-tabbar__tab {
