@@ -1,0 +1,28 @@
+.bi-page {
+  /* 動畫期間兩頁會同時存在，各自佔滿容器 */
+  min-height: 100%;
+  background: var(--bi-bg);
+}
+
+.bi-page[data-direction='forward'] {
+  animation: bi-page-forward var(--bi-dur-page) var(--bi-ease-out);
+}
+
+.bi-page[data-direction='back'] {
+  animation: bi-page-back var(--bi-dur-page) var(--bi-ease-out);
+}
+
+@keyframes bi-page-forward {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes bi-page-back {
+  from {
+    /* 退出時舊頁往右退回，所以新頁是從左邊的 30% 位置回來，
+       與規格 §5.5「舊頁左移 30%」對稱 */
+    transform: translateX(-30%);
+    filter: brightness(0.8);
+  }
+}

@@ -56,3 +56,6 @@ export type { PickerOption, SheetPickerProps } from './overlay/SheetPicker'
 
 export { SwipeAction } from './interaction/SwipeAction'
 export type { SwipeActionProps } from './interaction/SwipeAction'
+
+export { PageTransition } from './motion/PageTransition'
+export type { PageTransitionProps } from './motion/PageTransition'
