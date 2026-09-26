@@ -61,13 +61,20 @@ describe('token layering', () => {
     expect(offenders, `these reference palette tokens directly: ${offenders.join(', ')}`).toEqual([])
   })
 
-  it('no component source hardcodes a hex colour', () => {
+  /*
+   * 只擋 hex 是不夠的。Plan 3 的 Sheet/Dialog/Snackbar/Fab 都要陰影與遮罩，
+   * 而那些最自然的寫法是 rgba(0, 0, 0, .3)——它繞過兩層架構、不隨主題變
+   * （淺色主題的遮罩不該跟深色一樣黑），而且原本這條測試完全看不見它。
+   * 陰影與遮罩該有自己的語意 token，在那之前先讓字面色值一律過不了關。
+   */
+  it('no component source hardcodes a colour, in any notation', () => {
+    const LITERAL = /#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?|color-mix|lab|lch|oklab|oklch)\s*\(/
     const offenders: string[] = []
     for (const path of componentSources()) {
       const stripped = readFileSync(path, 'utf8')
         .replace(/\/\*[\s\S]*?\*\//g, '')
         .replace(/\/\/.*$/gm, '')
-      if (/#[0-9a-fA-F]{3,8}\b/.test(stripped)) offenders.push(path.slice(SRC.length + 1))
+      if (LITERAL.test(stripped)) offenders.push(path.slice(SRC.length + 1))
     }
     expect(offenders, `these hardcode a colour: ${offenders.join(', ')}`).toEqual([])
   })
