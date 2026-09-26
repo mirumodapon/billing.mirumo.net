@@ -36,6 +36,9 @@ export type { TabBarProps, TabItem } from './layout/TabBar'
 export { Fab } from './layout/Fab'
 export type { FabProps } from './layout/Fab'
 
+export { Accordion } from './layout/Accordion'
+export type { AccordionProps } from './layout/Accordion'
+
 export { Scrim } from './overlay/Scrim'
 export type { ScrimProps } from './overlay/Scrim'
 

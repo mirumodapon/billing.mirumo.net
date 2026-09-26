@@ -8,6 +8,7 @@
 @import '../layout/AppBar.css';
 @import '../layout/TabBar.css';
 @import '../layout/Fab.css';
+@import '../layout/Accordion.css';
 @import '../overlay/Scrim.css';
 @import '../overlay/Sheet.css';
 @import '../overlay/Dialog.css';
