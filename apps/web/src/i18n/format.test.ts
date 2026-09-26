@@ -1,0 +1,69 @@
+import { describe, expect, it } from 'vitest'
+import { setLocale } from './index'
+import { formatDate, formatDateRange, formatMoney, formatWeekday } from './format'
+
+describe('formatMoney', () => {
+  it('formats a zero-decimal currency without decimals', () => {
+    setLocale('zh-TW')
+    // 798 個最小單位的 TWD 就是 798 元
+    expect(formatMoney(798, 'TWD')).toMatch(/798/)
+    expect(formatMoney(798, 'TWD')).not.toMatch(/\.00/)
+  })
+
+  it('formats a two-decimal currency with decimals', () => {
+    setLocale('en-US')
+    expect(formatMoney(1234, 'USD')).toMatch(/12\.34/)
+  })
+
+  it('handles negatives', () => {
+    setLocale('zh-TW')
+    expect(formatMoney(-500, 'TWD')).toMatch(/-|−|\(/)
+  })
+})
+
+describe('formatDate', () => {
+  /*
+   * 這兩個語系在「數字月/日」這個格式下輸出完全相同，所以不能寫成
+   * 「兩者應該不同」——那條斷言不可能成立。改成釘住各自的實際輸出：
+   * 比「有差異」更強，格式選項被改動時會直接紅。
+   *
+   * 「真的有讀取 locale」這件事由 formatWeekday 與 formatDateRange 證明，
+   * 那兩個在兩個語系下確實不同。
+   */
+  it('formats the same way in both locales for this compact format', () => {
+    setLocale('zh-TW')
+    expect(formatDate('2026-03-15')).toBe('3/15')
+    setLocale('en-US')
+    expect(formatDate('2026-03-15')).toBe('3/15')
+  })
+
+  // 用 UTC 解析，否則在 UTC+8 以外的時區會差一天
+  it('does not shift the day across time zones', () => {
+    setLocale('en-US')
+    expect(formatDate('2026-03-15')).toMatch(/15/)
+  })
+})
+
+describe('formatWeekday', () => {
+  it('returns a short weekday name', () => {
+    setLocale('en-US')
+    expect(formatWeekday('2026-03-15')).toBe('Sun')
+  })
+})
+
+describe('formatDateRange', () => {
+  it('joins two dates', () => {
+    setLocale('en-US')
+    expect(formatDateRange('2026-03-14', '2026-03-18')).toMatch(/14.*18/)
+  })
+
+  // 範圍分隔符號在兩個語系下不同（zh-TW 用「至」，en-US 用 en dash），
+  // 這條才是真正證明 formatDate 系列有讀 locale 的斷言。
+  it('localises the range separator', () => {
+    setLocale('zh-TW')
+    const zh = formatDateRange('2026-03-14', '2026-03-18')
+    setLocale('en-US')
+    const en = formatDateRange('2026-03-14', '2026-03-18')
+    expect(zh).not.toBe(en)
+  })
+})

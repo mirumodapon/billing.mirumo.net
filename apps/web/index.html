@@ -8,6 +8,28 @@
     />
     <meta name="theme-color" content="#1e1e2e" />
     <title>Travel Split</title>
+    <script>
+      // 早於 React bundle 執行，避免首次繪製閃過預設主題。
+      // 這裡刻意不 import 任何東西——多一個 module 請求就多一次閃爍的機會。
+      (function () {
+        try {
+          var saved = localStorage.getItem('bi-theme')
+          if (saved && saved !== 'system') {
+            document.documentElement.dataset.theme = saved
+            return
+          }
+          var family = localStorage.getItem('bi-theme-family') || 'catppuccin'
+          var dark = matchMedia('(prefers-color-scheme: dark)').matches
+          document.documentElement.dataset.theme =
+            family === 'tokyo-night'
+              ? dark ? 'tokyo-night' : 'tokyo-night-day'
+              : dark ? 'catppuccin-mocha' : 'catppuccin-latte'
+        } catch (e) {
+          // localStorage 在無痕模式可能整個拋錯。CSS 的 :root 已經是預設主題，
+          // 什麼都不做就是正確的降級
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>
