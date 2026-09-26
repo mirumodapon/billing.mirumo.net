@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { setLocale } from './index'
-import { formatDate, formatDateRange, formatMoney, formatWeekday } from './format'
+import { parseDate, formatDate, formatDateRange, formatMoney, formatWeekday } from './format'
 
 describe('formatMoney', () => {
   it('formats a zero-decimal currency without decimals', () => {
@@ -65,5 +65,16 @@ describe('formatDateRange', () => {
     setLocale('en-US')
     const en = formatDateRange('2026-03-14', '2026-03-18')
     expect(zh).not.toBe(en)
+  })
+})
+
+/*
+ * 這條刻意不依賴執行時的時區：直接比對解析出來的那一瞬間。
+ * 少了它，「把 ISO 當成本地時間解析」這個錯誤只有在 UTC 以東的機器上才會被抓到，
+ * 在 UTC 或美洲時區下測試照樣全綠——而旅行記帳把日期記錯一天是使用者看得見的 bug。
+ */
+describe('parseDate', () => {
+  it('reads a plain date as UTC midnight, whatever the machine zone', () => {
+    expect(parseDate('2026-03-15').toISOString()).toBe('2026-03-15T00:00:00.000Z')
   })
 })
