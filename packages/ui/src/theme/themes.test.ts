@@ -11,7 +11,7 @@ const PALETTE_SLOTS = [
   'text', 'text-muted', 'text-subtle',
   // 陰影與遮罩逐主題不同：淺色主題的遮罩不該跟深色一樣黑。
   // 存成空格分隔的 RGB 通道，讓 semantic 層自己決定透明度。
-  'shadow-rgb', 'scrim-rgb',
+  'shadow-rgb',
   ...Array.from({ length: 12 }, (_, i) => `accent${i + 1}`),
 ]
 
@@ -97,5 +97,53 @@ describe('theme files', () => {
     })
     expect(defaults, `expected one :root default, found: ${defaults.join(', ') || 'none'}`)
       .toHaveLength(1)
+  })
+})
+
+/** WCAG 的相對亮度。0 是黑、1 是白 */
+function relativeLuminance([r, g, b]: [number, number, number]): number {
+  const [lr, lg, lb] = [r, g, b].map((v) => {
+    const c = v / 255
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+  }) as [number, number, number]
+  return 0.2126 * lr + 0.7152 * lg + 0.0722 * lb
+}
+
+describe('scrim and shadow colour', () => {
+  /*
+   * 遮罩與陰影必須在每個主題下都是深色。
+   *
+   * 這條測試存在是因為第一版沒有它就出過事：當時直接取主題最深的底色，
+   * 深色主題沒問題，但淺色主題的「最深」仍然是淺的——Catppuccin Latte 的
+   * crust 是 #dce0e8，疊 56% 上去只讓背景暗了 1.09 倍，等於完全沒有調暗。
+   * 全部測試照樣綠燈，因為當時的守衛只檢查 token 存在且引用了 palette。
+   *
+   * 門檻 0.06 是量出來的，不是猜的：
+   *   目前八個主題最亮的是 latte 的 0.0159（近四倍餘裕）
+   *   壓黑 0.7 會是 0.0561 —— 仍然通過，調校還有空間
+   *   壓黑 0.4 會是 0.2382 —— 擋下
+   *   完全不壓（當初的壞版本）是 0.7435 —— 擋下
+   */
+  const MAX_LUMINANCE = 0.06
+
+  it('is dark in every theme, light themes included', () => {
+    const files = themeFiles()
+    // 一個檔案都沒讀到的話，下面的迴圈會零圈通過而什麼都沒證明
+    expect(files.length, 'no theme files were found').toBeGreaterThan(0)
+
+    for (const file of files) {
+      const css = readFileSync(join(THEME_DIR, file), 'utf8')
+      const raw = css.match(/--bi-p-shadow-rgb:\s*([^;]+);/)?.[1]
+      expect(raw, `${file} has no --bi-p-shadow-rgb`).toBeDefined()
+
+      const channels = raw!.trim().split(/\s+/).map(Number)
+      expect(channels, `${file} does not store three channels`).toHaveLength(3)
+
+      const luminance = relativeLuminance(channels as [number, number, number])
+      expect(
+        luminance,
+        `${file} would not dim anything: --bi-p-shadow-rgb is ${raw!.trim()}, luminance ${luminance.toFixed(4)}`,
+      ).toBeLessThan(MAX_LUMINANCE)
+    }
   })
 })

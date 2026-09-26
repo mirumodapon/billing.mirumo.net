@@ -4,7 +4,7 @@ import { PALETTE_SLOTS, catppuccinToSlots, tokyoNightToSlots } from './mapping'
 import { TOKYO_NIGHT } from './palettes'
 
 const HEX = /^#[0-9a-f]{6}$/i
-// shadow-rgb / scrim-rgb store space-separated RGB channels (for rgb(... / alpha)
+// shadow-rgb stores space-separated RGB channels (for rgb(... / alpha)
 // in the semantic layer), not finished hex colours — everything else is still hex.
 const RGB_CHANNELS = /^\d{1,3} \d{1,3} \d{1,3}$/
 const formatFor = (slot: string) => (slot.endsWith('-rgb') ? RGB_CHANNELS : HEX)

@@ -56,7 +56,7 @@
    * 這裡是 semantic 層，允許出現 rgb()——元件只會看到 var(--bi-shadow-sheet)。
    * 透明度刻意不開成 token：三個層級是設計決策，不是讓呼叫端調的旋鈕。
    */
-  --bi-scrim: rgb(var(--bi-p-scrim-rgb) / 0.56);
+  --bi-scrim: rgb(var(--bi-p-shadow-rgb) / 0.56);
   --bi-shadow-raised: 0 1px 3px rgb(var(--bi-p-shadow-rgb) / 0.18);
   --bi-shadow-sheet: 0 -4px 24px rgb(var(--bi-p-shadow-rgb) / 0.3);
   --bi-shadow-dialog: 0 8px 32px rgb(var(--bi-p-shadow-rgb) / 0.4);
