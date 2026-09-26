@@ -4,14 +4,8 @@ export interface ScrimProps {
 }
 
 export function Scrim({ onDismiss }: ScrimProps) {
-  return (
-    <div
-      data-testid="scrim"
-      className="bi-scrim"
-      aria-hidden="true"
-      // 不可關閉時仍掛一個空的 onClick：沒有它的話點擊會穿透到底下
-      // 被遮住的元素，使用者會點到自己看不見的東西
-      onClick={onDismiss ?? (() => {})}
-    />
-  )
+  // 擋住底下的點擊靠的是 CSS 的 position: fixed + inset: 0 + z-index，
+  // 不是事件處理器——一層蓋滿畫面的元素本來就會攔下指標事件。
+  // 原本這裡對不可關閉的情況掛了一個空的 onClick，那是沒有作用的。
+  return <div data-testid="scrim" className="bi-scrim" aria-hidden="true" onClick={onDismiss} />
 }

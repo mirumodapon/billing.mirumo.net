@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { Sheet } from './Sheet'
@@ -84,5 +84,42 @@ describe('Sheet', () => {
   it('disables the transition while dragging', () => {
     const css = readFileSync(join(import.meta.dirname, 'Sheet.css'), 'utf8')
     expect(css).toMatch(/\[data-dragging\][^{]*{[^}]*transition:\s*none/)
+  })
+
+  /*
+   * 上面那條只證明 CSS 規則在，證明不了它會被套用。拿掉 data-dragging
+   * 之後那條規則永遠匹配不到，而測試照樣全綠——手指移動時每一幀都被
+   * 280ms 的過渡追著跑，sheet 變得像黏在糖漿裡，卻沒有任何東西報錯。
+   */
+  it('marks itself as dragging so that rule can match', () => {
+    render(
+      <Sheet open onClose={vi.fn()} title="選擇幣別">
+        內容
+      </Sheet>,
+    )
+    const handle = document.querySelector('.bi-sheet__handle')!
+    fireEvent(
+      handle,
+      Object.assign(new Event('pointerdown', { bubbles: true }), { pointerId: 1, clientY: 0 }),
+    )
+    expect(screen.getByRole('dialog')).toHaveAttribute('data-dragging', 'true')
+  })
+
+  /*
+   * 只有把手可以拖。整張 sheet 都可拖的話，裡面的捲動清單永遠搶不到手勢——
+   * 使用者想往下捲內容，結果把整張 sheet 拉下來關掉了。
+   */
+  it('drags only by the handle, so content inside can still scroll', () => {
+    render(
+      <Sheet open onClose={vi.fn()} title="選擇幣別">
+        <p data-testid="body-text">很長的內容</p>
+      </Sheet>,
+    )
+    const body = screen.getByTestId('body-text')
+    fireEvent(
+      body,
+      Object.assign(new Event('pointerdown', { bubbles: true }), { pointerId: 1, clientY: 0 }),
+    )
+    expect(screen.getByRole('dialog')).not.toHaveAttribute('data-dragging')
   })
 })
