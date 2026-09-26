@@ -1,0 +1,41 @@
+.bi-avatar {
+  /* outlined 會加 2px border。沒有這一行的話 content-box 讓它比 filled 大 4px，
+     Plan 3 的 AvatarToggleGroup 一切換選取狀態頭像就會跳動。
+     這個套件沒有全域 reset，所以每個固定尺寸的元件都得自己宣告 */
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--bi-radius-full);
+  background: var(--bi-avatar-color);
+  color: var(--bi-accent-fg);
+  font-weight: 600;
+  line-height: 1;
+  flex: none;
+  user-select: none;
+}
+
+.bi-avatar[data-size='sm'] {
+  width: var(--bi-space-6);
+  height: var(--bi-space-6);
+  font-size: var(--bi-text-xs);
+}
+
+.bi-avatar[data-size='md'] {
+  width: var(--bi-space-8);
+  height: var(--bi-space-8);
+  font-size: var(--bi-text-sm);
+}
+
+.bi-avatar[data-size='lg'] {
+  width: var(--bi-space-12);
+  height: var(--bi-space-12);
+  font-size: var(--bi-text-lg);
+}
+
+/* 未選中：留住顏色身分，改用外框而非填滿，讓選中與否一眼可分 */
+.bi-avatar[data-outlined] {
+  background: transparent;
+  border: 2px solid var(--bi-avatar-color);
+  color: var(--bi-avatar-color);
+}

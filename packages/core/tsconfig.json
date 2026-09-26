@@ -2,6 +2,10 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2022"],
+    // core 是純函式庫：沒有 DOM，也沒有 Node。空的 types 陣列讓它不自動吃進
+    // node_modules/@types 下的任何東西——在 @types/node 裝進 root 之前，
+    // 這層保護只是 pnpm 隔離佈局的副作用，現在是明示的宣告。
+    "types": [],
     "outDir": "./dist",
     "rootDir": "./src"
   },

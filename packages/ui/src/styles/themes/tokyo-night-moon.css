@@ -1,0 +1,29 @@
+/*
+ * Tokyo Night Moon — https://github.com/folke/tokyonight.nvim （MIT）
+ * 由 scripts/generate-themes.ts 產生，不要手改。
+ */
+[data-theme='tokyo-night-moon'] {
+  color-scheme: dark;
+
+  --bi-p-accent1: #ff757f;
+  --bi-p-accent2: #ff966c;
+  --bi-p-accent3: #ffc777;
+  --bi-p-accent4: #c3e88d;
+  --bi-p-accent5: #4fd6be;
+  --bi-p-accent6: #86e1fc;
+  --bi-p-accent7: #82aaff;
+  --bi-p-accent8: #fca7ea;
+  --bi-p-accent9: #c099ff;
+  --bi-p-accent10: #ff8676;
+  --bi-p-accent11: #a5e5c5;
+  --bi-p-accent12: #a1a2ff;
+  --bi-p-bg: #222436;
+  --bi-p-bg-sunken: #1e2030;
+  --bi-p-bg-deepest: #1b1d2b;
+  --bi-p-surface1: #2f334d;
+  --bi-p-surface2: #3b4261;
+  --bi-p-surface3: #444a73;
+  --bi-p-text: #c8d3f5;
+  --bi-p-text-muted: #828bb8;
+  --bi-p-text-subtle: #636da6;
+}

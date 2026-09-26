@@ -1,0 +1,38 @@
+.bi-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bi-space-2);
+}
+
+.bi-skeleton__line {
+  display: block;
+  background: var(--bi-surface);
+  border-radius: var(--bi-radius-sm);
+  /* 時長走 token，所以 prefers-reduced-motion 下會自動變成 0ms 而不閃動。
+     另寫一份 media query 會讓「尊重使用者偏好」這件事散在兩個地方。
+     用 --bi-dur-pulse 而非 --bi-dur-sheet：後者是 sheet 轉場的時長，
+     語意上與骨架屏的呼吸節奏無關，共用會讓兩者被迫綁在一起變動 */
+  animation: bi-skeleton-pulse var(--bi-dur-pulse) var(--bi-ease-out) infinite alternate;
+}
+
+.bi-skeleton[data-variant='text'] .bi-skeleton__line {
+  height: var(--bi-text-base);
+  width: 100%;
+}
+
+.bi-skeleton[data-variant='circle'] .bi-skeleton__line {
+  width: var(--bi-space-8);
+  height: var(--bi-space-8);
+  border-radius: var(--bi-radius-full);
+}
+
+.bi-skeleton[data-variant='rect'] .bi-skeleton__line {
+  height: var(--bi-space-12);
+  width: 100%;
+  border-radius: var(--bi-radius-md);
+}
+
+@keyframes bi-skeleton-pulse {
+  from { opacity: 1; }
+  to { opacity: 0.55; }
+}

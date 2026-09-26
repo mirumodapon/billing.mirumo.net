@@ -1,0 +1,29 @@
+/*
+ * Tokyo Night Storm — https://github.com/folke/tokyonight.nvim （MIT）
+ * 由 scripts/generate-themes.ts 產生，不要手改。
+ */
+[data-theme='tokyo-night-storm'] {
+  color-scheme: dark;
+
+  --bi-p-accent1: #f7768e;
+  --bi-p-accent2: #ff9e64;
+  --bi-p-accent3: #e0af68;
+  --bi-p-accent4: #9ece6a;
+  --bi-p-accent5: #1abc9c;
+  --bi-p-accent6: #7dcfff;
+  --bi-p-accent7: #7aa2f7;
+  --bi-p-accent8: #9d7cd8;
+  --bi-p-accent9: #bb9af7;
+  --bi-p-accent10: #fb8a79;
+  --bi-p-accent11: #8ecfb5;
+  --bi-p-accent12: #9b9ef7;
+  --bi-p-bg: #24283b;
+  --bi-p-bg-sunken: #1f2335;
+  --bi-p-bg-deepest: #1d202f;
+  --bi-p-surface1: #292e42;
+  --bi-p-surface2: #3b4261;
+  --bi-p-surface3: #414868;
+  --bi-p-text: #c0caf5;
+  --bi-p-text-muted: #a9b1d6;
+  --bi-p-text-subtle: #565f89;
+}

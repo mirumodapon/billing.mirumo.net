@@ -1,0 +1,29 @@
+/*
+ * Catppuccin Frappe — https://catppuccin.com/ （MIT）
+ * 由 scripts/generate-themes.ts 產生，不要手改。
+ */
+[data-theme='catppuccin-frappe'] {
+  color-scheme: dark;
+
+  --bi-p-accent1: #e78284;
+  --bi-p-accent2: #ef9f76;
+  --bi-p-accent3: #e5c890;
+  --bi-p-accent4: #a6d189;
+  --bi-p-accent5: #81c8be;
+  --bi-p-accent6: #99d1db;
+  --bi-p-accent7: #85c1dc;
+  --bi-p-accent8: #8caaee;
+  --bi-p-accent9: #babbf1;
+  --bi-p-accent10: #ca9ee6;
+  --bi-p-accent11: #ea999c;
+  --bi-p-accent12: #f4b8e4;
+  --bi-p-bg: #303446;
+  --bi-p-bg-sunken: #292c3c;
+  --bi-p-bg-deepest: #232634;
+  --bi-p-surface1: #414559;
+  --bi-p-surface2: #51576d;
+  --bi-p-surface3: #626880;
+  --bi-p-text: #c6d0f5;
+  --bi-p-text-muted: #b5bfe2;
+  --bi-p-text-subtle: #a5adce;
+}
