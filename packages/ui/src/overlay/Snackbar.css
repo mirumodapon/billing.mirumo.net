@@ -1,0 +1,51 @@
+.bi-safe:has(> .bi-snackbar) {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: var(--bi-z-snackbar);
+}
+
+.bi-snackbar {
+  box-sizing: border-box;
+  margin: var(--bi-space-4);
+  padding: var(--bi-space-3) var(--bi-space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--bi-space-4);
+  background: var(--bi-surface-raised);
+  color: var(--bi-text);
+  border-radius: var(--bi-radius-md);
+  box-shadow: var(--bi-shadow-dialog);
+  font-size: var(--bi-text-sm);
+  animation: bi-snackbar-in var(--bi-dur-collapse) var(--bi-ease-out);
+}
+
+.bi-snackbar__message {
+  flex: 1;
+}
+
+.bi-snackbar__action {
+  /* 視覺上只是一行字，但可點區域必須撐到 44px */
+  min-height: var(--bi-tap-min);
+  padding-inline: var(--bi-space-2);
+  margin-block: calc(var(--bi-space-2) * -1);
+  border: 0;
+  background: none;
+  color: var(--bi-accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.bi-snackbar__action:focus-visible {
+  outline: 2px solid var(--bi-accent);
+  outline-offset: 2px;
+  border-radius: var(--bi-radius-sm);
+}
+
+@keyframes bi-snackbar-in {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}

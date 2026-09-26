@@ -35,3 +35,6 @@ export type { SheetProps } from './overlay/Sheet'
 
 export { Dialog } from './overlay/Dialog'
 export type { DialogProps } from './overlay/Dialog'
+
+export { Snackbar } from './overlay/Snackbar'
+export type { SnackbarProps } from './overlay/Snackbar'
