@@ -4,13 +4,13 @@ import { describe, expect, it } from 'vitest'
 
 const THEME_DIR = join(import.meta.dirname, '../styles/themes')
 
-/** palette 層的 23 個槽位。少一個，該主題就會沿用上一個主題的殘留值。 */
+/** palette 層的 22 個槽位。少一個，該主題就會沿用上一個主題的殘留值。 */
 const PALETTE_SLOTS = [
   'bg', 'bg-sunken', 'bg-deepest',
   'surface1', 'surface2', 'surface3',
   'text', 'text-muted', 'text-subtle',
-  // 陰影與遮罩逐主題不同：淺色主題的遮罩不該跟深色一樣黑。
-  // 存成空格分隔的 RGB 通道，讓 semantic 層自己決定透明度。
+  // 陰影與遮罩共用這一個來源，存成空格分隔的 RGB 通道，
+  // 讓 semantic 層用同一個底色配出 raised / sheet / dialog / scrim 四種透明度。
   'shadow-rgb',
   ...Array.from({ length: 12 }, (_, i) => `accent${i + 1}`),
 ]
@@ -57,7 +57,7 @@ describe('theme files', () => {
     expect(imported).toEqual(themeFiles().map((f) => f.replace('.css', '')).sort())
   })
 
-  it('every theme defines all 21 palette slots', () => {
+  it('every theme defines all 22 palette slots', () => {
     for (const file of themeFiles()) {
       const css = readFileSync(join(THEME_DIR, file), 'utf8')
       for (const slot of PALETTE_SLOTS) {
@@ -144,6 +144,48 @@ describe('scrim and shadow colour', () => {
         luminance,
         `${file} would not dim anything: --bi-p-shadow-rgb is ${raw!.trim()}, luminance ${luminance.toFixed(4)}`,
       ).toBeLessThan(MAX_LUMINANCE)
+    }
+  })
+
+  /*
+   * 上面那條釘的是絕對亮度，這條釘的是關係：疊上去之後一定要比原本的背景暗。
+   *
+   * 兩條都需要，缺一不可。只有關係式的話，淺色主題把遮罩設成中灰也會通過
+   * （中灰確實比淺背景暗），而那正是當初出事的那一類值；只有絕對值的話，
+   * 它是照現有八個主題量出來的常數，第九個主題若背景更暗就不再適用。
+   *
+   * 這條對深色主題近乎必然成立（背景已經接近黑，還要更暗很容易），所以它
+   * 真正守的是「有人把遮罩調成比背景亮」這種方向性錯誤，不是調暗幅度夠不夠。
+   */
+  it('composites darker than the background it sits on', () => {
+    const SCRIM_ALPHA = 0.56
+    const files = themeFiles()
+    expect(files.length, 'no theme files were found').toBeGreaterThan(0)
+
+    for (const file of files) {
+      const css = readFileSync(join(THEME_DIR, file), 'utf8')
+      const shadow = css
+        .match(/--bi-p-shadow-rgb:\s*([^;]+);/)![1]!
+        .trim()
+        .split(/\s+/)
+        .map(Number) as [number, number, number]
+      const bgHex = css.match(/--bi-p-bg:\s*#([0-9a-fA-F]{6})/)![1]!
+      const bg = [0, 2, 4].map((i) => Number.parseInt(bgHex.slice(i, i + 2), 16)) as [
+        number,
+        number,
+        number,
+      ]
+
+      const composited = bg.map((c, i) =>
+        Math.round(SCRIM_ALPHA * shadow[i]! + (1 - SCRIM_ALPHA) * c),
+      ) as [number, number, number]
+
+      const before = relativeLuminance(bg)
+      const after = relativeLuminance(composited)
+      expect(
+        after,
+        `${file}: the scrim makes the page lighter, not darker (${before.toFixed(4)} -> ${after.toFixed(4)})`,
+      ).toBeLessThan(before)
     }
   })
 })
