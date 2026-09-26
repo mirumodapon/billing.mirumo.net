@@ -4,11 +4,14 @@ import { describe, expect, it } from 'vitest'
 
 const THEME_DIR = join(import.meta.dirname, '../styles/themes')
 
-/** palette 層的 21 個槽位。少一個，該主題就會沿用上一個主題的殘留值。 */
+/** palette 層的 23 個槽位。少一個，該主題就會沿用上一個主題的殘留值。 */
 const PALETTE_SLOTS = [
   'bg', 'bg-sunken', 'bg-deepest',
   'surface1', 'surface2', 'surface3',
   'text', 'text-muted', 'text-subtle',
+  // 陰影與遮罩逐主題不同：淺色主題的遮罩不該跟深色一樣黑。
+  // 存成空格分隔的 RGB 通道，讓 semantic 層自己決定透明度。
+  'shadow-rgb', 'scrim-rgb',
   ...Array.from({ length: 12 }, (_, i) => `accent${i + 1}`),
 ]
 

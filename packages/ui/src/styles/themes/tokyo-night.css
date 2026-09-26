@@ -26,4 +26,6 @@
   --bi-p-text: #c0caf5;
   --bi-p-text-muted: #a9b1d6;
   --bi-p-text-subtle: #565f89;
+  --bi-p-shadow-rgb: 21 22 30;
+  --bi-p-scrim-rgb: 21 22 30;
 }

@@ -4,6 +4,9 @@ export const PALETTE_SLOTS = [
   'bg', 'bg-sunken', 'bg-deepest',
   'surface1', 'surface2', 'surface3',
   'text', 'text-muted', 'text-subtle',
+  // 陰影與遮罩逐主題不同：淺色主題的遮罩不該跟深色一樣黑。
+  // 存成空格分隔的 RGB 通道，讓 semantic 層自己決定透明度。
+  'shadow-rgb', 'scrim-rgb',
   'accent1', 'accent2', 'accent3', 'accent4', 'accent5', 'accent6',
   'accent7', 'accent8', 'accent9', 'accent10', 'accent11', 'accent12',
 ] as const
@@ -45,6 +48,8 @@ export function catppuccinToSlots(flavour: CatppuccinFlavour): Record<PaletteSlo
     text: c('text'),
     'text-muted': c('subtext1'),
     'text-subtle': c('subtext0'),
+    'shadow-rgb': toRgbChannels(c('crust')),
+    'scrim-rgb': toRgbChannels(c('crust')),
   }
 }
 
@@ -58,6 +63,19 @@ const TOKYO_NIGHT_ACCENTS: readonly (keyof TokyoNightPalette | [keyof TokyoNight
   'blue', 'purple', 'magenta',
   ['red', 'orange'], ['green', 'cyan'], ['blue', 'magenta'],
 ]
+
+/**
+ * '#11111b' → '17 17 27'
+ *
+ * 存通道而不存完整顏色，是為了讓 semantic 層用同一個底色配不同透明度
+ * （raised 用 0.18、sheet 用 0.3、dialog 用 0.4），而不必逐個主題列出四種。
+ */
+export function toRgbChannels(hex: string): string {
+  const h = hex.replace('#', '')
+  const full = h.length === 3 ? [...h].map((c) => c + c).join('') : h
+  const [r, g, b] = [0, 2, 4].map((i) => Number.parseInt(full.slice(i, i + 2), 16))
+  return `${r} ${g} ${b}`
+}
 
 /** 兩色等比混合，回傳 #rrggbb */
 export function mix(a: string, b: string): string {
@@ -89,5 +107,7 @@ export function tokyoNightToSlots(p: TokyoNightPalette): Record<PaletteSlot, str
     text: p.fg,
     'text-muted': p.fg_dark,
     'text-subtle': p.comment,
+    'shadow-rgb': toRgbChannels(p.black),
+    'scrim-rgb': toRgbChannels(p.black),
   }
 }
