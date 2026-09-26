@@ -1,0 +1,57 @@
+.bi-sheet {
+  box-sizing: border-box;
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: var(--bi-z-sheet);
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bi-surface);
+  border-radius: var(--bi-radius-lg) var(--bi-radius-lg) 0 0;
+  box-shadow: var(--bi-shadow-sheet);
+  transform: translateY(var(--bi-sheet-drag, 0px));
+  transition: transform var(--bi-dur-sheet) var(--bi-ease-out);
+  animation: bi-sheet-in var(--bi-dur-sheet) var(--bi-ease-out);
+}
+
+/* 拖曳中必須關掉過渡，否則每一幀都被 280ms 的動畫追著跑，手感變成黏滯 */
+.bi-sheet[data-dragging] {
+  transition: none;
+}
+
+.bi-sheet__handle {
+  /* 手勢區要夠大才抓得到，而且不能讓拖曳被瀏覽器當成頁面捲動 */
+  touch-action: none;
+  cursor: grab;
+  padding: var(--bi-space-3) var(--bi-space-4) var(--bi-space-2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--bi-space-2);
+}
+
+.bi-sheet__grip {
+  width: var(--bi-space-8);
+  height: 4px;
+  border-radius: var(--bi-radius-full);
+  background: var(--bi-text-subtle);
+}
+
+.bi-sheet__title {
+  margin: 0;
+  font-size: var(--bi-text-base);
+  font-weight: 600;
+  color: var(--bi-text);
+}
+
+.bi-sheet__body {
+  padding: 0 var(--bi-space-4) var(--bi-space-4);
+  overflow-y: auto;
+}
+
+@keyframes bi-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}

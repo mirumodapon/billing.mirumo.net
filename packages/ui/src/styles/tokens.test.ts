@@ -67,3 +67,40 @@ describe('reduced motion', () => {
     expect(reducedMotionBlock(':root { --bi-dur-x: 1s; }')).toBe('')
   })
 })
+
+describe('overlay tokens', () => {
+  /*
+   * 這四個 token 是 Sheet / Dialog / Snackbar / Fab 共用的。少了任何一個，
+   * 用到它的元件會拿到空值——陰影整個消失、遮罩變透明，而 CSS 不會報錯，
+   * 只有肉眼看得出來。
+   */
+  it('defines every overlay token the layout components need', () => {
+    const css = readFileSync(join(import.meta.dirname, 'tokens.css'), 'utf8')
+    for (const name of ['scrim', 'shadow-raised', 'shadow-sheet', 'shadow-dialog']) {
+      expect(css, `tokens.css is missing --bi-${name}`).toMatch(
+        new RegExp(`--bi-${name}\\s*:`),
+      )
+    }
+  })
+
+  /*
+   * 遮罩與陰影必須引用 palette 的通道值，不能寫死。寫死的話八個主題會共用
+   * 同一個黑，而淺色主題的遮罩會過重——那正是把它放進 palette 層的理由。
+   */
+  it('derives the scrim and shadows from the theme palette', () => {
+    const css = readFileSync(join(import.meta.dirname, 'tokens.css'), 'utf8')
+    for (const name of ['scrim', 'shadow-raised', 'shadow-sheet', 'shadow-dialog']) {
+      const decl = css.match(new RegExp(`--bi-${name}\\s*:([^;]+);`))?.[1] ?? ''
+      expect(decl, `--bi-${name} does not reference the palette`).toMatch(/--bi-p-(shadow|scrim)-rgb/)
+    }
+  })
+
+  it('exposes every safe-area edge', () => {
+    const css = readFileSync(join(import.meta.dirname, 'tokens.css'), 'utf8')
+    for (const edge of ['top', 'bottom', 'left', 'right']) {
+      expect(css, `tokens.css is missing --bi-safe-${edge}`).toMatch(
+        new RegExp(`--bi-safe-${edge}\\s*:\\s*env\\(safe-area-inset-${edge}`),
+      )
+    }
+  })
+})

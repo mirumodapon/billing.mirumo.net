@@ -20,3 +20,42 @@ export type { ProgressBarProps } from './primitives/ProgressBar'
 
 export { Skeleton } from './primitives/Skeleton'
 export type { SkeletonProps } from './primitives/Skeleton'
+
+export { Icon } from './icons/Icon'
+export type { IconProps } from './icons/Icon'
+
+export { SafeArea } from './layout/SafeArea'
+export type { SafeAreaEdge, SafeAreaProps } from './layout/SafeArea'
+
+export { AppBar } from './layout/AppBar'
+export type { AppBarAction, AppBarProps } from './layout/AppBar'
+
+export { TabBar } from './layout/TabBar'
+export type { TabBarProps, TabItem } from './layout/TabBar'
+
+export { Fab } from './layout/Fab'
+export type { FabProps } from './layout/Fab'
+
+export { Accordion } from './layout/Accordion'
+export type { AccordionProps } from './layout/Accordion'
+
+export { Scrim } from './overlay/Scrim'
+export type { ScrimProps } from './overlay/Scrim'
+
+export { Sheet } from './overlay/Sheet'
+export type { SheetProps } from './overlay/Sheet'
+
+export { Dialog } from './overlay/Dialog'
+export type { DialogProps } from './overlay/Dialog'
+
+export { Snackbar } from './overlay/Snackbar'
+export type { SnackbarProps } from './overlay/Snackbar'
+
+export { SheetPicker } from './overlay/SheetPicker'
+export type { PickerOption, SheetPickerProps } from './overlay/SheetPicker'
+
+export { SwipeAction } from './interaction/SwipeAction'
+export type { SwipeActionProps } from './interaction/SwipeAction'
+
+export { PageTransition } from './motion/PageTransition'
+export type { PageTransitionProps } from './motion/PageTransition'

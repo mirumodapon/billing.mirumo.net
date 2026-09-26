@@ -1,0 +1,69 @@
+.bi-accordion {
+  border-bottom: 1px solid var(--bi-border);
+}
+
+.bi-accordion__header {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--bi-tap-min);
+  padding: var(--bi-space-3) var(--bi-space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--bi-space-3);
+  border: 0;
+  background: none;
+  color: var(--bi-text);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.bi-accordion__title {
+  font-weight: 600;
+}
+
+.bi-accordion__summary {
+  flex: 1;
+  color: var(--bi-text-muted);
+  font-size: var(--bi-text-sm);
+  text-align: end;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bi-accordion__header:focus-visible {
+  outline: 2px solid var(--bi-accent);
+  outline-offset: -2px;
+}
+
+.bi-accordion__header .bi-icon {
+  transition: transform var(--bi-dur-collapse) var(--bi-ease-out);
+}
+
+.bi-accordion[data-open] .bi-accordion__header .bi-icon {
+  transform: rotate(180deg);
+}
+
+/*
+ * 0fr → 1fr 的收折不需要知道內容有多高，所以不必量測 DOM，也不會因為
+ * 內容變高而被一個猜出來的高度上限截斷。
+ */
+.bi-accordion__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--bi-dur-collapse) var(--bi-ease-out);
+}
+
+.bi-accordion[data-open] .bi-accordion__panel {
+  grid-template-rows: 1fr;
+}
+
+.bi-accordion__inner {
+  /* grid 子項必須 overflow:hidden，0fr 才真的會把內容收掉 */
+  overflow: hidden;
+}
+
+.bi-accordion[data-open] .bi-accordion__inner {
+  padding: 0 var(--bi-space-4) var(--bi-space-4);
+}

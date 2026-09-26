@@ -1,0 +1,13 @@
+.bi-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: var(--bi-z-overlay);
+  background: var(--bi-scrim);
+  animation: bi-scrim-in var(--bi-dur-sheet) var(--bi-ease-out);
+}
+
+@keyframes bi-scrim-in {
+  from {
+    opacity: 0;
+  }
+}

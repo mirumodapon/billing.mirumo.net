@@ -4,24 +4,28 @@ import { PALETTE_SLOTS, catppuccinToSlots, tokyoNightToSlots } from './mapping'
 import { TOKYO_NIGHT } from './palettes'
 
 const HEX = /^#[0-9a-f]{6}$/i
+// shadow-rgb stores space-separated RGB channels (for rgb(... / alpha)
+// in the semantic layer), not finished hex colours — everything else is still hex.
+const RGB_CHANNELS = /^\d{1,3} \d{1,3} \d{1,3}$/
+const formatFor = (slot: string) => (slot.endsWith('-rgb') ? RGB_CHANNELS : HEX)
 
 describe('palette mapping', () => {
-  it('maps every Catppuccin flavour onto all 24 slots', () => {
+  it('maps every Catppuccin flavour onto all 23 slots', () => {
     for (const name of ['latte', 'frappe', 'macchiato', 'mocha'] as const) {
       const slots = catppuccinToSlots(flavors[name])
       expect(Object.keys(slots).sort()).toEqual([...PALETTE_SLOTS].sort())
       for (const [slot, value] of Object.entries(slots)) {
-        expect(value, `${name}.${slot}`).toMatch(HEX)
+        expect(value, `${name}.${slot}`).toMatch(formatFor(slot))
       }
     }
   })
 
-  it('maps every Tokyo Night variant onto all 24 slots', () => {
+  it('maps every Tokyo Night variant onto all 23 slots', () => {
     for (const name of ['night', 'storm', 'moon', 'day'] as const) {
       const slots = tokyoNightToSlots(TOKYO_NIGHT[name])
       expect(Object.keys(slots).sort()).toEqual([...PALETTE_SLOTS].sort())
       for (const [slot, value] of Object.entries(slots)) {
-        expect(value, `${name}.${slot}`).toMatch(HEX)
+        expect(value, `${name}.${slot}`).toMatch(formatFor(slot))
       }
     }
   })
