@@ -40,7 +40,13 @@ describe('translation parity', () => {
     }
   })
 
-  // 複數 key 必須用到 count，否則單複數根本不會有差別
+  /*
+   * 複數 key 必須用到 count，否則單複數根本不會有差別。
+   *
+   * 這裡只斷言英文的 .other，看起來漏掉 .one，但上面那條 parity 測試已經
+   * 強制 .one 的變數集合等於中文那份，而這條又要求中文那份含有 count——
+   * 英文 .one 漏掉 count 仍然會被抓到，只是由另一條測試發出聲音。
+   */
   it('references count in every plural form', () => {
     for (const key of Object.keys(zhTWPlurals) as (keyof typeof zhTWPlurals)[]) {
       expect(placeholders(zhTWPlurals[key])).toContain('count')
