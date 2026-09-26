@@ -38,3 +38,6 @@ export type { DialogProps } from './overlay/Dialog'
 
 export { Snackbar } from './overlay/Snackbar'
 export type { SnackbarProps } from './overlay/Snackbar'
+
+export { SheetPicker } from './overlay/SheetPicker'
+export type { PickerOption, SheetPickerProps } from './overlay/SheetPicker'
