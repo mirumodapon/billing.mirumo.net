@@ -1,0 +1,44 @@
+.bi-dialog {
+  box-sizing: border-box;
+  position: fixed;
+  z-index: var(--bi-z-dialog);
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(calc(100vw - var(--bi-space-8)), 320px);
+  padding: var(--bi-space-5);
+  background: var(--bi-surface);
+  border-radius: var(--bi-radius-lg);
+  box-shadow: var(--bi-shadow-dialog);
+  animation: bi-dialog-in var(--bi-dur-collapse) var(--bi-ease-out);
+}
+
+.bi-dialog__title {
+  margin: 0 0 var(--bi-space-2);
+  font-size: var(--bi-text-lg);
+  font-weight: 600;
+  color: var(--bi-text);
+}
+
+.bi-dialog__desc {
+  margin: 0 0 var(--bi-space-5);
+  font-size: var(--bi-text-sm);
+  line-height: var(--bi-leading-normal);
+  color: var(--bi-text-muted);
+}
+
+.bi-dialog__actions {
+  display: flex;
+  gap: var(--bi-space-3);
+}
+
+.bi-dialog__actions > * {
+  flex: 1;
+}
+
+@keyframes bi-dialog-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+}

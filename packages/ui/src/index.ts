@@ -32,3 +32,6 @@ export type { ScrimProps } from './overlay/Scrim'
 
 export { Sheet } from './overlay/Sheet'
 export type { SheetProps } from './overlay/Sheet'
+
+export { Dialog } from './overlay/Dialog'
+export type { DialogProps } from './overlay/Dialog'
