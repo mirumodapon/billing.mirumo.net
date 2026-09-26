@@ -30,6 +30,9 @@ export type { SafeAreaEdge, SafeAreaProps } from './layout/SafeArea'
 export { AppBar } from './layout/AppBar'
 export type { AppBarAction, AppBarProps } from './layout/AppBar'
 
+export { TabBar } from './layout/TabBar'
+export type { TabBarProps, TabItem } from './layout/TabBar'
+
 export { Scrim } from './overlay/Scrim'
 export type { ScrimProps } from './overlay/Scrim'
 

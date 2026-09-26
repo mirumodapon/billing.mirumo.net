@@ -6,6 +6,7 @@
 @import '../icons/Icon.css';
 @import '../layout/SafeArea.css';
 @import '../layout/AppBar.css';
+@import '../layout/TabBar.css';
 @import '../overlay/Scrim.css';
 @import '../overlay/Sheet.css';
 @import '../overlay/Dialog.css';
