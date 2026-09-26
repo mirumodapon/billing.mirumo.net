@@ -89,6 +89,10 @@ importers:
         version: 4.10.2
 
   packages/ui:
+    dependencies:
+      '@tabler/icons-react':
+        specifier: ^3.48.0
+        version: 3.48.0(react@19.3.0)
     devDependencies:
       '@catppuccin/palette':
         specifier: ^1.8.0
@@ -1606,6 +1610,14 @@ packages:
         optional: true
       typescript:
         optional: true
+
+  '@tabler/icons-react@3.48.0':
+    resolution: {integrity: sha512-OCeAlpaWHEMV+EsgdVeGQ3YuKfmfnThZhc++CaZ/ujYzi5+/DONDQlX4OGvH1ikYhIfmc0grI4otJgHy7QAvng==}
+    peerDependencies:
+      react: '>= 16'
+
+  '@tabler/icons@3.48.0':
+    resolution: {integrity: sha512-lQk06gVHNVBnJp0UOgtth54mcZBJM7rdYKsAxKOProj1bbSAx+/xiuOWfHlyvgdL3M+Y+I0HINrjHa3ygp8eXQ==}
 
   '@tailwindcss/node@4.3.3':
     resolution: {integrity: sha512-/T8IKEsf9VTU6tLjgC7+sv2mOPtQxzE2jMw7u4Tt40Tx+QSZxpzh95/H6cMKoja9XuW7iMdLJYBB0o9G1CaAgg==}
@@ -5159,6 +5171,13 @@ snapshots:
       typescript: 6.0.3
     transitivePeerDependencies:
       - supports-color
+
+  '@tabler/icons-react@3.48.0(react@19.3.0)':
+    dependencies:
+      '@tabler/icons': 3.48.0
+      react: 19.3.0
+
+  '@tabler/icons@3.48.0': {}
 
   '@tailwindcss/node@4.3.3':
     dependencies:

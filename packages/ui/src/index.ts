@@ -20,3 +20,6 @@ export type { ProgressBarProps } from './primitives/ProgressBar'
 
 export { Skeleton } from './primitives/Skeleton'
 export type { SkeletonProps } from './primitives/Skeleton'
+
+export { Icon } from './icons/Icon'
+export type { IconProps } from './icons/Icon'

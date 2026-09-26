@@ -1,0 +1,7 @@
+.bi-icon {
+  /* 顏色一律繼承：圖示放進 primary 按鈕就變前景色，放進 danger 就變紅，
+     不必在每個使用處指定，也不會有人漏掉某個狀態 */
+  color: inherit;
+  flex: none;
+  display: block;
+}
