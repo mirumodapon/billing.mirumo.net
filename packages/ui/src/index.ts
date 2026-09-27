@@ -96,3 +96,6 @@ export { CATEGORY_ICONS } from './icons/categoryIcons'
 export type { CategoryIconName } from './icons/categoryIcons'
 export { IconGrid } from './input/IconGrid'
 export type { IconGridProps } from './input/IconGrid'
+
+export { ColorSwatches } from './input/ColorSwatches'
+export type { ColorSwatchesProps } from './input/ColorSwatches'
