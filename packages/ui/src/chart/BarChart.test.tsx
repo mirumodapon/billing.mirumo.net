@@ -101,6 +101,19 @@ describe('BarChart', () => {
     expect(document.querySelector('.bi-bar__mark')!.getAttribute('d')).toBe('')
   })
 
+  /*
+   * 退款多於支出的那天是負的。柱子畫不出負值所以是空的，但數字不能跟著變成 0：
+   * 原本表格與點擊標籤都顯示夾過的值，給輔助科技的資料因此說謊。
+   * 上一條測試抓不到這件事——負值的柱本來就畫不出來，夾不夾都是空柱。
+   */
+  it('reports a negative day’s real amount, not zero', async () => {
+    render(<BarChart {...base} bars={[{ key: 'r', label: '3/17', value: -300 }]} />)
+    expect(within(screen.getByRole('table')).getByRole('row', { name: /3\/17/ })).toHaveTextContent('-300')
+    const bar = screen.getByTestId('bar-r')
+    await userEvent.click(bar.querySelector('.bi-bar__hit')!)
+    expect(within(bar).getByText('-300')).toBeInTheDocument()
+  })
+
   it('says so when there are no days', () => {
     render(<BarChart {...base} bars={[]} />)
     expect(screen.getByText('還沒有支出')).toBeInTheDocument()

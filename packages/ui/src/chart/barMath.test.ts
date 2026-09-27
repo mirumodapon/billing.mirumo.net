@@ -12,9 +12,20 @@ describe('niceScale', () => {
     expect(niceScale(3000).max).toBe(3000)
   })
 
-  // 0.3 / 0.1 在浮點數下是 2.9999999999999996，直接 ceil 會多出一格
   it('keeps floating point noise out of the ticks', () => {
+    // 0.1 × 3 在浮點數下是 0.30000000000000004，刻度要顯示成 0.3
     expect(niceScale(0.3)).toEqual({ max: 0.3, ticks: [0, 0.1, 0.2, 0.3] })
+  })
+
+  /*
+   * 除法結果的雜訊落在整數「上方」時，直接 ceil 會多出一整格空刻度。
+   * 注意 0.3 / 0.1 = 2.9999999999999996 是落在下方，ceil 本來就對——原本的
+   * 測試拿它當例子，所以拿掉修正照樣全綠。窮舉 26 萬個值找到的真實例子
+   * 在這個量級：步距本身就帶雜訊（0.0000049999999999999996），
+   * 1e-5 / 步距 = 2.0000000000000004。
+   */
+  it('does not add a spurious step when division noise lands above an integer', () => {
+    expect(niceScale(0.00001)).toEqual({ max: 0.00001, ticks: [0, 0.000005, 0.00001] })
   })
 
   it('handles an all-zero day set', () => {

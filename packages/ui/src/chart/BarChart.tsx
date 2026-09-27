@@ -96,7 +96,7 @@ export function BarChart({
                 {/* 只標重點：超支日與被點的那一天 */}
                 {over || isSelected ? (
                   <text className="bi-bar__value" x={x + BAR / 2} y={y(value) - 4} textAnchor="middle">
-                    {formatValue(value)}
+                    {formatValue(bar.value)}
                   </text>
                 ) : null}
                 <text className="bi-bar__label" x={x + BAR / 2} y={base + 14} textAnchor="middle">
@@ -122,7 +122,11 @@ export function BarChart({
           {bars.map((bar, index) => (
             <tr key={bar.key}>
               <th scope="row">{bar.label}</th>
-              <td>{formatValue(values[index]!)}</td>
+              {/*
+               * 表格寫真實數值，不寫夾過的：退款多於支出的那天是負的，
+               * 柱子畫不出負值所以是空的，但給輔助科技的資料不能跟著說謊寫 0
+               */}
+              <td>{formatValue(bar.value)}</td>
               <td>{isOver(values[index]!) ? overBudgetLabel : ''}</td>
             </tr>
           ))}

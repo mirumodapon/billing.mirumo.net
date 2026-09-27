@@ -9,7 +9,8 @@ export function niceScale(max: number, targetTicks = 4): { max: number; ticks: n
   const magnitude = 10 ** Math.floor(Math.log10(rough))
   const normalized = rough / magnitude
   const step = (normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10) * magnitude
-  // 減一個極小值再 ceil：0.3 / 0.1 在浮點數下是 2.9999999999999996
+  // 先壓雜訊再減一個極小值才 ceil：除法結果落在整數上方一點點時
+  // （如 2.0000000000000004），直接 ceil 會多出一整格空刻度
   const count = Math.ceil(clean(max / step) - 1e-9)
   const top = clean(count * step)
   return { max: top, ticks: Array.from({ length: count + 1 }, (_, i) => clean(i * step)) }
