@@ -4,7 +4,7 @@ import { BootSkeleton } from '../../app/BootSkeleton'
 import { formatWeekday } from '../../i18n/format'
 import { useI18n } from '../../i18n/useI18n'
 import { useTrips } from '../../stores/StoresProvider'
-import { Fact, ViewShell } from '../forms/ViewShell'
+import { DraftNote, Fact, ViewShell } from '../forms/ViewShell'
 import { useOpenTrip } from '../useOpenTrip'
 
 /** 轉帳的唯讀檢視（task#101） */
@@ -27,8 +27,9 @@ export function TransferViewScreen() {
       editTo={`/trip/${tripId}/transfer/${transferId}/edit`}
       fallback={`/trip/${tripId}/settle`}
     >
+      {transfer.draft ? <DraftNote /> : null}
       <p className="app-money m-0 text-end text-2xl">{money(toMinor(transfer.amount, decimalsOf(transfer.currency)), transfer.currency)}</p>
-      {foreign ? (
+      {foreign && transfer.exchangeRate > 0 ? (
         <p className="app-field-label app-money m-0 text-end">
           {t('expense.converted', { amount: money(convertToBaseMinor(transfer.amount, transfer.exchangeRate, trip.baseCurrency), trip.baseCurrency) })}
         </p>

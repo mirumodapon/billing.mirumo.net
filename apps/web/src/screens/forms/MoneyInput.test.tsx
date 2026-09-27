@@ -70,13 +70,13 @@ describe('AmountSection', () => {
     expect(screen.getByText(/^≈/)).toHaveTextContent(plain(t('expense.converted', { amount: formatMoney(200, 'TWD') })))
   })
 
-  it('asks for a rate when the trip has none for the currency, and blocks saving', async () => {
+  it('asks for a rate when the trip has none for the currency, and saves only as a draft', async () => {
     const { user } = await openNew('KRW')
     for (const k of ['5', '0', '0', '0']) await user.click(key(k))
     await user.click(screen.getByLabelText(t('expense.description')))
     await user.type(screen.getByLabelText(t('expense.description')), '炸雞')
     expect(screen.getByText(t('expense.noRate', { currency: 'KRW' }))).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: t('form.save') })).toBeDisabled()
+    expect(screen.getByRole('button', { name: t('form.saveDraft') })).toBeEnabled()
   })
 
   // 走查時發現：還沒輸入金額時算不出換算，卻被說成沒有匯率

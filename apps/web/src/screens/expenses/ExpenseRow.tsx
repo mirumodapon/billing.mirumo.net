@@ -1,5 +1,5 @@
 import { convertToBaseMinor, decimalsOf, toMinor, type Expense, type Trip } from '@billing/core'
-import { CATEGORY_ICONS, Icon, SwipeAction } from '@billing/ui'
+import { CATEGORY_ICONS, Chip, Icon, SwipeAction } from '@billing/ui'
 import { IconDots, IconPaperclip, IconTrash } from '@tabler/icons-react'
 import type { Category } from '../../data/types'
 import { useI18n } from '../../i18n/useI18n'
@@ -27,7 +27,8 @@ export function ExpenseRow({ expense, trip, category, onOpen, onDelete, showBase
   const name = expense.description.trim() || t('expense.untitled')
   const foreign = expense.currency !== trip.baseCurrency
   const original = money(toMinor(expense.amount, decimalsOf(expense.currency)), expense.currency)
-  const base = money(convertToBaseMinor(expense.amount, expense.exchangeRate, trip.baseCurrency), trip.baseCurrency)
+  // 草稿可能還沒有匯率（存成 0）：那時換算不出本位幣，只顯示原幣
+  const base = expense.exchangeRate > 0 ? money(convertToBaseMinor(expense.amount, expense.exchangeRate, trip.baseCurrency), trip.baseCurrency) : undefined
   const glyph = category ? CATEGORY_ICONS[category.icon] : IconDots
   const color = category?.colorKey
 
@@ -43,6 +44,12 @@ export function ExpenseRow({ expense, trip, category, onOpen, onDelete, showBase
         <span className="app-expense__body">
           <span>
             {name}
+            {expense.draft ? (
+              <>
+                {' '}
+                <Chip label={t('record.draft')} />
+              </>
+            ) : null}
             {expense.attachments.length > 0 ? (
               <>
                 {' '}
@@ -53,9 +60,9 @@ export function ExpenseRow({ expense, trip, category, onOpen, onDelete, showBase
           <span className="app-field-label m-0">{t('expenses.paidSplit', { payer, split })}</span>
         </span>
         <span className="app-expense__amounts">
-          {foreign && showBase ? <span className="app-field-label m-0 block">{original}</span> : null}
+          {foreign && showBase && base ? <span className="app-field-label m-0 block">{original}</span> : null}
           {/* 關掉本位幣時，外幣支出只顯示原幣（task#99）；本位幣支出本來就只有一個金額 */}
-          <span className="block">{foreign && !showBase ? original : base}</span>
+          <span className="block">{(foreign && !showBase) || !base ? original : base}</span>
         </span>
       </button>
     </SwipeAction>

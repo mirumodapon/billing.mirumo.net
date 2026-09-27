@@ -15,10 +15,10 @@ async function setup(route: string) {
 }
 
 describe('ExpenseFormScreen: frame', () => {
-  it('opens a blank new expense with saving blocked until it is filled', async () => {
+  it('opens a blank new expense that would save as a draft until it is filled', async () => {
     await setup('/trip/t1/expense/new')
     expect(screen.getByRole('heading', { name: t('expense.new') })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: t('form.save') })).toBeDisabled()
+    expect(screen.getByRole('button', { name: t('form.saveDraft') })).toBeEnabled()
   })
 
   it('opens an existing expense for editing', async () => {

@@ -79,7 +79,9 @@ function ExpenseForm({ trip, existing }: { trip: Trip; existing?: Expense }) {
   return (
     <FormShell
       title={existing ? t('expense.edit') : t('expense.new')}
-      canSave={problemsOf(draft).length === 0}
+      incomplete={problemsOf(draft).length > 0}
+      isDraft={draft.isDraft === true}
+      onDraftChange={(isDraft) => change((d) => ({ ...d, isDraft }))}
       onSave={save}
       drafted={drafted}
       fallback={`/trip/${trip.id}/expenses`}

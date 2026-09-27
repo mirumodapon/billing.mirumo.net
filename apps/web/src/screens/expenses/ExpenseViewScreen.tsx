@@ -7,7 +7,7 @@ import { formatWeekday } from '../../i18n/format'
 import { useI18n } from '../../i18n/useI18n'
 import { useSettings, useTrips } from '../../stores/StoresProvider'
 import { ReceiptThumbnail } from '../forms/ReceiptThumbnail'
-import { Fact, ViewShell } from '../forms/ViewShell'
+import { DraftNote, Fact, ViewShell } from '../forms/ViewShell'
 import { useOpenTrip } from '../useOpenTrip'
 
 /** 支出的唯讀檢視（task#101）：金額、明細、各人分攤、收據 */
@@ -43,8 +43,9 @@ export function ExpenseViewScreen() {
       editTo={`/trip/${tripId}/expense/${expenseId}/edit`}
       fallback={`/trip/${tripId}/expenses`}
     >
+      {expense.draft ? <DraftNote /> : null}
       <p className="app-money m-0 text-end text-2xl">{money(toMinor(expense.amount, decimalsOf(expense.currency)), expense.currency)}</p>
-      {foreign ? (
+      {foreign && expense.exchangeRate > 0 ? (
         <p className="app-field-label app-money m-0 text-end">
           {t('expense.converted', { amount: base })} ・{t('expense.rateInline', { rate: String(expense.exchangeRate) })}
         </p>

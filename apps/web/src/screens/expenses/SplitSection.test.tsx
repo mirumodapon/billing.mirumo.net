@@ -52,7 +52,7 @@ describe('SplitSection: even', () => {
 
 describe('SplitSection: exact', () => {
   // 規格 4.4：未對齊時儲存鍵停用並提示差額
-  it('blocks saving until the exact amounts add up to the total', async () => {
+  it('saves only as a draft until the exact amounts add up to the total', async () => {
     const { user, header, panel, amount, describe, key } = await openNew()
     await amount(['3', '0', '0', '0'])
     await describe('晚餐')
@@ -62,7 +62,7 @@ describe('SplitSection: exact', () => {
     for (const d of ['2', '0', '0', '0']) await user.click(key(d))
     await user.click(key(t('keypad.done')))
     expect(panel().getByRole('status')).toHaveTextContent(plain(t('split.remaining', { amount: formatMoney(1000, 'TWD') })))
-    expect(screen.getByRole('button', { name: t('form.save') })).toBeDisabled()
+    expect(screen.getByRole('button', { name: t('form.saveDraft') })).toBeEnabled()
     await user.click(panel().getByRole('button', { name: /^小美/ }))
     for (const d of ['1', '0', '0', '0']) await user.click(key(d))
     await user.click(key(t('keypad.done')))

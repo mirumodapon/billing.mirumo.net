@@ -85,9 +85,9 @@ describe('ItemsSplit', () => {
     expect(saved?.split).toEqual({ mode: 'items', overflowRule: 'even', items: [expect.objectContaining({ name: '', amount: 3400, participants: ['a', 'b', 'c'] })] })
   })
 
-  it('blocks saving without any item', async () => {
+  it('saves only as a draft without any item', async () => {
     const { user } = await openItems(['1', '0', '0'])
     await user.type(screen.getByLabelText(t('expense.description')), '空的')
-    expect(screen.getByRole('button', { name: t('form.save') })).toBeDisabled()
+    expect(screen.getByRole('button', { name: t('form.saveDraft') })).toBeEnabled()
   })
 })

@@ -1,5 +1,5 @@
 import { convertToBaseMinor, decimalsOf, fromMinor, toMinor, type Transfer, type Trip } from '@billing/core'
-import { Avatar, Button, Icon, SwipeAction } from '@billing/ui'
+import { Avatar, Button, Chip, Icon, SwipeAction } from '@billing/ui'
 import { IconPlus, IconShare, IconTrash } from '@tabler/icons-react'
 import { useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router'
@@ -114,20 +114,27 @@ function TransferRow({ trip, transfer, onOpen, onDelete }: { trip: Trip; transfe
   const name = (id: string) => trip.members.find((m) => m.id === id)?.name ?? id
   const foreign = transfer.currency !== trip.baseCurrency
   const original = money(toMinor(transfer.amount, decimalsOf(transfer.currency)), transfer.currency)
-  const base = money(convertToBaseMinor(transfer.amount, transfer.exchangeRate, trip.baseCurrency), trip.baseCurrency)
+  // 草稿可能還沒有匯率（存成 0）：那時只顯示原幣
+  const base = transfer.exchangeRate > 0 ? money(convertToBaseMinor(transfer.amount, transfer.exchangeRate, trip.baseCurrency), trip.baseCurrency) : undefined
   return (
     <SwipeAction glyph={IconTrash} actionLabel={t('common.delete')} onAction={onDelete}>
       <button type="button" className="app-expense" onClick={onOpen}>
         <span className="app-expense__body">
           <span>
             {date(transfer.date)} · {name(transfer.from)} → {name(transfer.to)}
+            {transfer.draft ? (
+              <>
+                {' '}
+                <Chip label={t('record.draft')} />
+              </>
+            ) : null}
           </span>
           <span className="app-field-label m-0">
             {[t(`transfer.${transfer.kind}`), transfer.note].filter(Boolean).join('・')}
           </span>
         </span>
         <span className="app-expense__amounts">
-          <span className="block">{foreign ? `${original} ≈ ${base}` : base}</span>
+          <span className="block">{!base ? original : foreign ? `${original} ≈ ${base}` : base}</span>
         </span>
       </button>
     </SwipeAction>

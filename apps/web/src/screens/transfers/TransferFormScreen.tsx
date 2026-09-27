@@ -53,7 +53,9 @@ function TransferForm({ trip, existing }: { trip: Trip; existing?: Transfer }) {
   return (
     <FormShell
       title={existing ? t('transfer.edit') : t('transfer.new')}
-      canSave={problems.length === 0}
+      incomplete={problems.length > 0}
+      isDraft={draft.isDraft === true}
+      onDraftChange={(isDraft) => change((d) => ({ ...d, isDraft }))}
       onSave={async () => Boolean(await trips.getState().saveTransfer(toTransfer(draft, trip.id)))}
       drafted={drafted}
       fallback={`/trip/${trip.id}/settle`}

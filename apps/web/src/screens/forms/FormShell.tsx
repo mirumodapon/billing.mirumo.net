@@ -1,4 +1,4 @@
-import { Button, Dialog, Icon, SafeArea } from '@billing/ui'
+import { Button, Chip, Dialog, Icon, SafeArea } from '@billing/ui'
 import { IconX } from '@tabler/icons-react'
 import { useState, type ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router'
@@ -7,7 +7,11 @@ import type { useFormDraft } from './useFormDraft'
 
 export interface FormShellProps<T> {
   title: string
-  canSave: boolean
+  /** 還有欄位沒填完：照樣可以存，但一律存成草稿（task#96） */
+  incomplete: boolean
+  /** 使用者自己要存成草稿 */
+  isDraft: boolean
+  onDraftChange: (isDraft: boolean) => void
   /** 存檔；回傳是否成功。成功後外框負責刪草稿與離開 */
   onSave: () => Promise<boolean>
   drafted: ReturnType<typeof useFormDraft<T>>
@@ -21,12 +25,13 @@ export interface FormShellProps<T> {
  * 全螢幕表單的外框（支出、轉帳共用）：頂列 ✕／標題／儲存、草稿還原提示、
  * 離開時的「保留草稿／捨棄」（規格 4.4、7.9）。
  */
-export function FormShell<T>({ title, canSave, onSave, drafted, fallback, children }: FormShellProps<T>) {
+export function FormShell<T>({ title, incomplete, isDraft, onDraftChange, onSave, drafted, fallback, children }: FormShellProps<T>) {
   const { t } = useI18n()
   const navigate = useNavigate()
   const location = useLocation()
   const [version, setVersion] = useState(0)
   const [asking, setAsking] = useState(false)
+  const asDraft = incomplete || isDraft
 
   // 從別頁推進來的就退回去；前面沒有頁面時改去 fallback，不是退出 app
   const leave = () => (location.key !== 'default' ? navigate(-1) : navigate(fallback, { replace: true }))
@@ -52,11 +57,16 @@ export function FormShell<T>({ title, canSave, onSave, drafted, fallback, childr
             <Icon glyph={IconX} />
           </Button>
           <h1 className="app-form-header__title">{title}</h1>
-          <Button disabled={!canSave} onClick={() => void save()}>
-            {t('form.save')}
-          </Button>
+          <Button onClick={() => void save()}>{asDraft ? t('form.saveDraft') : t('form.save')}</Button>
         </header>
       </SafeArea>
+      {/* 沒填完時切換鍵鎖在「草稿」：那時存成正式紀錄會算錯帳 */}
+      <div className="flex items-center gap-3 px-4 py-2 text-sm">
+        <Chip label={t('record.draft')} selected={asDraft} disabled={incomplete} onSelect={() => onDraftChange(!isDraft)} />
+        <span data-testid="draft-hint" style={{ color: 'var(--bi-text-muted)' }}>
+          {incomplete ? t('form.draftForced') : asDraft ? t('form.draftHint') : null}
+        </span>
+      </div>
       {drafted.restored ? (
         <div role="status" data-testid="draft-banner" className="flex items-center justify-between gap-2 px-4 py-2 text-sm" style={{ background: 'var(--bi-surface)' }}>
           <span>{t('draft.restored')}</span>

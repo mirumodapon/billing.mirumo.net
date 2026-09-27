@@ -55,11 +55,11 @@ describe('TransferFormScreen', () => {
     expect((await stores.repo.listTransfers('t1')).find((x) => x.from === 'c')?.amount).toBe(1200)
   })
 
-  it('will not save a transfer to oneself, and says why', async () => {
+  it('saves a transfer to oneself only as a draft, and says why', async () => {
     const { user } = await setup('/trip/t1/transfer/new?amount=100')
     await user.click(group(t('transfer.to')).getByRole('radio', { name: '阿明' }))
     expect(screen.getByRole('alert')).toHaveTextContent(t('transfer.sameMember'))
-    expect(key(t('form.save'))).toBeDisabled()
+    expect(key(t('form.saveDraft'))).toBeEnabled()
   })
 
   it('keeps the id and the fixed rate when editing', async () => {

@@ -1,4 +1,4 @@
-import { Button, Icon, SafeArea } from '@billing/ui'
+import { Button, Chip, Icon, SafeArea } from '@billing/ui'
 import { IconX } from '@tabler/icons-react'
 import type { ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router'
@@ -40,5 +40,16 @@ export function Fact({ label, children }: { label: string; children: ReactNode }
       <span>{label}</span>
       <span className="text-end">{children}</span>
     </div>
+  )
+}
+
+/** 草稿的提示（task#96）：看的人要知道這一筆還沒算進帳裡 */
+export function DraftNote() {
+  const { t } = useI18n()
+  return (
+    <p role="note" className="m-0 flex items-center gap-2 text-sm" style={{ color: 'var(--bi-text-muted)' }}>
+      <Chip label={t('record.draft')} />
+      {t('form.draftHint')}
+    </p>
   )
 }

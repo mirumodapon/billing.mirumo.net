@@ -1,4 +1,4 @@
-import { convertToBaseMinor, type Expense } from '@billing/core'
+import { convertToBaseMinor, countsInTotals, type Expense } from '@billing/core'
 import { Chip, Fab, ProgressBar } from '@billing/ui'
 import { IconPlus } from '@tabler/icons-react'
 import { useNavigate, useParams } from 'react-router'
@@ -63,7 +63,7 @@ export function ExpensesTab() {
               <span className="app-money">
                 {t('expenses.dayTotal', {
                   amount: money(
-                    list.reduce((sum, e) => sum + convertToBaseMinor(e.amount, e.exchangeRate, trip.baseCurrency), 0),
+                    list.filter(countsInTotals).reduce((sum, e) => sum + convertToBaseMinor(e.amount, e.exchangeRate, trip.baseCurrency), 0),
                     trip.baseCurrency,
                   ),
                 })}
