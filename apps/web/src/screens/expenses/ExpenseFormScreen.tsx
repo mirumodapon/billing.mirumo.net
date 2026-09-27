@@ -61,8 +61,17 @@ function ExpenseForm({ trip, existing }: { trip: Trip; existing?: Expense }) {
   const leave = () => (location.key !== 'default' ? navigate(-1) : navigate(`/trip/${trip.id}/expenses`, { replace: true }))
 
   const save = async () => {
-    if (!(await trips.getState().saveExpense(toExpense(draft, trip.id)))) return
+    const saved = await trips.getState().saveExpense(toExpense(draft, trip.id))
+    if (!saved) return
     await drafted.abandon()
+    // 規格 4.4 的「上一筆用的類別／付款方式」。只在新增時記：打開舊帳改個錯字不該改掉下一筆的預設值。
+    // 失敗只影響下一筆的預設值，支出本身已經存好了
+    if (!existing) {
+      void settings.getState().update((s) => ({
+        ...s,
+        lastUsed: { currency: saved.currency, categoryId: saved.categoryId, paymentMethodId: saved.paymentMethodId },
+      }))
+    }
     leave()
   }
 

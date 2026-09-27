@@ -116,10 +116,10 @@ describe('adding from the list', () => {
     const { user } = await setup()
     await user.click(screen.getByRole('button', { name: t('expenses.add') }))
     expect(currentRoute()).toBe('/trip/t1/expense/new')
-    expect(screen.getByTestId('page')).toHaveAttribute('data-direction', 'up')
+    await waitFor(() => expect(screen.getByTestId('page')).toHaveAttribute('data-direction', 'up'))
     await user.click(screen.getByRole('button', { name: t('expense.close') }))
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
-    expect(screen.getByTestId('page')).toHaveAttribute('data-direction', 'down')
+    await waitFor(() => expect(screen.getByTestId('page')).toHaveAttribute('data-direction', 'down'))
   })
 
   // 關閉是「退回上一頁」而不是「換成列表」：再按一次返回鍵要回到旅程列表，不是又一次支出列表
