@@ -23,15 +23,16 @@
   --bi-text-muted: var(--bi-p-text-muted);
   --bi-text-subtle: var(--bi-p-text-subtle);
   --bi-accent: var(--bi-p-accent8);
-  --bi-accent-fg: var(--bi-p-bg-deepest);
+  /* 每個填色的字色都讀自己那一格的前景（task#71），不再共用主題最深色 */
+  --bi-accent-fg: var(--bi-p-accent8-fg);
   --bi-success: var(--bi-p-accent4);
   --bi-warning: var(--bi-p-accent3);
   --bi-danger: var(--bi-p-accent1);
-  /* 這三個填色都是淺色調，所以共用同一個深色前景。獨立命名是為了日後
-     某個主題把 danger 調深時，只要改這裡而不必動每個元件 */
-  --bi-success-fg: var(--bi-p-bg-deepest);
-  --bi-warning-fg: var(--bi-p-bg-deepest);
-  --bi-danger-fg: var(--bi-p-bg-deepest);
+  /* 原本三者共用主題最深色，理由是「這三個填色都是淺色調」——在深色主題成立，
+     在淺色主題不成立（Latte 的 danger 配最深色只有 2 左右）。改讀各自槽位的前景 */
+  --bi-success-fg: var(--bi-p-accent4-fg);
+  --bi-warning-fg: var(--bi-p-accent3-fg);
+  --bi-danger-fg: var(--bi-p-accent1-fg);
 
   /* ── 身分色：成員頭像、類別圓點。
      名稱刻意與 core 的 AccentKey 值逐字對應（'accent3' → --bi-accent3），
@@ -50,6 +51,20 @@
   --bi-accent10: var(--bi-p-accent10);
   --bi-accent11: var(--bi-p-accent11);
   --bi-accent12: var(--bi-p-accent12);
+
+  /* 身分色填色上的字色。名稱同樣與 AccentKey 逐字對應：var(--bi-${colorKey}-fg) */
+  --bi-accent1-fg: var(--bi-p-accent1-fg);
+  --bi-accent2-fg: var(--bi-p-accent2-fg);
+  --bi-accent3-fg: var(--bi-p-accent3-fg);
+  --bi-accent4-fg: var(--bi-p-accent4-fg);
+  --bi-accent5-fg: var(--bi-p-accent5-fg);
+  --bi-accent6-fg: var(--bi-p-accent6-fg);
+  --bi-accent7-fg: var(--bi-p-accent7-fg);
+  --bi-accent8-fg: var(--bi-p-accent8-fg);
+  --bi-accent9-fg: var(--bi-p-accent9-fg);
+  --bi-accent10-fg: var(--bi-p-accent10-fg);
+  --bi-accent11-fg: var(--bi-p-accent11-fg);
+  --bi-accent12-fg: var(--bi-p-accent12-fg);
 
   /*
    * 陰影與遮罩用 palette 的通道值配不同透明度組出來。

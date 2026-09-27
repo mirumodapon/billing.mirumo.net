@@ -41,6 +41,17 @@ describe('Avatar', () => {
 
   // 這是這個元件與 brief 版本分歧的地方:outlined 要留住顏色身分,
   // 不能像 brief 那樣退回 --bi-text-muted。詳見 Avatar.css 的註解。
+  /*
+   * 字色讀這一格自己的前景。共用一個字色的話，淺色主題有三分之二的頭像
+   * 看不清（task#71）：Latte 的 accent1、accent8、accent10 要白字，其餘要黑字。
+   */
+  it('takes its text colour from its own slot', () => {
+    render(<Avatar name="阿明" colorKey="accent5" />)
+    expect(screen.getByRole('img')).toHaveStyle({ '--bi-avatar-fg': 'var(--bi-accent5-fg)' })
+    const css = readFileSync(join(import.meta.dirname, 'Avatar.css'), 'utf8')
+    expect(css).toMatch(/\.bi-avatar\s*{[^}]*color:\s*var\(--bi-avatar-fg\)/)
+  })
+
   it('keeps the colour identity when outlined', () => {
     render(<Avatar name="阿明" colorKey="accent5" outlined />)
     expect(screen.getByRole('img')).toHaveStyle({ '--bi-avatar-color': 'var(--bi-accent5)' })

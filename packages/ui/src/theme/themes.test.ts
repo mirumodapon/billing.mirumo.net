@@ -1,10 +1,11 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { contrast } from './colorScience'
 
 const THEME_DIR = join(import.meta.dirname, '../styles/themes')
 
-/** palette 層的 22 個槽位。少一個，該主題就會沿用上一個主題的殘留值。 */
+/** palette 層的 34 個槽位。少一個，該主題就會沿用上一個主題的殘留值。 */
 const PALETTE_SLOTS = [
   'bg', 'bg-sunken', 'bg-deepest',
   'surface1', 'surface2', 'surface3',
@@ -13,6 +14,8 @@ const PALETTE_SLOTS = [
   // 讓 semantic 層用同一個底色配出 raised / sheet / dialog / scrim 四種透明度。
   'shadow-rgb',
   ...Array.from({ length: 12 }, (_, i) => `accent${i + 1}`),
+  // 每個 accent 填色上的字色（task#71）
+  ...Array.from({ length: 12 }, (_, i) => `accent${i + 1}-fg`),
 ]
 
 function themeFiles(): string[] {
@@ -57,7 +60,7 @@ describe('theme files', () => {
     expect(imported).toEqual(themeFiles().map((f) => f.replace('.css', '')).sort())
   })
 
-  it('every theme defines all 22 palette slots', () => {
+  it('every theme defines all 34 palette slots', () => {
     for (const file of themeFiles()) {
       const css = readFileSync(join(THEME_DIR, file), 'utf8')
       for (const slot of PALETTE_SLOTS) {
@@ -186,6 +189,53 @@ describe('scrim and shadow colour', () => {
         after,
         `${file}: the scrim makes the page lighter, not darker (${before.toFixed(4)} -> ${after.toFixed(4)})`,
       ).toBeLessThan(before)
+    }
+  })
+})
+
+describe('text on accent fills (task#71)', () => {
+  const hex = (css: string, slot: string) => css.match(new RegExp(`--bi-p-${slot}:\\s*(#[0-9a-fA-F]{6});`))?.[1]
+
+  /*
+   * 這條是 task#71 本身：每個主題、每個 accent 槽位，填色上的字都要達 WCAG AA。
+   * 原本所有填色共用主題最深色當字色，淺色主題最差只有 1.90:1——頭像的字、
+   * 主要按鈕的字、選中的膠囊，在 Latte 與 Tokyo Night Day 下幾乎看不見。
+   */
+  it('makes the text on every accent fill readable in every theme', () => {
+    const failures: string[] = []
+    const files = themeFiles()
+    expect(files.length).toBeGreaterThan(0)
+    for (const file of files) {
+      const css = readFileSync(join(THEME_DIR, file), 'utf8')
+      for (let n = 1; n <= 12; n += 1) {
+        const fill = hex(css, `accent${n}`)
+        const fg = hex(css, `accent${n}-fg`)
+        if (!fill || !fg) {
+          failures.push(`${file} accent${n}: missing fill or foreground`)
+          continue
+        }
+        const ratio = contrast(fill, fg)
+        if (ratio < 4.5) failures.push(`${file} accent${n}: ${fill} on ${fg} is ${ratio.toFixed(2)}`)
+      }
+    }
+    expect(failures).toEqual([])
+  })
+
+  /*
+   * 主題最深的底色夠用時要用它，而不是一律換成純黑：它帶著主題自己的色調，
+   * 深色主題原本的樣子就是靠它。這條擋住「全部改成黑白」這種對比合格但
+   * 讓八個深色主題都變了樣的做法。
+   */
+  it('keeps the theme’s own deepest colour wherever it is already readable', () => {
+    for (const file of themeFiles()) {
+      const css = readFileSync(join(THEME_DIR, file), 'utf8')
+      const deepest = hex(css, 'bg-deepest')!
+      for (let n = 1; n <= 12; n += 1) {
+        const fill = hex(css, `accent${n}`)!
+        if (contrast(fill, deepest) >= 4.5) {
+          expect(hex(css, `accent${n}-fg`), `${file} accent${n}`).toBe(deepest)
+        }
+      }
     }
   })
 })

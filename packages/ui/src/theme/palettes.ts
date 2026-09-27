@@ -63,3 +63,9 @@ export const TOKYO_NIGHT: Record<TokyoNightVariant, TokyoNightPalette> = {
     magenta: '#9854f1',
   },
 }
+
+/**
+ * 純黑與純白，給填色挑前景用（task#71）。放在這裡而不是 mapping.ts，
+ * 是因為色值只屬於 palette 層——mapping.ts 是邏輯，layering 測試不准它出現色值。
+ */
+export const INK = { black: '#000000', white: '#ffffff' } as const

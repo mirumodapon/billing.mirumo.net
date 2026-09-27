@@ -104,3 +104,30 @@ describe('overlay tokens', () => {
     }
   })
 })
+
+describe('foreground pairing (task#71)', () => {
+  const css = () => readFileSync(join(import.meta.dirname, 'tokens.css'), 'utf8')
+  const slotOf = (source: string, token: string) =>
+    source.match(new RegExp(`--bi-${token}\\s*:\\s*var\\(--bi-p-(accent\\d+)(-fg)?\\)`))?.[1]
+
+  it('gives every identity colour its own foreground alias', () => {
+    const source = css()
+    for (let n = 1; n <= 12; n += 1) {
+      expect(source, `--bi-accent${n}-fg`).toMatch(new RegExp(`--bi-accent${n}-fg\\s*:\\s*var\\(--bi-p-accent${n}-fg\\)`))
+    }
+  })
+
+  /*
+   * 字色必須與它所在的填色來自同一個槽位。哪天有人把 --bi-accent 換成 accent5
+   * 卻忘了改 --bi-accent-fg，字色就是替別的顏色挑的，對比沒有任何保證——
+   * 而畫面上不會有任何錯誤，只是某些主題下字突然看不清。
+   */
+  it('pairs each semantic fill with the foreground of the same slot', () => {
+    const source = css()
+    for (const [fill, fg] of [['accent', 'accent-fg'], ['success', 'success-fg'], ['warning', 'warning-fg'], ['danger', 'danger-fg']]) {
+      const fillSlot = slotOf(source, fill!)
+      expect(fillSlot, `--bi-${fill} does not map to an accent slot`).toBeDefined()
+      expect(slotOf(source, fg!), `--bi-${fg} is not the foreground of ${fillSlot}`).toBe(fillSlot)
+    }
+  })
+})

@@ -80,6 +80,14 @@ describe('SwipeAction', () => {
    * touch-action 必須鎖住橫向，否則瀏覽器會把橫滑當成頁面捲動搶走手勢，
    * 而在直式清單裡這正是最容易發生的衝突。
    */
+  // 底是 danger，字就要是 danger 的前景；原本配的是 accent 的，兩者不是同一對
+  it('pairs the delete button’s text with its danger background', () => {
+    const css = readFileSync(join(import.meta.dirname, 'SwipeAction.css'), 'utf8')
+    const rule = css.match(/\.bi-swipe__action\s*{([^}]*)}/)?.[1] ?? ''
+    expect(rule).toMatch(/background:\s*var\(--bi-danger\)/)
+    expect(rule).toMatch(/color:\s*var\(--bi-danger-fg\)/)
+  })
+
   it('claims the horizontal gesture from the browser', () => {
     const css = readFileSync(join(import.meta.dirname, 'SwipeAction.css'), 'utf8')
     expect(css).toMatch(/\.bi-swipe__surface\s*{[^}]*touch-action:\s*pan-y/)
