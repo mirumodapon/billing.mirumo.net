@@ -34,3 +34,13 @@ textarea,
 *::-webkit-scrollbar {
   display: none;
 }
+
+/*
+ * 換頁動畫把新頁從右邊 translateX(100%) 滑進來，動畫期間文件寬度會變成兩倍，
+ * 手機上會出現短暫的水平捲動（Plan 8 走查量到 750px / 375px）。用 clip 而不是
+ * hidden：hidden 會讓 position: sticky 失效，支出列表的黏頂摘要列就黏不住了。
+ */
+html,
+body {
+  overflow-x: clip;
+}
