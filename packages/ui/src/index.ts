@@ -65,3 +65,6 @@ export type { CalcKeypadLabels, CalcKeypadProps } from './input/CalcKeypad'
 
 export { TextField } from './input/TextField'
 export type { TextFieldProps } from './input/TextField'
+
+export { SegmentedControl } from './input/SegmentedControl'
+export type { SegmentedControlProps, SegmentOption } from './input/SegmentedControl'
