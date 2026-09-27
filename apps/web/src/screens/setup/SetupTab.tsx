@@ -1,4 +1,5 @@
 import { BasicInfoSection } from './BasicInfoSection'
+import { BudgetSection } from './BudgetSection'
 import { MembersSection } from './MembersSection'
 import { useOpenSection } from './useOpenSection'
 import { useTripEditor } from './useTripEditor'
@@ -13,6 +14,7 @@ export function SetupTab() {
     <div key={trip.id} data-testid="setup-tab" className="flex flex-col gap-2 p-4">
       <BasicInfoSection trip={trip} hasRecords={hasRecords} open={open === 'basic'} onToggle={() => toggle('basic')} save={save} />
       <MembersSection trip={trip} open={open === 'members'} onToggle={() => toggle('members')} save={save} />
+      <BudgetSection trip={trip} open={open === 'budget'} onToggle={() => toggle('budget')} save={save} />
     </div>
   )
 }

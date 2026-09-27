@@ -58,6 +58,17 @@ export const zhTW = {
   'members.selfBadge': '我',
   'members.remove': '移除 {name}',
   'members.inUse': '{names} 還有支出或轉帳，不能移除。先把那幾筆改給別人或刪掉。',
+  'budget.title': '預算',
+  'budget.total': '總預算',
+  'budget.daily': '每日預算',
+  'budget.scope': '計算口徑',
+  'budget.scopeSelf': '只算我的',
+  'budget.scopeGroup': '全團',
+  'budget.notSet': '未設定',
+  'budget.summaryNone': '未設定預算',
+  'keypad.done': '完成',
+  'keypad.clear': '清除',
+  'keypad.backspace': '退格',
 } as const
 
 export const zhTWPlurals = {

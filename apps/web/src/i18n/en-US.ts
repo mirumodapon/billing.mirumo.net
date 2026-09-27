@@ -58,6 +58,17 @@ export const enUS: Record<TranslationKey, string> = {
   'members.selfBadge': 'Me',
   'members.remove': 'Remove {name}',
   'members.inUse': "{names} still appear in expenses or transfers and can't be removed. Reassign or delete those first.",
+  'budget.title': 'Budget',
+  'budget.total': 'Total budget',
+  'budget.daily': 'Daily budget',
+  'budget.scope': 'Counts',
+  'budget.scopeSelf': 'Just my share',
+  'budget.scopeGroup': 'Whole group',
+  'budget.notSet': 'Not set',
+  'budget.summaryNone': 'No budget',
+  'keypad.done': 'Done',
+  'keypad.clear': 'Clear',
+  'keypad.backspace': 'Backspace',
 }
 
 export const enUSPlurals: Record<PluralKey, { one: string; other: string }> = {
