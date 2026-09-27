@@ -9,7 +9,6 @@ import { draftFromExpense, newDraft, problemsOf, toExpense, type ExpenseDraft } 
 import { useI18n } from '../../i18n/useI18n'
 import { useStores, useTrips } from '../../stores/StoresProvider'
 import { useOpenTrip } from '../useOpenTrip'
-import { useOpenSection } from '../setup/useOpenSection'
 import { AmountSection } from './AmountSection'
 import { DetailsSection } from './DetailsSection'
 import { ReceiptSection } from './ReceiptSection'
@@ -50,8 +49,10 @@ function ExpenseForm({ trip, existing }: { trip: Trip; existing?: Expense }) {
   // 捨棄還原的草稿時整個表單重新掛載：金額欄自己保留了算式，不重掛會顯示舊的
   const [version, setVersion] = useState(0)
   const [asking, setAsking] = useState(false)
-  // 規格 4.4：一次只展開一個區塊
-  const sections = useOpenSection()
+  // 規格 4.4：一次只展開一個區塊，而且每次打開表單都從全部收起開始。不記在 session 裡：
+  // 上一筆展開過分攤，不代表下一筆也要——那會讓「不必展開任何區塊」的預設狀態消失
+  const [openSection, setOpenSection] = useState<string>()
+  const sections = { open: openSection, toggle: (key: string) => setOpenSection((o) => (o === key ? undefined : key)) }
 
   if (!drafted.ready) return <BootSkeleton />
   const { draft, setDraft: change } = drafted

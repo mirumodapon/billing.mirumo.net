@@ -211,3 +211,37 @@
   text-align: end;
   font-variant-numeric: tabular-nums;
 }
+
+/* 金額區塊（規格 4.4 示意）：幣別貼在金額左邊，換算與匯率一行 */
+.app-amount-row {
+  display: flex;
+  align-items: stretch;
+  gap: var(--bi-space-2);
+}
+
+.app-currency {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--bi-space-1);
+  min-width: var(--bi-tap-min);
+  padding: 0 var(--bi-space-3);
+  border: 1px solid var(--bi-border);
+  border-radius: var(--bi-radius-md);
+  background: var(--bi-surface);
+  color: var(--bi-text);
+  font: inherit;
+  font-weight: 600;
+}
+
+.app-converted {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bi-space-2);
+  min-height: var(--bi-tap-min);
+  color: var(--bi-text-muted);
+  font-size: var(--bi-text-sm);
+  font-variant-numeric: tabular-nums;
+}

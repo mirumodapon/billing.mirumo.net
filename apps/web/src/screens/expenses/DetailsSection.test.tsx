@@ -31,7 +31,7 @@ describe('DetailsSection', () => {
     const { user, header, panel } = await openNew()
     await user.click(header())
     await user.click(panel().getByRole('radio', { name: t('pay.cash') }))
-    expect(screen.getByRole('button', { name: new RegExp(`^${t('expense.rate')}`) })).toHaveTextContent('0.215')
+    expect(screen.getByText(new RegExp(t('expense.rateInline', { rate: '0.215' }).replace('.', '\\.')))).toBeInTheDocument()
   })
 
   it('records who paid and when', async () => {
@@ -59,5 +59,18 @@ describe('DetailsSection', () => {
     expect(header()).toHaveAttribute('aria-expanded', 'true')
     await user.click(header())
     expect(header()).toHaveAttribute('aria-expanded', 'false')
+  })
+})
+
+describe('form sections', () => {
+  // 規格 4.4：收折後的預設狀態。上一筆展開過某個區塊，下一筆仍從全部收起開始
+  it('start closed on every new form, whatever the last one had open', async () => {
+    const { user, header } = await openNew()
+    await user.click(header())
+    await user.click(screen.getByRole('button', { name: t('expense.close') }))
+    await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
+    location.hash = '#/trip/t1/expense/new'
+    await screen.findByRole('heading', { name: t('expense.new') })
+    await waitFor(() => expect(header()).toHaveAttribute('aria-expanded', 'false'))
   })
 })

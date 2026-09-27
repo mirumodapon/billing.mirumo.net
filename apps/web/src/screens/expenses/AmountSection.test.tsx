@@ -37,7 +37,7 @@ describe('AmountSection', () => {
     for (const k of ['1', '2', '0', '0', '+', '8', '0', '0', '×', '2']) await user.click(key(k))
     await user.click(key(t('keypad.done')))
     expect(amountField()).toHaveValue('2800')
-    expect(screen.getByText(plain(t('expense.converted', { amount: formatMoney(convertToBaseMinor(2800, 0.21, 'TWD'), 'TWD') })))).toBeInTheDocument()
+    expect(screen.getByText(/^≈/)).toHaveTextContent(plain(t('expense.converted', { amount: formatMoney(convertToBaseMinor(2800, 0.21, 'TWD'), 'TWD') })))
   })
 
   // 典型三個動作：輸入金額 → 輸入說明 → 儲存。沒按「完成」直接去打說明，金額不能不見
@@ -53,7 +53,7 @@ describe('AmountSection', () => {
   it('disables the decimal point for currencies without minor units', async () => {
     const { user } = await openNew()
     expect(key('.')).toBeDisabled()
-    await user.click(screen.getByRole('button', { name: new RegExp(`^${t('expense.currency')}`) }))
+    await user.click(screen.getByRole('button', { name: new RegExp(`^${t('expense.pickCurrency', { currency: '' }).trim()}`) }))
     await user.click(within(screen.getByRole('dialog', { name: t('expense.currency') })).getByRole('radio', { name: /^USD/ }))
     await user.click(amountField())
     expect(key('.')).toBeEnabled()
@@ -63,11 +63,11 @@ describe('AmountSection', () => {
     const { user } = await openNew()
     for (const k of ['1', '0', '0', '0']) await user.click(key(k))
     await user.click(key(t('keypad.done')))
-    await user.click(screen.getByRole('button', { name: new RegExp(`^${t('expense.rate')}`) }))
+    await user.click(screen.getByRole('button', { name: t('expense.editRate') }))
     await user.click(key(t('keypad.clear')))
     for (const k of ['0', '.', '2']) await user.click(key(k))
     await user.click(key(t('keypad.done')))
-    expect(screen.getByText(plain(t('expense.converted', { amount: formatMoney(200, 'TWD') })))).toBeInTheDocument()
+    expect(screen.getByText(/^≈/)).toHaveTextContent(plain(t('expense.converted', { amount: formatMoney(200, 'TWD') })))
   })
 
   it('asks for a rate when the trip has none for the currency, and blocks saving', async () => {
@@ -81,7 +81,7 @@ describe('AmountSection', () => {
 
   it('shows no conversion or rate for the home currency', async () => {
     await openNew('TWD')
-    expect(screen.queryByRole('button', { name: new RegExp(`^${t('expense.rate')}`) })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: t('expense.editRate') })).not.toBeInTheDocument()
     expect(screen.queryByText(/≈/)).not.toBeInTheDocument()
   })
 })
