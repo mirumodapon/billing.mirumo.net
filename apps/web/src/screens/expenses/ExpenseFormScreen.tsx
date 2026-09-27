@@ -9,7 +9,9 @@ import { draftFromExpense, newDraft, problemsOf, toExpense, type ExpenseDraft } 
 import { useI18n } from '../../i18n/useI18n'
 import { useStores, useTrips } from '../../stores/StoresProvider'
 import { useOpenTrip } from '../useOpenTrip'
+import { useOpenSection } from '../setup/useOpenSection'
 import { AmountSection } from './AmountSection'
+import { DetailsSection } from './DetailsSection'
 
 /** 新增（/expense/new）或編輯（/expense/:id）支出的全螢幕表單（規格 4.4） */
 export function ExpenseFormScreen() {
@@ -42,6 +44,8 @@ function ExpenseForm({ trip, existing }: { trip: Trip; existing?: Expense }) {
       : newDraft({ trip, expenses: trips.getState().current?.expenses ?? [], settings: settings.getState().settings, today: todayIso() }),
   )
   const change = (update: (d: ExpenseDraft) => ExpenseDraft) => setDraft(update)
+  // 規格 4.4：一次只展開一個區塊
+  const sections = useOpenSection()
   const canSave = problemsOf(draft).length === 0
 
   // 從旅程頁推進來的就退回去；直接由 session 還原進來、前面沒有頁面時，改去支出列表
@@ -68,6 +72,7 @@ function ExpenseForm({ trip, existing }: { trip: Trip; existing?: Expense }) {
         <div className="app-form">
           <AmountSection trip={trip} draft={draft} change={change} autoFocus={!existing} />
           <TextField label={t('expense.description')} value={draft.description} onChange={(description) => change((d) => ({ ...d, description }))} />
+          <DetailsSection trip={trip} draft={draft} change={change} open={sections.open === 'details'} onToggle={() => sections.toggle('details')} />
         </div>
       </div>
     </div>
