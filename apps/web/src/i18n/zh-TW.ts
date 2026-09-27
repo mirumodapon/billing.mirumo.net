@@ -113,8 +113,6 @@ export const zhTW = {
   'newTrip.nameRequired': '請輸入旅程名稱',
   'newTrip.selfNameRequired': '請輸入你的名字',
   'newTrip.dateOrder': '回程不能早於出發',
-  'date.other': '其他日期',
-  'date.calendarTitle': '選擇日期',
   'date.prevMonth': '上個月',
   'date.nextMonth': '下個月',
   'setup.basic': '基本資料',

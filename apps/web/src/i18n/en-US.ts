@@ -113,8 +113,6 @@ export const enUS: Record<TranslationKey, string> = {
   'newTrip.nameRequired': 'Enter a trip name',
   'newTrip.selfNameRequired': 'Enter your name',
   'newTrip.dateOrder': "The end date can't be before the start",
-  'date.other': 'Other date',
-  'date.calendarTitle': 'Pick a date',
   'date.prevMonth': 'Previous month',
   'date.nextMonth': 'Next month',
   'setup.basic': 'Details',

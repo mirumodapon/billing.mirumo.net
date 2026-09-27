@@ -1,5 +1,5 @@
 import type { Transfer, TransferKind, Trip } from '@billing/core'
-import { ChipGroup, DatePicker, SegmentedControl, TextField } from '@billing/ui'
+import { ChipGroup, SegmentedControl, TextField } from '@billing/ui'
 import { useState } from 'react'
 import { Navigate, useLocation, useParams } from 'react-router'
 import { BootSkeleton } from '../../app/BootSkeleton'
@@ -17,6 +17,7 @@ import {
 } from '../../domain/transferDraft'
 import { useI18n } from '../../i18n/useI18n'
 import { useStores, useTrips } from '../../stores/StoresProvider'
+import { DateField } from '../forms/DateField'
 import { FormShell } from '../forms/FormShell'
 import { MoneyInput } from '../forms/MoneyInput'
 import { useFormDraft } from '../forms/useFormDraft'
@@ -36,7 +37,7 @@ export function TransferFormScreen() {
 }
 
 function TransferForm({ trip, existing }: { trip: Trip; existing?: Transfer }) {
-  const { t, locale } = useI18n()
+  const { t } = useI18n()
   const location = useLocation()
   const { trips } = useStores()
   const [initial] = useState<TransferDraft>(() =>
@@ -95,18 +96,7 @@ function TransferForm({ trip, existing }: { trip: Trip; existing?: Transfer }) {
               onChange={(kind) => change((d) => ({ ...d, kind }))}
             />
           </div>
-          <div>
-            <p className="app-field-label">{t('expense.date')}</p>
-            <DatePicker
-              value={draft.date}
-              onChange={(date) => change((d) => ({ ...d, date }))}
-              locale={locale}
-              ariaLabel={t('expense.date')}
-              labels={{ other: t('date.other'), calendarTitle: t('date.calendarTitle'), prevMonth: t('date.prevMonth'), nextMonth: t('date.nextMonth') }}
-              rangeStart={trip.startDate}
-              rangeEnd={trip.endDate}
-            />
-          </div>
+          <DateField label={t('expense.date')} value={draft.date} onChange={(date) => change((d) => ({ ...d, date }))} />
           <TextField label={t('transfer.note')} value={draft.note} onChange={(note) => change((d) => ({ ...d, note }))} />
         </div>
       )}
