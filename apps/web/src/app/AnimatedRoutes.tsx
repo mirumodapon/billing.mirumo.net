@@ -5,6 +5,7 @@ import { ExpenseFormScreen } from '../screens/expenses/ExpenseFormScreen'
 import { ExpensesTab } from '../screens/expenses/ExpensesTab'
 import { PlaceholderTab } from '../screens/PlaceholderTab'
 import { SettingsScreen } from '../screens/settings/SettingsScreen'
+import { SettleTab } from '../screens/settle/SettleTab'
 import { SetupTab } from '../screens/setup/SetupTab'
 import { TripListScreen } from '../screens/TripListScreen'
 import { TripShell } from '../screens/TripShell'
@@ -50,7 +51,7 @@ export function AnimatedRoutes() {
         <Route path="/trip/:tripId" element={<TripShell />}>
           <Route path="expenses" element={<ExpensesTab />} />
           <Route path="stats" element={<PlaceholderTab />} />
-          <Route path="settle" element={<PlaceholderTab />} />
+          <Route path="settle" element={<SettleTab />} />
           <Route path="setup" element={<SetupTab />} />
           <Route index element={<Navigate to="expenses" replace />} />
         </Route>

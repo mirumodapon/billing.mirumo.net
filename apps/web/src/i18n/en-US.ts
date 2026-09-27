@@ -164,6 +164,7 @@ export const enUS: Record<TranslationKey, string> = {
   'settle.copied': 'Settlement copied',
   'settle.shareTitle': '{trip} settlement',
   'settle.noTransfers': 'No transfers yet',
+  'settle.shareFailed': "Couldn't share or copy the settlement",
   'transfer.loan': 'Loan',
   'transfer.settlement': 'Settlement',
   'settings.language': 'Language',

@@ -164,6 +164,7 @@ export const zhTW = {
   'settle.copied': '已複製結算結果',
   'settle.shareTitle': '{trip} 結算',
   'settle.noTransfers': '還沒有轉帳',
+  'settle.shareFailed': '無法分享，也無法複製',
   'transfer.loan': '借款',
   'transfer.settlement': '結清',
   'settings.language': '語言',
