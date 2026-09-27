@@ -83,6 +83,11 @@ export const enUS: Record<TranslationKey, string> = {
   'rates.empty': 'No other currencies yet. When the trip uses one, set its rate to {base} here.',
   'setup.delete': 'Delete trip',
   'setup.deleteHint': 'You can undo this from the message at the bottom.',
+  'settings.language': 'Language',
+  'settings.languageSystem': 'Use system',
+  'settings.theme': 'Theme',
+  'settings.themeSystem': 'Match system light and dark',
+  'settings.themeFamily': 'Palette',
 }
 
 export const enUSPlurals: Record<PluralKey, { one: string; other: string }> = {

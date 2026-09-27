@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { resolveSystemTheme } from '@billing/ui'
+import { describe, expect, it, vi } from 'vitest'
 import { persistTheme, THEME_FAMILY_KEY, THEME_KEY } from './persistTheme'
 
 function fakeStorage() {
@@ -44,6 +45,31 @@ describe('persistTheme', () => {
    * 不一致，設定頁切的主題下次開機就不會生效，而且沒有任何錯誤。
    * HTML 不進 jsdom，所以只能讀原始碼比對。
    */
+  /*
+   * 開機 script 自己挑「跟隨系統」的主題（它不能 import），settingsStore 載入後再用
+   * resolveSystemTheme 挑一次。兩邊挑得不一樣，冷啟動就會先畫一個、再換成另一個。
+   * 這裡真的執行那段 script，逐一比對兩個家族 × 深淺偏好。
+   */
+  it.each([
+    ['catppuccin', false],
+    ['catppuccin', true],
+    ['tokyo-night', false],
+    ['tokyo-night', true],
+  ] as const)('boots %s (dark: %s) into the theme the app will resolve to', (family, dark) => {
+    const html = readFileSync(join(import.meta.dirname, '../../index.html'), 'utf8')
+    const script = /<script>([\s\S]*?)<\/script>/.exec(html)![1]!
+    const saved: Record<string, string> = { [THEME_KEY]: 'system', [THEME_FAMILY_KEY]: family }
+    vi.stubGlobal('localStorage', { getItem: (k: string) => saved[k] ?? null })
+    vi.stubGlobal('matchMedia', () => ({ matches: dark }))
+    try {
+      document.documentElement.removeAttribute('data-theme')
+      new Function(script)()
+      expect(document.documentElement.dataset.theme).toBe(resolveSystemTheme(family))
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
+
   it('uses the same keys the inline boot script reads', () => {
     const html = readFileSync(join(import.meta.dirname, '../../index.html'), 'utf8')
     expect(html).toContain(`localStorage.getItem('${THEME_KEY}')`)

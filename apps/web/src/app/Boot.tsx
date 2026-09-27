@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { validateSession } from '../session/coldStart'
 import { useSessionSync } from '../session/useSessionSync'
+import { useFollowSystemTheme } from './useFollowSystemTheme'
 import { useStores } from '../stores/StoresProvider'
 import { BootSkeleton } from './BootSkeleton'
 
@@ -26,6 +27,7 @@ export function Boot({ children }: { children: ReactNode }) {
    */
   const ready = target !== undefined && (target === null || pathname === target)
   useSessionSync(ready)
+  useFollowSystemTheme()
 
   /*
    * navigate 不能放進下面那個 effect 的相依：HashRouter 的 navigate 每換一次位置

@@ -83,6 +83,11 @@ export const zhTW = {
   'rates.empty': '還沒有其他幣別。旅程中用到外幣時，在這裡設定它對 {base} 的匯率。',
   'setup.delete': '刪除旅程',
   'setup.deleteHint': '刪除後可以在底部的提示裡復原',
+  'settings.language': '語言',
+  'settings.languageSystem': '跟隨系統',
+  'settings.theme': '主題',
+  'settings.themeSystem': '跟隨系統明暗',
+  'settings.themeFamily': '配色家族',
 } as const
 
 export const zhTWPlurals = {
