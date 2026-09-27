@@ -4,6 +4,8 @@ export const UI_VERSION = '0.0.0'
 
 export { applyTheme, resolveSystemTheme } from './theme/applyTheme'
 export { DEFAULT_THEME, THEMES } from './theme/manifest'
+export { ACCENT_ORDER, pickAccent } from './theme/accentOrder'
+export type { AccentSlot } from './theme/accentOrder'
 export type { ThemeFamily, ThemeId, ThemeManifest } from './theme/manifest'
 
 export { Button } from './primitives/Button'

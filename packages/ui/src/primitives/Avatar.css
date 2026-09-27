@@ -8,7 +8,7 @@
   justify-content: center;
   border-radius: var(--bi-radius-full);
   background: var(--bi-avatar-color);
-  color: var(--bi-accent-fg);
+  color: var(--bi-avatar-fg);
   font-weight: 600;
   line-height: 1;
   flex: none;

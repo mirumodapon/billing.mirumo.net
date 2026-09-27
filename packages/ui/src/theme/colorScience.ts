@@ -1,0 +1,40 @@
+/**
+ * 色彩運算：WCAG 對比與 OKLab 色差。主題產生器用它挑前景色，
+ * 測試用它守住「每個填色上的字都讀得清楚」與「指派順序仍是最佳」。
+ *
+ * 輸入一律是 '#rrggbb'。這個檔案刻意不含任何色值：色值只屬於 palette 層。
+ */
+
+const channels = (hex: string) => [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16) / 255)
+const toLinear = (v: number) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)
+
+/** WCAG 2.x 相對亮度 */
+export function luminance(hex: string): number {
+  const [r, g, b] = channels(hex).map(toLinear) as [number, number, number]
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b
+}
+
+/** WCAG 2.x 對比，1 到 21 */
+export function contrast(a: string, b: string): number {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x) as [number, number]
+  return (hi + 0.05) / (lo + 0.05)
+}
+
+function toOklab(hex: string): [number, number, number] {
+  const [r, g, b] = channels(hex).map(toLinear) as [number, number, number]
+  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b)
+  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b)
+  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b)
+  return [
+    0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
+    1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s,
+    0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s,
+  ]
+}
+
+/** OKLab 歐氏距離 ×100。低於 15 時並排也很難分辨 */
+export function deltaE(a: string, b: string): number {
+  const p = toOklab(a)
+  const q = toOklab(b)
+  return 100 * Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2])
+}

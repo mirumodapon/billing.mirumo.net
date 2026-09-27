@@ -16,14 +16,25 @@ export const PALETTE_SLOTS = [
 
 export type PaletteSlot = (typeof PALETTE_SLOTS)[number]
 
+/**
+ * 每個 accent 填色上的字色槽位（task#71）。值由 scripts/generate-themes.ts 依
+ * 對比挑選，而不是由這裡的映射決定：挑選需要對比計算，而這個檔案要維持
+ * 能被 Node 直接載入的形狀（相對 import 得帶 .ts，建置設定不允許）。
+ */
+export const ACCENT_FG_SLOTS = Array.from({ length: 12 }, (_, i) => `accent${i + 1}-fg` as const)
+
 /** @catppuccin/palette 的 flavour 形狀，只取我們用得到的部分 */
 interface CatppuccinFlavour {
   colors: Record<string, { hex: string }>
 }
 
 /**
- * Catppuccin 的 14 個具名 accent 取 12 個，順序繞色相環一圈，
- * 讓相鄰的成員拿到明顯不同的顏色。
+ * Catppuccin 的 14 個具名 accent 取 12 個，順序繞色相環一圈。
+ *
+ * 原本這裡說「讓相鄰的成員拿到明顯不同的顏色」——實測是錯的：teal 與 sky 相鄰，
+ * 在 Macchiato 下色差只有 3.6（並排分不出來的門檻是 15）。槽位順序因此不再
+ * 承擔「相鄰要不同」的責任，那由 accentOrder.ts 的指派順序負責（task#81）。
+ * 這張表本身不改：改了會讓既有成員的顏色全部換掉。
  */
 const CATPPUCCIN_ACCENTS = [
   'red', 'peach', 'yellow', 'green', 'teal', 'sky',
