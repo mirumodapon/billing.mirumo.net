@@ -18,6 +18,16 @@ export const enUS: Record<TranslationKey, string> = {
   'error.loadFailed': "Couldn't load your data.",
   'tripList.deleted': 'Deleted "{name}"',
   'common.undo': 'Undo',
+  'common.back': 'Back',
+  'tab.expenses': 'Expenses',
+  'tab.stats': 'Stats',
+  'tab.settle': 'Settle',
+  'tab.setup': 'Setup',
+  'tab.label': 'Trip sections',
+  'placeholder.comingSoon': 'This page arrives in the next version',
+  'tripList.title': 'My trips',
+  'settings.title': 'Settings',
+  'common.loading': 'Loading',
 }
 
 export const enUSPlurals: Record<PluralKey, { one: string; other: string }> = {

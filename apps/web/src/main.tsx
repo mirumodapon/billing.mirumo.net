@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { App } from './App'
+import { App } from './app/App'
+import { createAppStores } from './app/createAppStores'
 import { readSession } from './data/session'
 import { detectLocale, setLocale } from './i18n'
 import { initialHash } from './session/coldStart'
@@ -20,6 +21,6 @@ if (hash) history.replaceState(null, '', `#${hash}`)
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <App stores={createAppStores()} />
   </StrictMode>,
 )

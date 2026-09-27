@@ -18,6 +18,16 @@ export const zhTW = {
   'error.loadFailed': '讀取資料失敗',
   'tripList.deleted': '已刪除「{name}」',
   'common.undo': '復原',
+  'common.back': '返回',
+  'tab.expenses': '支出',
+  'tab.stats': '統計',
+  'tab.settle': '結算',
+  'tab.setup': '設定',
+  'tab.label': '旅程分頁',
+  'placeholder.comingSoon': '這一頁在下一個版本加入',
+  'tripList.title': '我的旅程',
+  'settings.title': '設定',
+  'common.loading': '載入中',
 } as const
 
 export const zhTWPlurals = {

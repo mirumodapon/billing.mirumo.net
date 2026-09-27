@@ -20,3 +20,16 @@ textarea,
 [data-selectable] {
   user-select: text;
 }
+
+/*
+ * 規格 5.2：原生捲軸隱藏（task#77）。手機上捲軸本來就是浮動的，但 iOS 的
+ * standalone PWA 與 Android 部分瀏覽器仍會畫出一條，與自製介面格格不入。
+ * 捲動本身不受影響。
+ */
+* {
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}

@@ -12,6 +12,7 @@
   "dependencies": {
     "@billing/core": "workspace:*",
     "@billing/ui": "workspace:*",
+    "@tabler/icons-react": "^3.48.0",
     "fflate": "^0.8.3",
     "idb": "^8.0.3",
     "react": "^19.3.0",
