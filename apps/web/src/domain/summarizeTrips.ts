@@ -1,4 +1,4 @@
-import { budgetStatus, contributionOf, decimalsOf, toMinor, type BudgetStatus, type Expense, type Trip } from '@billing/core'
+import { budgetStatus, contributionOf, countsInTotals, decimalsOf, toMinor, type BudgetStatus, type Expense, type Trip } from '@billing/core'
 import type { TripRepository } from '../data/tripRepository'
 
 export interface TripSummary {
@@ -9,7 +9,8 @@ export interface TripSummary {
 }
 
 export function summarizeTrip(trip: Trip, expenses: Expense[]): TripSummary {
-  const live = expenses.filter((e) => !e.deletedAt)
+  // 草稿與刪除的都不算（task#96）
+  const live = expenses.filter(countsInTotals)
   const order = trip.members.map((m) => m.id)
   const total = (scope: 'self' | 'group') =>
     live.reduce((sum, e) => sum + contributionOf(e, scope, trip.selfMemberId, trip.baseCurrency, order), 0)

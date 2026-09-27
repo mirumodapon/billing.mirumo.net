@@ -169,3 +169,27 @@ describe('validateSnapshot: records using trip payment methods (task#92)', () =>
     expect(problemsOf(snapshot({ expenses: [makeExpense({ paymentMethodId: 'nowhere' })] }))).toContain('expense e1: payment method nowhere does not exist')
   })
 })
+
+describe('validateSnapshot: drafts (task#96)', () => {
+  it('accepts a draft that has no rate yet', () => {
+    expect(validateSnapshot(snapshot({ expenses: [makeExpense({ draft: true, exchangeRate: 0, amount: 0 })] }))).toMatchObject({ ok: true })
+  })
+
+  it('still requires a rate on a finished record', () => {
+    expect(problemsOf(snapshot({ expenses: [makeExpense({ exchangeRate: 0 })] }))).toContain('expense e1: exchange rate must be a positive number')
+  })
+
+  it('rejects a draft flag that is not true or false', () => {
+    const odd = { ...makeExpense(), draft: 'yes' } as unknown as ReturnType<typeof makeExpense>
+    expect(problemsOf(snapshot({ expenses: [odd] }))).toContain('expense e1: draft must be true or false')
+  })
+
+  // 表單允許把沒選好對象的轉帳存成草稿；匯出後要能匯回來
+  it('accepts a draft transfer that has not picked a second person yet', () => {
+    expect(validateSnapshot(snapshot({ transfers: [makeTransfer({ draft: true, from: 'a', to: 'a' })] }))).toMatchObject({ ok: true })
+  })
+
+  it('still rejects a finished transfer to the same person', () => {
+    expect(problemsOf(snapshot({ transfers: [makeTransfer({ id: 'tr', from: 'a', to: 'a' })] }))).toContain('transfer tr: sends money to the same person')
+  })
+})

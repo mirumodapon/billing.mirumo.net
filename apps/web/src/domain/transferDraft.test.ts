@@ -9,6 +9,7 @@ import {
   transferDraftFrom,
   transferProblems,
   withAutoTransferRate,
+  willSaveTransferAsDraft,
   withManualTransferRate,
   type TransferDraft,
 } from './transferDraft'
@@ -100,7 +101,7 @@ describe('isTransferDraft', () => {
     expect(isTransferDraft(transferDraftFrom(makeTransfer()))).toBe(true)
   })
 
-  it.each([null, {}, { ...newTransferDraft(ctx), kind: 'gift' }, { ...newTransferDraft(ctx), amount: 'x' }, { ...newTransferDraft(ctx), from: 1 }])(
+  it.each([null, {}, { ...newTransferDraft(ctx), kind: 'gift' }, { ...newTransferDraft(ctx), amount: 'x' }, { ...newTransferDraft(ctx), from: 1 }, { ...newTransferDraft(ctx), isDraft: 'yes' }])(
     'rejects %j',
     (value) => expect(isTransferDraft(value)).toBe(false),
   )
@@ -116,5 +117,31 @@ describe('parsePrefill (Plan 8 S3)', () => {
     expect(parsePrefill(new URLSearchParams('from=zz&to=a&amount=abc&kind=gift'), trip)).toEqual({ to: 'a' })
     expect(parsePrefill(new URLSearchParams('amount=-5'), trip)).toEqual({})
     expect(parsePrefill(new URLSearchParams(''), trip)).toEqual({})
+  })
+})
+
+describe('drafts (task#96)', () => {
+  it('saves an unfinished transfer as a draft, with 0 for what is missing', () => {
+    expect(toTransfer(filled({ amount: undefined, exchangeRate: undefined }), 't1')).toMatchObject({ draft: true, amount: 0, exchangeRate: 0 })
+  })
+
+  it('saves a transfer to the same person as a draft', () => {
+    expect(willSaveTransferAsDraft(filled({ to: 'a' }))).toBe(true)
+  })
+
+  it('reopens a draft with the missing amount and rate unset, so the rate is filled in again', () => {
+    const d = transferDraftFrom(makeTransfer({ draft: true, amount: 0, currency: 'JPY', exchangeRate: 0 }))
+    expect(d).toMatchObject({ amount: undefined, exchangeRate: undefined, rateTouched: false, isDraft: true })
+    expect(withAutoTransferRate(d, trip).exchangeRate).toBe(0.21)
+  })
+
+  it('saves a finished transfer as a draft when asked to, and as a real one otherwise', () => {
+    expect(toTransfer(filled({ isDraft: true }), 't1').draft).toBe(true)
+    expect(toTransfer(filled(), 't1')).not.toHaveProperty('draft')
+  })
+
+  it('turns a finished draft into a real transfer when the toggle is switched off', () => {
+    const d = transferDraftFrom(makeTransfer({ draft: true }))
+    expect(toTransfer({ ...d, isDraft: false }, 't1')).not.toHaveProperty('draft')
   })
 })

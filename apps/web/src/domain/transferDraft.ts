@@ -13,6 +13,11 @@ export interface TransferDraft {
   date: string
   kind: TransferKind
   note: string
+  /**
+   * 使用者要把這筆存成草稿（task#96）：不算進結算。
+   * 欄位還沒填完時不論這裡怎麼設，一律存成草稿——見 willSaveTransferAsDraft
+   */
+  isDraft?: boolean
 }
 
 /** 「已結清」帶來的預填（Plan 8 S1、S3） */
@@ -44,22 +49,27 @@ export function newTransferDraft({ trip, today }: { trip: Trip; today: string },
     date: today >= trip.startDate && today <= trip.endDate ? today : trip.startDate,
     kind: prefill.kind ?? 'loan',
     note: '',
+    isDraft: false,
   }
 }
 
 export function transferDraftFrom(t: Transfer): TransferDraft {
+  // 草稿存的時候缺什麼就記 0（task#96）；打開時還原成「未填」，匯率也恢復自動帶入
+  const missingAmount = t.draft === true && t.amount === 0
+  const missingRate = t.draft === true && t.exchangeRate === 0
   return {
     id: t.id,
     from: t.from,
     to: t.to,
-    amount: t.amount,
+    amount: missingAmount ? undefined : t.amount,
     currency: t.currency,
-    exchangeRate: t.exchangeRate,
+    exchangeRate: missingRate ? undefined : t.exchangeRate,
     // 規格 2.5：建立時固化的匯率，編輯時不被今天的匯率表改掉
-    rateTouched: true,
+    rateTouched: !missingRate,
     date: t.date,
     kind: t.kind,
     note: t.note,
+    isDraft: t.draft === true,
   }
 }
 
@@ -80,9 +90,18 @@ export function transferProblems(d: TransferDraft): TransferProblem[] {
   return problems
 }
 
-/** transferProblems 為空時才能呼叫。時間戳留空：由 Repository 蓋 */
+/** 使用者要求，或還有欄位沒填完：這次存檔會是草稿 */
+export function willSaveTransferAsDraft(d: TransferDraft): boolean {
+  return d.isDraft === true || transferProblems(d).length > 0
+}
+
+/**
+ * 轉成要存的紀錄。欄位不完整也可以：那時存成草稿，缺的金額與匯率記 0（task#96）。
+ * 時間戳留空：由 Repository 蓋
+ */
 export function toTransfer(d: TransferDraft, tripId: string): Transfer {
   return {
+    ...(willSaveTransferAsDraft(d) ? { draft: true } : {}),
     id: d.id ?? crypto.randomUUID(),
     tripId,
     date: d.date,
@@ -111,6 +130,7 @@ export function isTransferDraft(value: unknown): value is TransferDraft {
     isOptionalNumber(d.amount) &&
     isOptionalNumber(d.exchangeRate) &&
     typeof d.rateTouched === 'boolean' &&
+    (d.isDraft === undefined || typeof d.isDraft === 'boolean') &&
     (d.kind === 'loan' || d.kind === 'settlement')
   )
 }

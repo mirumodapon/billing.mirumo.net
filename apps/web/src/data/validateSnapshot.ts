@@ -81,7 +81,11 @@ export function validateSnapshot(input: unknown): SnapshotCheck {
   const checkRecord = (at: string, record: Expense | Transfer, referenced: Set<string>) => {
     if (!isValidIso(record.date)) problems.push(`${at}: invalid date`)
     if (!isAmount(record.amount)) problems.push(`${at}: amount is not a number`)
-    if (!isRate(record.exchangeRate)) problems.push(`${at}: exchange rate must be a positive number`)
+    // 草稿可以還沒有匯率（存成 0，task#96）；完成的紀錄一定要有
+    if (record.draft !== undefined && typeof record.draft !== 'boolean') problems.push(`${at}: draft must be true or false`)
+    if (!isRate(record.exchangeRate) && !(record.draft === true && record.exchangeRate === 0)) {
+      problems.push(`${at}: exchange rate must be a positive number`)
+    }
     const members = membersByTrip.get(record.tripId)
     if (!members) {
       problems.push(`${at}: trip ${record.tripId} does not exist`)
@@ -112,7 +116,8 @@ export function validateSnapshot(input: unknown): SnapshotCheck {
   for (const transfer of transfers) {
     const at = `transfer ${transfer.id}`
     checkRecord(at, transfer, membersOfTransfer(transfer))
-    if (transfer.from === transfer.to) problems.push(`${at}: sends money to the same person`)
+    // 草稿可以還沒選好對象（task#96）
+    if (transfer.from === transfer.to && transfer.draft !== true) problems.push(`${at}: sends money to the same person`)
   }
 
   return problems.length > 0 ? { ok: false, problems } : { ok: true, snapshot: input as unknown as Snapshot }
