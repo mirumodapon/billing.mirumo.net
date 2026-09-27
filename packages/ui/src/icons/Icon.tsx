@@ -1,4 +1,4 @@
-import type { Icon as TablerIcon } from '@tabler/icons-react'
+import type { TablerIcon } from '@tabler/icons-react'
 
 export interface IconProps {
   /** Tabler 的圖示元件，如 IconPlus。務必逐一具名 import，不要整包帶進來 */

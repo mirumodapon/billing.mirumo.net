@@ -1,4 +1,4 @@
-import type { Icon as TablerIcon } from '@tabler/icons-react'
+import type { TablerIcon } from '@tabler/icons-react'
 import { useRovingFocus } from '../hooks/rovingFocus'
 import { Icon } from '../icons/Icon'
 import { SafeArea } from './SafeArea'

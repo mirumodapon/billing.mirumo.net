@@ -1,4 +1,4 @@
-import { IconChevronLeft, type Icon as TablerIcon } from '@tabler/icons-react'
+import { IconChevronLeft, type TablerIcon } from '@tabler/icons-react'
 import { Icon } from '../icons/Icon'
 import { SafeArea } from './SafeArea'
 

@@ -1,4 +1,4 @@
-import type { Icon as TablerIcon } from '@tabler/icons-react'
+import type { TablerIcon } from '@tabler/icons-react'
 import type { CSSProperties, ReactNode } from 'react'
 import { useDragDismiss } from '../hooks/useDragDismiss'
 import { Icon } from '../icons/Icon'
