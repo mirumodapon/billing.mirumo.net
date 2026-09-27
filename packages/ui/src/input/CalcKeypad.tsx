@@ -104,7 +104,7 @@ export function CalcKeypad({
                   onPointerDown={keepFocus}
                   onClick={() => press('back')}
                 >
-                  <Icon glyph={IconBackspace} size="lg" label={labels.backspace} />
+                  <Icon glyph={IconBackspace} size="lg" ariaLabel={labels.backspace} />
                 </button>
               )
             }

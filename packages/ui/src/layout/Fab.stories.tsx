@@ -7,5 +7,5 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const AddExpense: Story = {
-  args: { glyph: IconPlus, label: '新增支出', onPress: () => undefined },
+  args: { glyph: IconPlus, ariaLabel: '新增支出', onPress: () => undefined },
 }

@@ -12,7 +12,7 @@ const bars = [
 ]
 const format = (n: number) => n.toLocaleString('en-US')
 const base = {
-  label: '每日花費',
+  ariaLabel: '每日花費',
   formatValue: format,
   budgetLabel: '預算',
   overBudgetLabel: '超支',

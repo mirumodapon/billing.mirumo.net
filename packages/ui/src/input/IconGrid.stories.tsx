@@ -6,7 +6,7 @@ import { IconGrid } from './IconGrid'
 const meta = {
   title: 'Input/IconGrid',
   component: IconGrid,
-  args: { icons: {}, value: '', onChange: () => undefined, label: '圖示', labelFor: (n: string) => n },
+  args: { icons: {}, value: '', onChange: () => undefined, ariaLabel: '圖示', labelFor: (n: string) => n },
 } satisfies Meta<typeof IconGrid>
 export default meta
 type Story = StoryObj<typeof meta>
@@ -18,7 +18,7 @@ function Demo() {
       icons={CATEGORY_ICONS}
       value={value}
       onChange={setValue}
-      label="類別圖示"
+      ariaLabel="類別圖示"
       labelFor={(name) => name.replace(/^Icon/, '')}
     />
   )

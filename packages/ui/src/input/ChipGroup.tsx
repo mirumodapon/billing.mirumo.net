@@ -1,27 +1,28 @@
 import { useRovingFocus } from '../hooks/rovingFocus'
+import type { AccentSlot } from '../theme/accentOrder'
 
 export interface ChipOption {
   value: string
   label: string
   /** accent 槽位名稱，給了才畫色點 */
-  colorKey?: string
+  colorKey?: AccentSlot
 }
 
 export interface ChipGroupProps {
   options: readonly ChipOption[]
   value: string
   onChange: (value: string) => void
-  label: string
+  ariaLabel: string
 }
 
-export function ChipGroup({ options, value, onChange, label }: ChipGroupProps) {
+export function ChipGroup({ options, value, onChange, ariaLabel }: ChipGroupProps) {
   const { onKeyDown, itemProps } = useRovingFocus({
     values: options.map((o) => o.value),
     value,
     onChange,
   })
   return (
-    <div role="radiogroup" aria-label={label} className="bi-chip-group" onKeyDown={onKeyDown}>
+    <div role="radiogroup" aria-label={ariaLabel} className="bi-chip-group" onKeyDown={onKeyDown}>
       {options.map((option) => {
         const selected = option.value === value
         return (

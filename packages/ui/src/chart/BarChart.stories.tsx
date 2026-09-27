@@ -5,7 +5,7 @@ const meta = {
   title: 'Chart/BarChart',
   component: BarChart,
   args: {
-    label: '每日花費',
+    ariaLabel: '每日花費',
     formatValue: (n: number) => `NT$${n.toLocaleString('en-US')}`,
     formatTick: (n: number) => (n >= 1000 ? `${n / 1000}k` : String(n)),
     budgetLabel: '預算',

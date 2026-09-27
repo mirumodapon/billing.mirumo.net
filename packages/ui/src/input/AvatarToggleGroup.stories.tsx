@@ -5,7 +5,7 @@ import { AvatarToggleGroup } from './AvatarToggleGroup'
 const meta = {
   title: 'Input/AvatarToggleGroup',
   component: AvatarToggleGroup,
-  args: { items: [], selected: [], onChange: () => undefined, label: '參與者' },
+  args: { items: [], selected: [], onChange: () => undefined, ariaLabel: '參與者' },
 } satisfies Meta<typeof AvatarToggleGroup>
 export default meta
 type Story = StoryObj<typeof meta>
@@ -14,7 +14,7 @@ function Demo() {
   const [selected, setSelected] = useState(['a', 'b'])
   return (
     <AvatarToggleGroup
-      label="參與者"
+      ariaLabel="參與者"
       selected={selected}
       onChange={setSelected}
       minSelected={1}

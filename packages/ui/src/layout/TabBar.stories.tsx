@@ -15,7 +15,7 @@ const meta = {
   component: TabBar,
   // 全部必填，這裡給預設值只是滿足 CSF3 的型別要求——FourTabs 用自己的
   // render 與 state，不會用到這些值。
-  args: { tabs: TABS, value: 'expenses', onChange: () => {}, label: '旅程分頁' },
+  args: { tabs: TABS, value: 'expenses', onChange: () => {}, ariaLabel: '旅程分頁' },
 } satisfies Meta<typeof TabBar>
 export default meta
 type Story = StoryObj<typeof meta>
@@ -24,7 +24,7 @@ type Story = StoryObj<typeof meta>
 // 叫 render 的箭頭函式裡呼叫 useState 會被當成違規，所以獨立成具名元件。
 function TabBarDemo() {
   const [value, setValue] = useState('expenses')
-  return <TabBar label="旅程分頁" value={value} onChange={setValue} tabs={TABS} />
+  return <TabBar ariaLabel="旅程分頁" value={value} onChange={setValue} tabs={TABS} />
 }
 
 export const FourTabs: Story = {

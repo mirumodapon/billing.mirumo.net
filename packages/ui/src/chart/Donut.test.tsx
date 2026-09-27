@@ -3,15 +3,15 @@ import { join } from 'node:path'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
-import { Donut } from './Donut'
+import { Donut, type DonutSegment } from './Donut'
 
-const segments = [
+const segments: DonutSegment[] = [
   { key: 'food', label: '餐飲', value: 3000, colorKey: 'accent1' },
   { key: 'transport', label: '交通', value: 3000, colorKey: 'accent5' },
   { key: 'lodging', label: '住宿', value: 3000, colorKey: 'accent6' },
 ]
 const format = (n: number) => `NT$${n.toLocaleString('en-US')}`
-const base = { label: '分類佔比', formatValue: format, emptyLabel: '還沒有支出', totalLabel: '總計' }
+const base = { ariaLabel: '分類佔比', formatValue: format, emptyLabel: '還沒有支出', totalLabel: '總計' }
 
 describe('Donut', () => {
   it('is a figure named by its label', () => {

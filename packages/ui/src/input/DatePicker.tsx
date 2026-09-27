@@ -17,7 +17,7 @@ export interface DatePickerProps {
   value: string
   onChange: (iso: string) => void
   locale: string
-  label: string
+  ariaLabel: string
   labels: DatePickerLabels
   /** 旅程區間。給了就只列這幾天；沒給就列前後三天 */
   rangeStart?: string
@@ -36,7 +36,7 @@ export function DatePicker({
   value,
   onChange,
   locale,
-  label,
+  ariaLabel,
   labels,
   rangeStart,
   rangeEnd,
@@ -69,7 +69,7 @@ export function DatePicker({
       <div
         ref={stripRef}
         role="radiogroup"
-        aria-label={label}
+        aria-label={ariaLabel}
         className="bi-datepicker__strip"
         onKeyDown={onKeyDown}
       >

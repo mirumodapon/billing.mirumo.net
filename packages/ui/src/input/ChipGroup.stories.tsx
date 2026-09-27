@@ -5,7 +5,7 @@ import { ChipGroup } from './ChipGroup'
 const meta = {
   title: 'Input/ChipGroup',
   component: ChipGroup,
-  args: { options: [], value: '', onChange: () => undefined, label: '付款方式' },
+  args: { options: [], value: '', onChange: () => undefined, ariaLabel: '付款方式' },
 } satisfies Meta<typeof ChipGroup>
 export default meta
 type Story = StoryObj<typeof meta>
@@ -14,7 +14,7 @@ function Demo() {
   const [value, setValue] = useState('cash')
   return (
     <ChipGroup
-      label="付款方式"
+      ariaLabel="付款方式"
       value={value}
       onChange={setValue}
       options={[

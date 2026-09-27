@@ -11,24 +11,24 @@ const labelFor = (key: string) => `顏色 ${key.replace('accent', '')}`
 
 describe('ColorSwatches', () => {
   it('is a radiogroup with one radio per slot', () => {
-    render(<ColorSwatches keys={keys} value="accent3" onChange={vi.fn()} label="顏色" labelFor={labelFor} />)
+    render(<ColorSwatches keys={keys} value="accent3" onChange={vi.fn()} ariaLabel="顏色" labelFor={labelFor} />)
     expect(screen.getByRole('radiogroup', { name: '顏色' })).toBeInTheDocument()
     expect(screen.getAllByRole('radio')).toHaveLength(12)
   })
 
   it('paints each swatch from its semantic slot', () => {
-    render(<ColorSwatches keys={keys} value="accent3" onChange={vi.fn()} label="顏色" labelFor={labelFor} />)
+    render(<ColorSwatches keys={keys} value="accent3" onChange={vi.fn()} ariaLabel="顏色" labelFor={labelFor} />)
     expect(screen.getByTestId('swatch-accent7')).toHaveStyle({ background: 'var(--bi-accent7)' })
   })
 
   it('names each swatch through labelFor and checks the current one', () => {
-    render(<ColorSwatches keys={keys} value="accent3" onChange={vi.fn()} label="顏色" labelFor={labelFor} />)
+    render(<ColorSwatches keys={keys} value="accent3" onChange={vi.fn()} ariaLabel="顏色" labelFor={labelFor} />)
     expect(screen.getByRole('radio', { name: '顏色 3' })).toBeChecked()
   })
 
   it('reports the slot that was pressed', async () => {
     const onChange = vi.fn()
-    render(<ColorSwatches keys={keys} value="accent3" onChange={onChange} label="顏色" labelFor={labelFor} />)
+    render(<ColorSwatches keys={keys} value="accent3" onChange={onChange} ariaLabel="顏色" labelFor={labelFor} />)
     await userEvent.click(screen.getByRole('radio', { name: '顏色 9' }))
     expect(onChange).toHaveBeenCalledWith('accent9')
   })
@@ -36,7 +36,7 @@ describe('ColorSwatches', () => {
   it('moves selection and focus with the arrow keys', async () => {
     function Controlled() {
       const [v, setV] = useState('accent1')
-      return <ColorSwatches keys={keys} value={v} onChange={setV} label="顏色" labelFor={labelFor} />
+      return <ColorSwatches keys={keys} value={v} onChange={setV} ariaLabel="顏色" labelFor={labelFor} />
     }
     render(<Controlled />)
     screen.getByRole('radio', { name: '顏色 1' }).focus()

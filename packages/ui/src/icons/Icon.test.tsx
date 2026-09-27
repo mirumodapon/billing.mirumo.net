@@ -14,12 +14,12 @@ describe('Icon', () => {
 
   // 只有圖示沒有文字的按鈕，圖示就是唯一的語意來源
   it('becomes an img with a name when given a label', () => {
-    render(<Icon glyph={IconPlus} label="新增支出" />)
+    render(<Icon glyph={IconPlus} ariaLabel="新增支出" />)
     expect(screen.getByRole('img', { name: '新增支出' })).toBeInTheDocument()
   })
 
   it('has no aria-hidden once it is labelled', () => {
-    render(<Icon glyph={IconPlus} label="新增支出" />)
+    render(<Icon glyph={IconPlus} ariaLabel="新增支出" />)
     expect(screen.getByRole('img')).not.toHaveAttribute('aria-hidden')
   })
 
@@ -60,5 +60,18 @@ describe('Icon', () => {
   it('sets its own stroke width rather than taking the library default', () => {
     render(<Icon glyph={IconPlus} data-testid="i" />)
     expect(screen.getByTestId('i')).toHaveAttribute('stroke-width', '1.75')
+  })
+
+  /*
+   * task#79：glyph 原本宣告成 Tabler 的 Icon（FunctionComponent<IconProps>），而 IconProps
+   * 全是選填，所以任何零參數元件都過得了型別檢查——傳錯元件時 size 與 stroke 被默默忽略。
+   * 斷言在型別層，由 pnpm typecheck 執行；型別放寬回去，這行註解就多餘（TS2578）。
+   * 自己用 forwardRef 包出來的元件仍然過得去，這是 Tabler 型別能擋到的極限。
+   */
+  it('accepts only Tabler icons as its glyph', () => {
+    const NotAnIcon = () => <span />
+    // @ts-expect-error 不是 Tabler 的圖示元件
+    const element = <Icon glyph={NotAnIcon} />
+    expect(element).toBeTruthy()
   })
 })

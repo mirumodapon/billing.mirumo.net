@@ -7,7 +7,7 @@ const meta = {
   title: 'Chart/Donut',
   component: Donut,
   args: {
-    label: '分類佔比',
+    ariaLabel: '分類佔比',
     formatValue: format,
     emptyLabel: '還沒有支出',
     totalLabel: '總計',

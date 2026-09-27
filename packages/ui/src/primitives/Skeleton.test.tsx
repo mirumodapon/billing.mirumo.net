@@ -66,3 +66,25 @@ describe('Skeleton', () => {
     expect(screen.getAllByTestId('skeleton-line')).toHaveLength(1)
   })
 })
+
+// task#76：載入中的區塊要能掛 id 與 data-*，Plan 6 的畫面也要能對骨架取 ref
+describe('Skeleton as a DOM element', () => {
+  it('forwards its ref', () => {
+    const ref = { current: null as HTMLSpanElement | null }
+    render(<Skeleton ref={ref} />)
+    expect(ref.current).toBeInstanceOf(HTMLSpanElement)
+  })
+
+  it('passes native attributes through', () => {
+    render(<Skeleton id="s1" data-slot="list" />)
+    const skeleton = screen.getByTestId('skeleton')
+    expect(skeleton).toHaveAttribute('id', 's1')
+    expect(skeleton).toHaveAttribute('data-slot', 'list')
+  })
+
+  // 骨架對輔助技術必須一直是隱藏的；透傳的 aria-hidden 不能把它打開
+  it('stays hidden from assistive tech whatever is passed', () => {
+    render(<Skeleton aria-hidden={false} />)
+    expect(screen.getByTestId('skeleton')).toHaveAttribute('aria-hidden', 'true')
+  })
+})

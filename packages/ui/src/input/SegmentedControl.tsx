@@ -9,14 +9,14 @@ export interface SegmentedControlProps<T extends string> {
   options: readonly SegmentOption<T>[]
   value: T
   onChange: (value: T) => void
-  label: string
+  ariaLabel: string
 }
 
 export function SegmentedControl<T extends string>({
   options,
   value,
   onChange,
-  label,
+  ariaLabel,
 }: SegmentedControlProps<T>) {
   const { onKeyDown, itemProps } = useRovingFocus({
     values: options.map((o) => o.value),
@@ -24,7 +24,7 @@ export function SegmentedControl<T extends string>({
     onChange,
   })
   return (
-    <div role="radiogroup" aria-label={label} className="bi-segmented" onKeyDown={onKeyDown}>
+    <div role="radiogroup" aria-label={ariaLabel} className="bi-segmented" onKeyDown={onKeyDown}>
       {options.map((option) => (
         <button
           key={option.value}

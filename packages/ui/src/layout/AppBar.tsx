@@ -1,11 +1,11 @@
-import { IconChevronLeft, type Icon as TablerIcon } from '@tabler/icons-react'
+import { IconChevronLeft, type TablerIcon } from '@tabler/icons-react'
 import { Icon } from '../icons/Icon'
 import { SafeArea } from './SafeArea'
 
 export interface AppBarAction {
   glyph: TablerIcon
   /** 只有圖示的按鈕，這個名稱是輔助科技唯一能讀到的東西 */
-  label: string
+  ariaLabel: string
   onPress: () => void
 }
 
@@ -28,7 +28,7 @@ export function AppBar({ title, onBack, backLabel = '返回', action }: AppBarPr
         <div className="bi-appbar__slot" data-testid="appbar-slot">
           {onBack ? (
             <button type="button" className="bi-appbar__button" onClick={onBack}>
-              <Icon glyph={IconChevronLeft} size="lg" label={backLabel} />
+              <Icon glyph={IconChevronLeft} size="lg" ariaLabel={backLabel} />
             </button>
           ) : null}
         </div>
@@ -36,7 +36,7 @@ export function AppBar({ title, onBack, backLabel = '返回', action }: AppBarPr
         <div className="bi-appbar__slot" data-testid="appbar-slot">
           {action ? (
             <button type="button" className="bi-appbar__button" onClick={action.onPress}>
-              <Icon glyph={action.glyph} size="lg" label={action.label} />
+              <Icon glyph={action.glyph} size="lg" ariaLabel={action.ariaLabel} />
             </button>
           ) : null}
         </div>

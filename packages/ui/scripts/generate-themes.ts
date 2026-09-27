@@ -2,7 +2,7 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { flavors } from '@catppuccin/palette'
 // 相對 import 必須帶 .ts：Node 24 原生執行 TypeScript，但不會替你補副檔名
-import { catppuccinToSlots, tokyoNightToSlots } from '../src/theme/mapping.ts'
+import { catppuccinToSlots, darken, tokyoNightToSlots } from '../src/theme/mapping.ts'
 import { contrast } from '../src/theme/colorScience.ts'
 import { INK, TOKYO_NIGHT } from '../src/theme/palettes.ts'
 
@@ -36,7 +36,31 @@ function withAccentForegrounds(slots: Record<string, string>): Record<string, st
   return out
 }
 
-const OUT = join(import.meta.dirname, '../src/styles/themes')
+/** 內文對主背景的對比（WCAG AAA），以及對下沉底與第一層表面的底線（AA） */
+const BODY_TEXT_CONTRAST = { bg: 7, 'bg-sunken': 4.5, surface1: 4.5 }
+
+/**
+ * 內文色不夠清楚時，沿原色相往黑壓，直到每個底都達標（task#82）。
+ *
+ * Tokyo Night Day 的 fg 對 bg 只有 4.52，剛好壓線：任何疊在字底下的淡色
+ * （選中的淡底、hover）都會讓它掉到 AA 以下。調色盤裡沒有更深的文字色可換，
+ * 所以壓暗 fg 本身，藍色調留著。其他七個主題本來就達標，一個值都不動。
+ *
+ * 放在產生器而不是 mapping.ts：mapping.ts 一旦有值的 import，Node 原生跑
+ * TypeScript 時就找不到模組（相對路徑沒有 .ts 副檔名）。
+ */
+function withReadableText(slots: Record<string, string>): Record<string, string> {
+  const reads = (text: string) =>
+    Object.entries(BODY_TEXT_CONTRAST).every(([slot, floor]) => contrast(text, slots[slot]!) >= floor)
+  for (let step = 0; step <= 100; step += 1) {
+    const text = darken(slots.text!, step / 100)
+    if (reads(text)) return { ...slots, text }
+  }
+  // 往黑壓只救得了淺色主題；深色主題若不達標，要換成往白提亮，那時再寫
+  throw new Error(`text ${slots.text} cannot reach ${JSON.stringify(BODY_TEXT_CONTRAST)} by darkening`)
+}
+
+const OUT =join(import.meta.dirname, '../src/styles/themes')
 
 interface ThemeSpec {
   id: string
@@ -55,14 +79,14 @@ const specs: ThemeSpec[] = [
     label: `Catppuccin ${f[0]!.toUpperCase()}${f.slice(1)}`,
     scheme: (flavors[f].dark ? 'dark' : 'light') as 'light' | 'dark',
     source: 'https://catppuccin.com/ （MIT）',
-    slots: withAccentForegrounds(catppuccinToSlots(flavors[f])),
+    slots: withAccentForegrounds(withReadableText(catppuccinToSlots(flavors[f]))),
   })),
   ...(['day', 'night', 'storm', 'moon'] as const).map((v) => ({
     id: v === 'night' ? 'tokyo-night' : `tokyo-night-${v}`,
     label: v === 'night' ? 'Tokyo Night' : `Tokyo Night ${v[0]!.toUpperCase()}${v.slice(1)}`,
     scheme: TOKYO_SCHEMES[v],
     source: 'https://github.com/folke/tokyonight.nvim （MIT）',
-    slots: withAccentForegrounds(tokyoNightToSlots(TOKYO_NIGHT[v])),
+    slots: withAccentForegrounds(withReadableText(tokyoNightToSlots(TOKYO_NIGHT[v]))),
   })),
 ]
 

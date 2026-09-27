@@ -1,14 +1,20 @@
-export interface ChipProps {
+import type { HTMLAttributes, Ref } from 'react'
+import type { AccentSlot } from '../theme/accentOrder'
+
+// onSelect 在 DOM 上是「選取文字」事件，這裡另有意思，所以從原生屬性裡拿掉
+export interface ChipProps extends Omit<HTMLAttributes<HTMLElement>, 'className' | 'children' | 'onSelect'> {
   label: string
   selected?: boolean
   disabled?: boolean
   /** 有值時渲染成可點的 button；沒有時是純標籤 */
   onSelect?: () => void
   /** accent 槽位名稱，如 'accent3'。不給則不顯示圓點 */
-  colorKey?: string
+  colorKey?: AccentSlot
+  /** 純標籤時指向 span，可點時指向 button */
+  ref?: Ref<HTMLElement>
 }
 
-export function Chip({ label, selected = false, disabled = false, onSelect, colorKey }: ChipProps) {
+export function Chip({ label, selected = false, disabled = false, onSelect, colorKey, ref, ...rest }: ChipProps) {
   const dot = colorKey ? (
     <span
       data-testid="chip-dot"
@@ -19,9 +25,10 @@ export function Chip({ label, selected = false, disabled = false, onSelect, colo
     />
   ) : null
 
+  // 兩種形態都是透傳的屬性先展開、元件自己的放後面：選取與停用的語意不能被蓋掉
   if (!onSelect) {
     return (
-      <span className="bi-chip" data-selected={selected || undefined}>
+      <span {...rest} ref={ref} className="bi-chip" data-selected={selected || undefined}>
         {dot}
         {label}
       </span>
@@ -30,6 +37,10 @@ export function Chip({ label, selected = false, disabled = false, onSelect, colo
 
   return (
     <button
+      {...rest}
+      // RefObject 的 current 在型別上是協變的，HTMLElement 不能直接當 HTMLButtonElement 用；
+      // 執行期 React 只會把 button 本身寫進去，所以這個轉型是安全的
+      ref={ref as Ref<HTMLButtonElement>}
       type="button"
       className="bi-chip"
       data-selected={selected || undefined}
