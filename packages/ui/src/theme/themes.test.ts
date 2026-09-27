@@ -1,7 +1,9 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { flavors } from '@catppuccin/palette'
 import { contrast } from './colorScience'
+import { TOKYO_NIGHT } from './palettes'
 
 const THEME_DIR = join(import.meta.dirname, '../styles/themes')
 
@@ -236,6 +238,48 @@ describe('text on accent fills (task#71)', () => {
         }
       }
     }
+  })
+})
+
+describe('body text (task#82)', () => {
+  const hex = (css: string, slot: string) => css.match(new RegExp(`--bi-p-${slot}:\\s*(#[0-9a-fA-F]{6});`))![1]!
+
+  /*
+   * 內文對主背景要有 7:1，不是剛好壓線的 4.5。文字底下常常疊著淡色——選中的淡底、
+   * hover 背景——壓線的主題一疊就掉到門檻以下：Tokyo Night Day 原本只有 4.52，
+   * 疊上 20% 的 accent 淡底剩 3.5。其餘七個主題本來就在 7 以上。
+   * 下沉底與第一層表面是內文實際會出現的另外兩個底，至少要守住 AA。
+   */
+  it('reads at 7:1 on the page and 4.5:1 on sunken and raised surfaces', () => {
+    const failures: string[] = []
+    for (const file of themeFiles()) {
+      const css = readFileSync(join(THEME_DIR, file), 'utf8')
+      const text = hex(css, 'text')
+      const floors = { bg: 7, 'bg-sunken': 4.5, surface1: 4.5 }
+      for (const [slot, floor] of Object.entries(floors)) {
+        const ratio = contrast(text, hex(css, slot))
+        if (ratio < floor) failures.push(`${file} text on ${slot}: ${ratio.toFixed(2)} < ${floor}`)
+      }
+    }
+    expect(failures).toEqual([])
+  })
+
+  // 已經夠清楚的主題一個色值都不能動：換掉等於改了那個主題原本的樣子
+  it('keeps each theme’s own text colour wherever it already reads at 7:1', () => {
+    const sources: Record<string, string> = {
+      ...Object.fromEntries(Object.entries(flavors).map(([f, v]) => [`catppuccin-${f}`, v.colors.text.hex])),
+      'tokyo-night': TOKYO_NIGHT.night.fg,
+      'tokyo-night-storm': TOKYO_NIGHT.storm.fg,
+      'tokyo-night-moon': TOKYO_NIGHT.moon.fg,
+      'tokyo-night-day': TOKYO_NIGHT.day.fg,
+    }
+    const changed: string[] = []
+    for (const file of themeFiles()) {
+      const id = file.replace('.css', '')
+      const css = readFileSync(join(THEME_DIR, file), 'utf8')
+      if (hex(css, 'text').toLowerCase() !== sources[id]!.toLowerCase()) changed.push(id)
+    }
+    expect(changed).toEqual(['tokyo-night-day'])
   })
 })
 
