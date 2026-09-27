@@ -1,0 +1,43 @@
+.bi-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bi-space-1);
+}
+
+.bi-field__label {
+  font-size: var(--bi-text-sm);
+  color: var(--bi-text-muted);
+}
+
+.bi-field__input {
+  box-sizing: border-box;
+  min-height: var(--bi-tap-min);
+  padding: var(--bi-space-2) var(--bi-space-3);
+  border: 1px solid var(--bi-border);
+  border-radius: var(--bi-radius-md);
+  background: var(--bi-surface);
+  color: var(--bi-text);
+  font: inherit;
+  /* 至少 16px：更小的話 iOS Safari 聚焦時會放大整個頁面而且不縮回 */
+  font-size: var(--bi-text-base);
+  user-select: text;
+}
+
+.bi-field__input::placeholder {
+  color: var(--bi-text-subtle);
+}
+
+.bi-field__input:focus-visible {
+  outline: 2px solid var(--bi-accent);
+  outline-offset: 1px;
+}
+
+.bi-field[data-invalid] .bi-field__input {
+  border-color: var(--bi-danger);
+}
+
+.bi-field__error {
+  margin: 0;
+  font-size: var(--bi-text-sm);
+  color: var(--bi-danger);
+}

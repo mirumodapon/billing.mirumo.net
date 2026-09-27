@@ -62,3 +62,6 @@ export type { PageTransitionProps } from './motion/PageTransition'
 
 export { CalcKeypad } from './input/CalcKeypad'
 export type { CalcKeypadLabels, CalcKeypadProps } from './input/CalcKeypad'
+
+export { TextField } from './input/TextField'
+export type { TextFieldProps } from './input/TextField'
