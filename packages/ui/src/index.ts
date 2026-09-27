@@ -91,3 +91,8 @@ export {
 
 export { DatePicker } from './input/DatePicker'
 export type { DatePickerLabels, DatePickerProps } from './input/DatePicker'
+
+export { CATEGORY_ICONS } from './icons/categoryIcons'
+export type { CategoryIconName } from './icons/categoryIcons'
+export { IconGrid } from './input/IconGrid'
+export type { IconGridProps } from './input/IconGrid'
