@@ -79,6 +79,13 @@ describe('AmountSection', () => {
     expect(screen.getByRole('button', { name: t('expense.save') })).toBeDisabled()
   })
 
+  // 走查時發現：還沒輸入金額時算不出換算，卻被說成沒有匯率
+  it('shows the rate, not a missing-rate message, before any amount is typed', async () => {
+    await openNew()
+    expect(screen.queryByText(t('expense.noRate', { currency: 'JPY' }), { exact: false })).not.toBeInTheDocument()
+    expect(screen.getByText(t('expense.rateInline', { rate: '0.21' }))).toBeInTheDocument()
+  })
+
   it('shows no conversion or rate for the home currency', async () => {
     await openNew('TWD')
     expect(screen.queryByRole('button', { name: t('expense.editRate') })).not.toBeInTheDocument()

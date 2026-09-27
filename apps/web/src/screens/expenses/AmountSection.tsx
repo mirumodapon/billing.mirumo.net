@@ -74,8 +74,10 @@ export function AmountSection({ trip, draft, change, autoFocus }: FormSectionPro
       {foreign ? (
         <div className="app-converted">
           <span aria-live="polite">
-            {converted ? t('expense.converted', { amount: converted }) : t('expense.noRate', { currency: draft.currency })}
-            {rateText ? ` ・${t('expense.rateInline', { rate: rateText })}` : null}
+            {/* 「沒有匯率」只看匯率本身：還沒輸入金額時也算不出換算，但那不是沒有匯率 */}
+            {rateText === undefined
+              ? t('expense.noRate', { currency: draft.currency })
+              : [converted && t('expense.converted', { amount: converted }), t('expense.rateInline', { rate: rateText })].filter(Boolean).join(' ・')}
           </span>
           <Button
             variant="ghost"
