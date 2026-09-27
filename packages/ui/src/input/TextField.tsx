@@ -9,6 +9,8 @@ export interface TextFieldProps {
   /** 有值時顯示在欄位下方，並讓欄位對輔助科技宣告無效 */
   error?: string
   autoFocus?: boolean
+  /** 離開欄位時。設定頁在這時才存檔，而不是每按一個鍵存一次 */
+  onBlur?: () => void
 }
 
 export function TextField({
@@ -19,6 +21,7 @@ export function TextField({
   maxLength,
   error,
   autoFocus,
+  onBlur,
 }: TextFieldProps) {
   const id = useId()
   const errorId = `${id}-error`
@@ -40,6 +43,7 @@ export function TextField({
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : undefined}
         onChange={(event) => onChange(event.target.value)}
+        onBlur={onBlur}
       />
       {error ? (
         <p id={errorId} className="bi-field__error">
