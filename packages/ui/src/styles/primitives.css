@@ -1,3 +1,4 @@
+@import './utilities.css';
 @import '../primitives/Button.css';
 @import '../primitives/Chip.css';
 @import '../input/ChipGroup.css';
@@ -26,3 +27,4 @@
 @import '../input/IconGrid.css';
 @import '../input/ColorSwatches.css';
 @import '../chart/Donut.css';
+@import '../chart/BarChart.css';

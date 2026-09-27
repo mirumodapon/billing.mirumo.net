@@ -1,0 +1,15 @@
+/*
+ * 看不見但輔助科技讀得到。給圖表的資料表用：圖形對螢幕閱讀器沒有意義，
+ * 同一份資料以表格提供。不能用 display: none，那會連輔助科技一起藏掉。
+ */
+.bi-visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}

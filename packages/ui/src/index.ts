@@ -102,3 +102,6 @@ export type { ColorSwatchesProps } from './input/ColorSwatches'
 
 export { Donut } from './chart/Donut'
 export type { DonutProps, DonutSegment } from './chart/Donut'
+
+export { BarChart } from './chart/BarChart'
+export type { BarChartProps, BarDatum } from './chart/BarChart'
