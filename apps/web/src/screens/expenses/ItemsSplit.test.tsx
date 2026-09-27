@@ -79,7 +79,7 @@ describe('ItemsSplit', () => {
     await addItem(['3', '4', '0', '0'])
     await user.click(within(panel().getByRole('radiogroup', { name: t('split.overflowRule') })).getByRole('radio', { name: t('split.overflowEven') }))
     await user.type(screen.getByLabelText(t('expense.description')), '居酒屋')
-    await user.click(screen.getByRole('button', { name: t('expense.save') }))
+    await user.click(screen.getByRole('button', { name: t('form.save') }))
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
     const [saved] = await stores.repo.listExpenses('t1')
     expect(saved?.split).toEqual({ mode: 'items', overflowRule: 'even', items: [expect.objectContaining({ name: '', amount: 3400, participants: ['a', 'b', 'c'] })] })
@@ -88,6 +88,6 @@ describe('ItemsSplit', () => {
   it('blocks saving without any item', async () => {
     const { user } = await openItems(['1', '0', '0'])
     await user.type(screen.getByLabelText(t('expense.description')), '空的')
-    expect(screen.getByRole('button', { name: t('expense.save') })).toBeDisabled()
+    expect(screen.getByRole('button', { name: t('form.save') })).toBeDisabled()
   })
 })

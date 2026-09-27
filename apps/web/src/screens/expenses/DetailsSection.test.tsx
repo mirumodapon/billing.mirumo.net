@@ -48,7 +48,7 @@ describe('DetailsSection', () => {
     await user.click(screen.getByRole('button', { name: '5' }))
     await user.click(screen.getByLabelText(t('expense.description')))
     await user.type(screen.getByLabelText(t('expense.description')), '地鐵')
-    await user.click(screen.getByRole('button', { name: t('expense.save') }))
+    await user.click(screen.getByRole('button', { name: t('form.save') }))
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
     expect((await stores.repo.listExpenses('t1'))[0]).toMatchObject({ paidBy: 'b', date: '2026-03-16', categoryId: 'cat.transport' })
   })
@@ -67,7 +67,7 @@ describe('form sections', () => {
   it('start closed on every new form, whatever the last one had open', async () => {
     const { user, header } = await openNew()
     await user.click(header())
-    await user.click(screen.getByRole('button', { name: t('expense.close') }))
+    await user.click(screen.getByRole('button', { name: t('form.close') }))
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
     location.hash = '#/trip/t1/expense/new'
     await screen.findByRole('heading', { name: t('expense.new') })

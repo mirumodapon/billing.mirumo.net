@@ -62,11 +62,11 @@ describe('SplitSection: exact', () => {
     for (const d of ['2', '0', '0', '0']) await user.click(key(d))
     await user.click(key(t('keypad.done')))
     expect(panel().getByRole('status')).toHaveTextContent(plain(t('split.remaining', { amount: formatMoney(1000, 'TWD') })))
-    expect(screen.getByRole('button', { name: t('expense.save') })).toBeDisabled()
+    expect(screen.getByRole('button', { name: t('form.save') })).toBeDisabled()
     await user.click(panel().getByRole('button', { name: /^小美/ }))
     for (const d of ['1', '0', '0', '0']) await user.click(key(d))
     await user.click(key(t('keypad.done')))
-    expect(screen.getByRole('button', { name: t('expense.save') })).toBeEnabled()
+    expect(screen.getByRole('button', { name: t('form.save') })).toBeEnabled()
   })
 
   it('says by how much the amounts go over the total', async () => {

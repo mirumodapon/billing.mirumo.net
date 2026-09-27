@@ -49,7 +49,7 @@ describe('ReceiptSection', () => {
     const { user, header, stores } = await open()
     pick(new File(['x'], 'r.jpg', { type: 'image/jpeg' }))
     await waitFor(() => expect(header()).toHaveTextContent(tPlural('receipt.count', { count: 1 })))
-    await user.click(screen.getByRole('button', { name: t('expense.save') }))
+    await user.click(screen.getByRole('button', { name: t('form.save') }))
     await waitFor(async () => expect((await stores.repo.listExpenses('t1'))[0]?.attachments).toEqual([
       { id: expect.any(String), mimeType: 'image/webp', byteSize: 900, width: 1200, height: 1600 },
     ]))

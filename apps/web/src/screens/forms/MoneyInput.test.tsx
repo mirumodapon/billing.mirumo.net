@@ -47,7 +47,7 @@ describe('AmountSection', () => {
     await user.click(screen.getByLabelText(t('expense.description')))
     expect(screen.queryByRole('button', { name: t('keypad.done') })).not.toBeInTheDocument()
     await user.type(screen.getByLabelText(t('expense.description')), '一蘭拉麵')
-    expect(screen.getByRole('button', { name: t('expense.save') })).toBeEnabled()
+    expect(screen.getByRole('button', { name: t('form.save') })).toBeEnabled()
   })
 
   it('disables the decimal point for currencies without minor units', async () => {
@@ -76,7 +76,7 @@ describe('AmountSection', () => {
     await user.click(screen.getByLabelText(t('expense.description')))
     await user.type(screen.getByLabelText(t('expense.description')), '炸雞')
     expect(screen.getByText(t('expense.noRate', { currency: 'KRW' }))).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: t('expense.save') })).toBeDisabled()
+    expect(screen.getByRole('button', { name: t('form.save') })).toBeDisabled()
   })
 
   // 走查時發現：還沒輸入金額時算不出換算，卻被說成沒有匯率

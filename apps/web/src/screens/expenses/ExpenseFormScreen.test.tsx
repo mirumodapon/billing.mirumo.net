@@ -18,14 +18,14 @@ describe('ExpenseFormScreen: frame', () => {
   it('opens a blank new expense with saving blocked until it is filled', async () => {
     await setup('/trip/t1/expense/new')
     expect(screen.getByRole('heading', { name: t('expense.new') })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: t('expense.save') })).toBeDisabled()
+    expect(screen.getByRole('button', { name: t('form.save') })).toBeDisabled()
   })
 
   it('opens an existing expense for editing', async () => {
     await setup('/trip/t1/expense/e1')
     expect(screen.getByRole('heading', { name: t('expense.edit') })).toBeInTheDocument()
     expect(screen.getByLabelText(t('expense.description'))).toHaveValue('一蘭拉麵')
-    expect(screen.getByRole('button', { name: t('expense.save') })).toBeEnabled()
+    expect(screen.getByRole('button', { name: t('form.save') })).toBeEnabled()
   })
 
   it('saves an edit and leaves the form', async () => {
@@ -33,7 +33,7 @@ describe('ExpenseFormScreen: frame', () => {
     const field = screen.getByLabelText(t('expense.description'))
     await user.clear(field)
     await user.type(field, '豚骨拉麵')
-    await user.click(screen.getByRole('button', { name: t('expense.save') }))
+    await user.click(screen.getByRole('button', { name: t('form.save') }))
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
     expect((await stores.repo.listExpenses('t1')).map((e) => [e.id, e.description])).toEqual([['e1', '豚骨拉麵']])
   })
@@ -41,7 +41,7 @@ describe('ExpenseFormScreen: frame', () => {
   // 直接由 session 還原進表單時前面沒有頁面：關閉要去支出列表，不是退出 app
   it('closes to the expenses tab when there is no page to go back to', async () => {
     const { user } = await setup('/trip/t1/expense/new')
-    await user.click(screen.getByRole('button', { name: t('expense.close') }))
+    await user.click(screen.getByRole('button', { name: t('form.close') }))
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
   })
 
@@ -80,7 +80,7 @@ describe('ExpenseFormScreen: acceptance and memory', () => {
     await user.click(screen.getByLabelText(t('expense.description')))
     await user.type(screen.getByLabelText(t('expense.description')), '豚骨拉麵')
     // 3. 儲存
-    await user.click(screen.getByRole('button', { name: t('expense.save') }))
+    await user.click(screen.getByRole('button', { name: t('form.save') }))
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
     expect(await screen.findByRole('button', { name: /^豚骨拉麵/ })).toBeInTheDocument()
     const created = (await stores.repo.listExpenses('t1')).find((e) => e.description === '豚骨拉麵')!
@@ -96,7 +96,7 @@ describe('ExpenseFormScreen: acceptance and memory', () => {
     const { user } = await renderApp('/trip/t1/expense/e1', stores)
     await user.click(screen.getByRole('button', { name: new RegExp(`^${t('expense.details')}`) }))
     await user.click(screen.getByRole('radio', { name: t('pay.cash') }))
-    await user.click(screen.getByRole('button', { name: t('expense.save') }))
+    await user.click(screen.getByRole('button', { name: t('form.save') }))
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
     expect(await stores.repo.listExpenses('t1')).toEqual([expect.objectContaining({ id: 'e1', paymentMethodId: 'pay.cash', exchangeRate: 0.2 })])
   })
@@ -111,7 +111,7 @@ describe('ExpenseFormScreen: acceptance and memory', () => {
     await user.click(details())
     await user.click(screen.getByRole('radio', { name: t('cat.transport') }))
     await user.click(screen.getByRole('radio', { name: t('pay.mobile') }))
-    await user.click(screen.getByRole('button', { name: t('expense.save') }))
+    await user.click(screen.getByRole('button', { name: t('form.save') }))
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
     await user.click(await screen.findByRole('button', { name: t('expenses.add') }))
     await screen.findByRole('heading', { name: t('expense.new') })
@@ -123,7 +123,7 @@ describe('ExpenseFormScreen: acceptance and memory', () => {
     const { user } = await renderApp('/trip/t1/expense/e1', stores)
     await user.click(screen.getByRole('button', { name: new RegExp(`^${t('expense.details')}`) }))
     await user.click(screen.getByRole('radio', { name: t('cat.shopping') }))
-    await user.click(screen.getByRole('button', { name: t('expense.save') }))
+    await user.click(screen.getByRole('button', { name: t('form.save') }))
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
     expect((await stores.repo.getSettings()).lastUsed).toEqual({})
   })
