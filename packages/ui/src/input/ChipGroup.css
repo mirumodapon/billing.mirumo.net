@@ -1,0 +1,5 @@
+.bi-chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bi-space-2);
+}

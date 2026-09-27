@@ -1,0 +1,64 @@
+.bi-bar {
+  margin: 0;
+  position: relative;
+}
+
+.bi-bar__scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.bi-bar__scroll svg {
+  display: block;
+}
+
+.bi-bar__grid {
+  stroke: var(--bi-border);
+  stroke-width: 1;
+}
+
+.bi-bar__tick,
+.bi-bar__label {
+  fill: var(--bi-text-muted);
+  font-size: var(--bi-text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.bi-bar__mark {
+  fill: var(--bi-accent);
+}
+
+/* 狀態色保留給狀態：超支才用 warning */
+.bi-bar g[data-over] .bi-bar__mark {
+  fill: var(--bi-warning);
+}
+
+.bi-bar__value {
+  fill: var(--bi-text);
+  font-size: var(--bi-text-xs);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.bi-bar__budget {
+  stroke: var(--bi-text-muted);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.bi-bar__budget-label {
+  fill: var(--bi-text-muted);
+  font-size: var(--bi-text-xs);
+}
+
+.bi-bar__hit {
+  fill: transparent;
+  cursor: pointer;
+}
+
+.bi-bar__empty {
+  margin: 0;
+  padding: var(--bi-space-6) 0;
+  text-align: center;
+  color: var(--bi-text-muted);
+}

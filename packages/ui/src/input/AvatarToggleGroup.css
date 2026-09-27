@@ -1,0 +1,51 @@
+.bi-avatar-toggle {
+  display: flex;
+  gap: var(--bi-space-1);
+  overflow-x: auto;
+  /* 橫向捲動時不要把整頁往左右拖 */
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.bi-avatar-toggle::-webkit-scrollbar {
+  display: none;
+}
+
+.bi-avatar-toggle__item {
+  box-sizing: border-box;
+  flex: none;
+  min-width: var(--bi-tap-min);
+  min-height: var(--bi-tap-min);
+  padding: var(--bi-space-1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  border: 0;
+  border-radius: var(--bi-radius-md);
+  background: none;
+  cursor: pointer;
+}
+
+.bi-avatar-toggle__item:active {
+  transform: scale(0.97);
+  transition: transform var(--bi-dur-press) var(--bi-ease-out);
+}
+
+.bi-avatar-toggle__item:focus-visible {
+  outline: 2px solid var(--bi-accent);
+  outline-offset: -2px;
+}
+
+.bi-avatar-toggle__name {
+  max-width: var(--bi-space-14);
+  font-size: var(--bi-text-xs);
+  color: var(--bi-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bi-avatar-toggle__item[aria-pressed='true'] .bi-avatar-toggle__name {
+  color: var(--bi-text);
+}

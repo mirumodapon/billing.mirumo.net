@@ -1,0 +1,92 @@
+.bi-safe:has(> .bi-keypad) {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: var(--bi-z-keypad);
+  background: var(--bi-bg-sunken);
+  border-top: 1px solid var(--bi-border);
+}
+
+.bi-keypad {
+  animation: bi-keypad-in var(--bi-dur-sheet) var(--bi-ease-out);
+}
+
+.bi-keypad__header {
+  padding: var(--bi-space-2) var(--bi-space-4) 0;
+}
+
+.bi-keypad__display {
+  padding: var(--bi-space-2) var(--bi-space-4);
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.bi-keypad__expression {
+  min-height: 1.5em;
+  font-size: var(--bi-text-lg);
+  color: var(--bi-text);
+  overflow-wrap: anywhere;
+}
+
+.bi-keypad__result {
+  display: block;
+  min-height: 1.4em;
+  font-size: var(--bi-text-sm);
+  color: var(--bi-text-muted);
+}
+
+.bi-keypad__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--bi-border);
+}
+
+.bi-keypad__key {
+  box-sizing: border-box;
+  min-height: var(--bi-tap-min);
+  padding: var(--bi-space-3) 0;
+  border: 0;
+  background: var(--bi-surface);
+  color: var(--bi-text);
+  font: inherit;
+  font-size: var(--bi-text-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.bi-keypad__key[data-kind='op'],
+.bi-keypad__key[data-kind='fn'] {
+  background: var(--bi-surface-raised);
+}
+
+/* 完成佔兩格：最常按的鍵要最好按 */
+.bi-keypad__key[data-kind='done'] {
+  grid-column: span 2;
+  color: var(--bi-accent);
+  font-weight: 600;
+}
+
+.bi-keypad__key:active:not(:disabled) {
+  transform: scale(0.97);
+  transition: transform var(--bi-dur-press) var(--bi-ease-out);
+}
+
+.bi-keypad__key:disabled {
+  color: var(--bi-text-subtle);
+  cursor: default;
+}
+
+.bi-keypad__key:focus-visible {
+  outline: 2px solid var(--bi-accent);
+  outline-offset: -2px;
+}
+
+@keyframes bi-keypad-in {
+  from {
+    transform: translateY(100%);
+  }
+}

@@ -1,0 +1,40 @@
+.bi-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bi-space-1);
+}
+
+.bi-swatches__option {
+  box-sizing: border-box;
+  min-width: var(--bi-tap-min);
+  min-height: var(--bi-tap-min);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--bi-radius-full);
+  background: none;
+  cursor: pointer;
+}
+
+.bi-swatches__color {
+  width: var(--bi-space-8);
+  height: var(--bi-space-8);
+  border-radius: var(--bi-radius-full);
+}
+
+/*
+ * 選中：色塊外一圈背景色的間隙，再一圈文字色的環。環的對比對象是背景，
+ * 任何主題都成立；在色塊上疊勾則要與十二種底色都有對比（task#71）。
+ */
+.bi-swatches__option[aria-checked='true'] .bi-swatches__color {
+  box-shadow:
+    0 0 0 2px var(--bi-bg),
+    0 0 0 4px var(--bi-text);
+}
+
+.bi-swatches__option:focus-visible {
+  outline: 2px solid var(--bi-accent);
+  outline-offset: -2px;
+}
