@@ -102,7 +102,9 @@ export function validateSnapshot(input: unknown): SnapshotCheck {
     }
     checkRecord(at, expense, membersOfExpense(expense))
     if (!categoryIds.has(expense.categoryId)) problems.push(`${at}: category ${expense.categoryId} does not exist`)
-    if (!methodIds.has(expense.paymentMethodId)) {
+    // 旅程專用的付款方式也算（task#92）
+    const tripMethods = trips.find((trip) => trip.id === expense.tripId)?.paymentMethods ?? []
+    if (!methodIds.has(expense.paymentMethodId) && !tripMethods.some((m) => m?.id === expense.paymentMethodId)) {
       problems.push(`${at}: payment method ${expense.paymentMethodId} does not exist`)
     }
   }

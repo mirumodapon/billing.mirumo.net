@@ -157,3 +157,15 @@ describe('validateSnapshot: trip payment methods (task#92)', () => {
     expect(problemsOf(snapshot({ trips: [twice] }))).toContain('trip t1: payment method suica appears more than once')
   })
 })
+
+describe('validateSnapshot: records using trip payment methods (task#92)', () => {
+  // 修正前：只認全域的付款方式，用了旅程專用付款方式的支出讓整份備份匯不進來
+  it('accepts an expense paid with one of its trip’s own payment methods', () => {
+    const trip = makeTrip({ paymentMethods: [{ id: 'suica', name: 'Suica' }] })
+    expect(validateSnapshot(snapshot({ trips: [trip], expenses: [makeExpense({ paymentMethodId: 'suica' })] }))).toMatchObject({ ok: true })
+  })
+
+  it('still rejects a payment method that is in neither list', () => {
+    expect(problemsOf(snapshot({ expenses: [makeExpense({ paymentMethodId: 'nowhere' })] }))).toContain('expense e1: payment method nowhere does not exist')
+  })
+})
