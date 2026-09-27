@@ -99,3 +99,6 @@ export type { IconGridProps } from './input/IconGrid'
 
 export { ColorSwatches } from './input/ColorSwatches'
 export type { ColorSwatchesProps } from './input/ColorSwatches'
+
+export { Donut } from './chart/Donut'
+export type { DonutProps, DonutSegment } from './chart/Donut'
