@@ -219,3 +219,37 @@ export function addItem(d: ExpenseDraft, trip: Trip): ExpenseDraft {
   const item: ItemDraft = { id: crypto.randomUUID(), name: '', amount: undefined, participants: last ? [...last.participants] : memberOrder(trip) }
   return { ...d, split: { ...d.split, items: [...d.split.items, item] } }
 }
+
+const isStringArray = (v: unknown): v is string[] => Array.isArray(v) && v.every((x) => typeof x === 'string')
+const isOptionalNumber = (v: unknown) => v === undefined || (typeof v === 'number' && Number.isFinite(v))
+
+/**
+ * 從 DraftStore 讀回來的東西是不是一份可用的草稿（規格 7.9）。
+ *
+ * 草稿會跨版本存活：舊版存的形狀、或寫到一半的資料，不能把表單弄壞。
+ * 形狀不對就當作沒有草稿——那是便利，不是資料。
+ */
+export function isExpenseDraft(value: unknown): value is ExpenseDraft {
+  if (typeof value !== 'object' || value === null) return false
+  const d = value as Record<string, unknown>
+  const strings = ['currency', 'description', 'date', 'categoryId', 'paymentMethodId', 'paidBy'] as const
+  if (!strings.every((k) => typeof d[k] === 'string')) return false
+  if (d.id !== undefined && typeof d.id !== 'string') return false
+  if (!isOptionalNumber(d.amount) || !isOptionalNumber(d.exchangeRate)) return false
+  if (typeof d.rateTouched !== 'boolean' || !Array.isArray(d.attachments)) return false
+  const split = d.split as Record<string, unknown> | null
+  if (typeof split !== 'object' || split === null) return false
+  if (split.mode === 'even') return isStringArray(split.participants)
+  if (split.mode === 'exact') {
+    const amounts = split.amounts
+    return typeof amounts === 'object' && amounts !== null && Object.values(amounts).every(isOptionalNumber)
+  }
+  if (split.mode === 'items') {
+    return (
+      (split.overflowRule === 'prorata' || split.overflowRule === 'even') &&
+      Array.isArray(split.items) &&
+      split.items.every((i: Record<string, unknown>) => typeof i?.id === 'string' && typeof i.name === 'string' && isOptionalNumber(i.amount) && isStringArray(i.participants))
+    )
+  }
+  return false
+}

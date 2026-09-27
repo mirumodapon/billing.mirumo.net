@@ -6,6 +6,7 @@ import {
   addItem,
   draftFromExpense,
   exactAllocation,
+  isExpenseDraft,
   itemsTotals,
   newDraft,
   previewShares,
@@ -277,5 +278,31 @@ describe('addItem (spec 4.4)', () => {
     const d = addItem(start, trip)
     expect(d.split.mode === 'items' && d.split.items[1]?.participants).toEqual(['a', 'c'])
     expect(d.split.mode === 'items' && d.split.items[1]?.id).not.toBe('i1')
+  })
+})
+
+describe('isExpenseDraft', () => {
+  it('accepts every draft the form can produce', () => {
+    const items = filled({ split: { mode: 'items', items: [{ id: 'i', name: '', amount: undefined, participants: ['a'] }], overflowRule: 'even' } })
+    for (const d of [newDraft(ctx()), filled(), filled({ split: { mode: 'exact', amounts: { a: 1, b: undefined } } }), items]) {
+      expect(isExpenseDraft(d)).toBe(true)
+    }
+  })
+
+  // 舊版存的形狀或寫到一半的資料：當作沒有草稿，不能把表單弄壞
+  it.each([
+    null,
+    'draft',
+    {},
+    { ...newDraft(ctx()), amount: 'x' },
+    { ...newDraft(ctx()), amount: Number.NaN },
+    { ...newDraft(ctx()), description: undefined },
+    { ...newDraft(ctx()), rateTouched: 'yes' },
+    { ...newDraft(ctx()), split: { mode: 'even' } },
+    { ...newDraft(ctx()), split: { mode: 'items', items: [{ id: 'i' }], overflowRule: 'prorata' } },
+    { ...newDraft(ctx()), split: { mode: 'items', items: [], overflowRule: 'sideways' } },
+    { ...newDraft(ctx()), split: { mode: 'magic' } },
+  ])('rejects %j', (value) => {
+    expect(isExpenseDraft(value)).toBe(false)
   })
 })
