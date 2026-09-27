@@ -1,6 +1,6 @@
 import { AppBar, Fab, Skeleton } from '@billing/ui'
 import { IconPlus, IconSettings } from '@tabler/icons-react'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { useI18n } from '../i18n/useI18n'
 import { useScrollRestore } from '../session/useScrollRestore'
@@ -16,6 +16,8 @@ export function TripListScreen() {
   const summaries = useTrips((s) => s.summaries)
   const loaded = useTrips((s) => s.loaded)
   const [creating, setCreating] = useState(false)
+  // 回到列表就放掉上一趟旅程的支出與轉帳（規格 7.5：首頁不載支出）
+  useEffect(() => store.getState().closeTrip(), [store])
   const scroller = useRef<HTMLDivElement>(null)
   useScrollRestore(scroller, loaded)
 

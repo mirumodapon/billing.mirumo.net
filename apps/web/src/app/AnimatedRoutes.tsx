@@ -1,33 +1,49 @@
 import { PageTransition } from '@billing/ui'
 import { useState } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router'
+import { ExpenseFormScreen } from '../screens/expenses/ExpenseFormScreen'
 import { PlaceholderTab } from '../screens/PlaceholderTab'
 import { SettingsScreen } from '../screens/settings/SettingsScreen'
 import { SetupTab } from '../screens/setup/SetupTab'
 import { TripListScreen } from '../screens/TripListScreen'
 import { TripShell } from '../screens/TripShell'
 
-/** 第一層路由：換這一層才播頁面動畫，旅程內切 tab 不播 */
+export type PageDirection = 'forward' | 'back' | 'up' | 'down'
+
+/** 換頁動畫的單位：旅程內切 tab 不算換頁，全螢幕表單算 */
 export function pageKeyOf(pathname: string): string {
+  const form = /^\/trip\/([^/]+)\/expense\/([^/]+)/.exec(pathname)
+  if (form) return `/trip/${form[1]}/expense/${form[2]}`
   const trip = /^\/trip\/([^/]+)/.exec(pathname)
   if (trip) return `/trip/${trip[1]}`
   return pathname === '/settings' ? '/settings' : '/'
 }
 
-const depthOf = (key: string) => (key === '/' ? 0 : 1)
+const depthOf = (key: string) => (key === '/' ? 0 : key.includes('/expense/') ? 2 : 1)
+const isForm = (key: string) => depthOf(key) === 2
+
+/**
+ * 規格 5.5：往深處走由右滑入、回來由左滑回；規格 4.1：全螢幕表單由下往上推入，
+ * 關掉時往下收。
+ */
+export function directionBetween(from: string, to: string): PageDirection {
+  if (isForm(to) && !isForm(from)) return 'up'
+  if (isForm(from) && !isForm(to)) return 'down'
+  return depthOf(to) >= depthOf(from) ? 'forward' : 'back'
+}
 
 export function AnimatedRoutes() {
   const location = useLocation()
   const key = pageKeyOf(location.pathname)
-  // 方向取決於「從哪裡來」：往深處走由右滑入，回到列表由左滑回（規格 5.5）
-  const [page, setPage] = useState({ key, direction: 'forward' as 'forward' | 'back' })
-  if (page.key !== key) setPage({ key, direction: depthOf(key) >= depthOf(page.key) ? 'forward' : 'back' })
+  const [page, setPage] = useState({ key, direction: 'forward' as PageDirection })
+  if (page.key !== key) setPage({ key, direction: directionBetween(page.key, key) })
 
   return (
     <PageTransition routeKey={key} direction={page.direction}>
       <Routes location={location}>
         <Route path="/" element={<TripListScreen />} />
         <Route path="/settings" element={<SettingsScreen />} />
+        <Route path="/trip/:tripId/expense/:expenseId" element={<ExpenseFormScreen />} />
         <Route path="/trip/:tripId" element={<TripShell />}>
           <Route path="expenses" element={<PlaceholderTab />} />
           <Route path="stats" element={<PlaceholderTab />} />

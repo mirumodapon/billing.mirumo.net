@@ -113,3 +113,20 @@
 .app-row__value {
   color: var(--bi-text-muted);
 }
+
+/* 全螢幕表單的頂列：✕、標題、儲存（規格 4.4：儲存鍵固定在 header） */
+.app-form-header {
+  display: flex;
+  align-items: center;
+  gap: var(--bi-space-2);
+  padding: var(--bi-space-2) var(--bi-space-3);
+  border-bottom: 1px solid var(--bi-border);
+}
+
+.app-form-header__title {
+  flex: 1;
+  margin: 0;
+  font-size: var(--bi-text-lg);
+  font-weight: 600;
+  text-align: center;
+}
