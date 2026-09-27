@@ -22,6 +22,15 @@ describe('directionBetween', () => {
   })
 
   // 規格 5.5：往深處由右滑入，回來由左滑回
+  // task#101：檢視頁由下推入，檢視 → 編輯往前，編輯存完回檢視往回
+  it('pushes a view up, slides into its edit form and back', () => {
+    expect(directionBetween('/trip/t1', '/trip/t1/expense/e1')).toBe('up')
+    expect(directionBetween('/trip/t1/expense/e1', '/trip/t1/expense/e1/edit')).toBe('forward')
+    expect(directionBetween('/trip/t1/expense/e1/edit', '/trip/t1/expense/e1')).toBe('back')
+    expect(directionBetween('/trip/t1/expense/e1', '/trip/t1')).toBe('down')
+    expect(pageKeyOf('/trip/t1/expense/e1/edit')).toBe('/trip/t1/expense/e1/edit')
+  })
+
   it('slides sideways between the list, settings and a trip', () => {
     expect(directionBetween('/', '/trip/t1')).toBe('forward')
     expect(directionBetween('/trip/t1', '/')).toBe('back')

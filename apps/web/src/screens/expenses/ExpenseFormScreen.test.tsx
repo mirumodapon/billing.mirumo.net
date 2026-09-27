@@ -22,14 +22,14 @@ describe('ExpenseFormScreen: frame', () => {
   })
 
   it('opens an existing expense for editing', async () => {
-    await setup('/trip/t1/expense/e1')
+    await setup('/trip/t1/expense/e1/edit')
     expect(screen.getByRole('heading', { name: t('expense.edit') })).toBeInTheDocument()
     expect(screen.getByLabelText(t('expense.description'))).toHaveValue('一蘭拉麵')
     expect(screen.getByRole('button', { name: t('form.save') })).toBeEnabled()
   })
 
   it('saves an edit and leaves the form', async () => {
-    const { user, stores } = await setup('/trip/t1/expense/e1')
+    const { user, stores } = await setup('/trip/t1/expense/e1/edit')
     const field = screen.getByLabelText(t('expense.description'))
     await user.clear(field)
     await user.type(field, '豚骨拉麵')
@@ -93,7 +93,7 @@ describe('ExpenseFormScreen: acceptance and memory', () => {
 
   it('keeps the id and the fixed rate when editing, even after changing the payment method', async () => {
     const stores = await tripWithJapan()
-    const { user } = await renderApp('/trip/t1/expense/e1', stores)
+    const { user } = await renderApp('/trip/t1/expense/e1/edit', stores)
     await user.click(screen.getByRole('button', { name: new RegExp(`^${t('expense.details')}`) }))
     await user.click(screen.getByRole('radio', { name: t('pay.cash') }))
     await user.click(screen.getByRole('button', { name: t('form.save') }))
@@ -120,7 +120,7 @@ describe('ExpenseFormScreen: acceptance and memory', () => {
 
   it('does not change the defaults when editing an old expense', async () => {
     const stores = await tripWithJapan()
-    const { user } = await renderApp('/trip/t1/expense/e1', stores)
+    const { user } = await renderApp('/trip/t1/expense/e1/edit', stores)
     await user.click(screen.getByRole('button', { name: new RegExp(`^${t('expense.details')}`) }))
     await user.click(screen.getByRole('radio', { name: t('cat.shopping') }))
     await user.click(screen.getByRole('button', { name: t('form.save') }))

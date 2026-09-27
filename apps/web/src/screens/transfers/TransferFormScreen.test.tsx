@@ -63,7 +63,7 @@ describe('TransferFormScreen', () => {
   })
 
   it('keeps the id and the fixed rate when editing', async () => {
-    const { user, stores } = await setup('/trip/t1/transfer/x1')
+    const { user, stores } = await setup('/trip/t1/transfer/x1/edit')
     expect(screen.getByRole('heading', { name: t('transfer.edit') })).toBeInTheDocument()
     expect(screen.getByLabelText(t('transfer.note'))).toHaveValue('車票')
     await user.type(screen.getByLabelText(t('transfer.note')), '！')

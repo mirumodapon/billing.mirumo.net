@@ -249,6 +249,36 @@
     font-weight: 600;
   }
 
+  /* 收據放大檢視：蓋住整個畫面，照片完整顯示不裁切（task#101） */
+  .app-photo-viewer {
+    position: fixed;
+    inset: 0;
+    z-index: var(--bi-z-dialog);
+    display: flex;
+    flex-direction: column;
+    background: var(--bi-scrim);
+  }
+
+  .app-photo-viewer img {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    object-fit: contain;
+  }
+
+  /* 檢視頁的一列「標籤 … 值」，唯讀 */
+  .app-fact {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--bi-space-3);
+    padding: var(--bi-space-2) 0;
+    border-bottom: 1px solid var(--bi-border);
+  }
+
+  .app-fact > :first-child {
+    color: var(--bi-text-muted);
+  }
+
   .app-converted {
     display: flex;
     align-items: center;

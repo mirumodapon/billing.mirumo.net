@@ -67,12 +67,12 @@ describe('expense drafts (spec 7.9)', () => {
 
   // Plan 5 找到的缺口：存檔後切到背景，不能把草稿寫回去
   it('is gone once the expense is saved, even if the app is then backgrounded', async () => {
-    const { user, stores } = await setup('/trip/t1/expense/e1')
+    const { user, stores } = await setup('/trip/t1/expense/e1/edit')
     await user.type(description(), '！')
     await user.click(screen.getByRole('button', { name: t('form.save') }))
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
     await act(async () => setVisibility('hidden'))
-    expect(await saved(stores, '/trip/t1/expense/e1')).toBeUndefined()
+    expect(await saved(stores, '/trip/t1/expense/e1/edit')).toBeUndefined()
   })
 
   it('leaves at once without asking when nothing was changed', async () => {
@@ -123,10 +123,10 @@ describe('expense drafts (spec 7.9)', () => {
   })
 
   it('keeps new and edit drafts apart', async () => {
-    const { user, stores } = await setup('/trip/t1/expense/e1')
+    const { user, stores } = await setup('/trip/t1/expense/e1/edit')
     await user.type(description(), '！')
     await act(async () => setVisibility('hidden'))
-    expect((await saved(stores, '/trip/t1/expense/e1'))?.description).toBe('一蘭拉麵！')
+    expect((await saved(stores, '/trip/t1/expense/e1/edit'))?.description).toBe('一蘭拉麵！')
     expect(await saved(stores, NEW)).toBeUndefined()
   })
 })
