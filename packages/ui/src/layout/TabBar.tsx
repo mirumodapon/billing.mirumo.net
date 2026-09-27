@@ -1,5 +1,5 @@
 import type { Icon as TablerIcon } from '@tabler/icons-react'
-import type { KeyboardEvent } from 'react'
+import { useRovingFocus } from '../hooks/rovingFocus'
 import { Icon } from '../icons/Icon'
 import { SafeArea } from './SafeArea'
 
@@ -18,15 +18,11 @@ export interface TabBarProps {
 }
 
 export function TabBar({ tabs, value, onChange, label }: TabBarProps) {
-  function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-    const delta = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0
-    if (delta === 0) return
-    event.preventDefault()
-    const index = tabs.findIndex((tab) => tab.value === value)
-    // 取模再加長度再取模，負數才會繞到最後一個而不是變成 -1
-    const next = tabs[(((index + delta) % tabs.length) + tabs.length) % tabs.length]
-    if (next) onChange(next.value)
-  }
+  const { onKeyDown, itemProps } = useRovingFocus({
+    values: tabs.map((tab) => tab.value),
+    value,
+    onChange,
+  })
 
   return (
     <SafeArea edges={['bottom', 'left', 'right']} data-testid="tabbar-safe">
@@ -39,10 +35,10 @@ export function TabBar({ tabs, value, onChange, label }: TabBarProps) {
               type="button"
               role="tab"
               aria-selected={selected}
+              className="bi-tabbar__tab"
               // 只有選中的留在 Tab 順序裡：tablist 的標準模型是「Tab 進來，
               // 方向鍵切換」。全部可 Tab 的話鍵盤使用者要按四次才走得掉
-              tabIndex={selected ? 0 : -1}
-              className="bi-tabbar__tab"
+              {...itemProps(tab.value)}
               onClick={() => onChange(tab.value)}
             >
               <Icon glyph={tab.glyph} />

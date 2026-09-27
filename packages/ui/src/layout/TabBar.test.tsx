@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { IconChartDonut, IconListDetails, IconSettings, IconTransfer } from '@tabler/icons-react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { TabBar } from './TabBar'
 
@@ -72,5 +73,20 @@ describe('TabBar', () => {
     const css = readFileSync(join(import.meta.dirname, 'TabBar.css'), 'utf8')
     expect(css).toMatch(/\.bi-tabbar__tab\s*{[^}]*min-height:\s*var\(--bi-tap-min\)/)
     expect(css).toMatch(/z-index:\s*var\(--bi-z-tabbar\)/)
+  })
+
+  /*
+   * Plan 3 的 TabBar 只改 aria-selected 不移焦點：焦點框留在舊分頁上，
+   * 螢幕閱讀器念的也是舊分頁。這條在改用 useRovingFocus 之前是紅的。
+   */
+  it('moves keyboard focus to the newly selected tab', async () => {
+    function Controlled() {
+      const [value, setValue] = useState('expenses')
+      return <TabBar tabs={tabs} value={value} onChange={setValue} label="旅程分頁" />
+    }
+    render(<Controlled />)
+    screen.getByRole('tab', { name: '支出' }).focus()
+    await userEvent.keyboard('{ArrowRight}')
+    expect(screen.getByRole('tab', { name: '統計' })).toHaveFocus()
   })
 })
