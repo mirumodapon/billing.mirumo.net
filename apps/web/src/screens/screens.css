@@ -130,3 +130,20 @@
   font-weight: 600;
   text-align: center;
 }
+
+/* 支出金額：大字、等寬數字，看起來像計算機的顯示 */
+.app-amount {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--bi-tap-min);
+  padding: var(--bi-space-2) var(--bi-space-3);
+  border: 1px solid var(--bi-border);
+  border-radius: var(--bi-radius-md);
+  background: var(--bi-surface);
+  color: var(--bi-text);
+  font: inherit;
+  font-size: var(--bi-text-2xl);
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+  caret-color: transparent;
+}

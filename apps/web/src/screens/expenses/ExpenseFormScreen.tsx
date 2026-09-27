@@ -9,6 +9,7 @@ import { draftFromExpense, newDraft, problemsOf, toExpense, type ExpenseDraft } 
 import { useI18n } from '../../i18n/useI18n'
 import { useStores, useTrips } from '../../stores/StoresProvider'
 import { useOpenTrip } from '../useOpenTrip'
+import { AmountSection } from './AmountSection'
 
 /** 新增（/expense/new）或編輯（/expense/:id）支出的全螢幕表單（規格 4.4） */
 export function ExpenseFormScreen() {
@@ -65,6 +66,7 @@ function ExpenseForm({ trip, existing }: { trip: Trip; existing?: Expense }) {
       </SafeArea>
       <div className="app-scroll">
         <div className="app-form">
+          <AmountSection trip={trip} draft={draft} change={change} autoFocus={!existing} />
           <TextField label={t('expense.description')} value={draft.description} onChange={(description) => change((d) => ({ ...d, description }))} />
         </div>
       </div>
