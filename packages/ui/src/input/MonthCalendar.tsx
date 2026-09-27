@@ -59,7 +59,7 @@ export function MonthCalendar({
           className="bi-calendar__nav"
           onClick={() => onMonthChange(addMonths(month, -1))}
         >
-          <Icon glyph={IconChevronLeft} label={labels.prevMonth} />
+          <Icon glyph={IconChevronLeft} ariaLabel={labels.prevMonth} />
         </button>
         <h3 className="bi-calendar__title">{title.format(parseIso(startOfMonth(month)))}</h3>
         <button
@@ -67,7 +67,7 @@ export function MonthCalendar({
           className="bi-calendar__nav"
           onClick={() => onMonthChange(addMonths(month, 1))}
         >
-          <Icon glyph={IconChevronRight} label={labels.nextMonth} />
+          <Icon glyph={IconChevronRight} ariaLabel={labels.nextMonth} />
         </button>
       </div>
       <table className="bi-calendar__grid" onKeyDown={onKeyDown}>

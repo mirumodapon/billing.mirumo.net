@@ -14,12 +14,12 @@ describe('Icon', () => {
 
   // 只有圖示沒有文字的按鈕，圖示就是唯一的語意來源
   it('becomes an img with a name when given a label', () => {
-    render(<Icon glyph={IconPlus} label="新增支出" />)
+    render(<Icon glyph={IconPlus} ariaLabel="新增支出" />)
     expect(screen.getByRole('img', { name: '新增支出' })).toBeInTheDocument()
   })
 
   it('has no aria-hidden once it is labelled', () => {
-    render(<Icon glyph={IconPlus} label="新增支出" />)
+    render(<Icon glyph={IconPlus} ariaLabel="新增支出" />)
     expect(screen.getByRole('img')).not.toHaveAttribute('aria-hidden')
   })
 

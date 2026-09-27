@@ -5,15 +5,15 @@ export interface ColorSwatchesProps {
   keys: readonly string[]
   value: string
   onChange: (key: string) => void
-  label: string
+  ariaLabel: string
   /** 色塊沒有文字，每一格的名稱由呼叫端給 */
   labelFor: (key: string) => string
 }
 
-export function ColorSwatches({ keys, value, onChange, label, labelFor }: ColorSwatchesProps) {
+export function ColorSwatches({ keys, value, onChange, ariaLabel, labelFor }: ColorSwatchesProps) {
   const { onKeyDown, itemProps } = useRovingFocus({ values: keys, value, onChange })
   return (
-    <div role="radiogroup" aria-label={label} className="bi-swatches" onKeyDown={onKeyDown}>
+    <div role="radiogroup" aria-label={ariaLabel} className="bi-swatches" onKeyDown={onKeyDown}>
       {keys.map((key) => (
         <button
           key={key}

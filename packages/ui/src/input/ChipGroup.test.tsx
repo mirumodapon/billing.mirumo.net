@@ -12,7 +12,7 @@ const options: ChipOption[] = [
 
 describe('ChipGroup', () => {
   it('is a radiogroup of radios, not a row of toggle buttons', () => {
-    render(<ChipGroup options={options} value="cash" onChange={vi.fn()} label="付款方式" />)
+    render(<ChipGroup options={options} value="cash" onChange={vi.fn()} ariaLabel="付款方式" />)
     expect(screen.getByRole('radiogroup', { name: '付款方式' })).toBeInTheDocument()
     expect(screen.getAllByRole('radio')).toHaveLength(3)
     // Chip 元件用的是 aria-pressed；混進來的話語意就錯了
@@ -22,7 +22,7 @@ describe('ChipGroup', () => {
   })
 
   it('checks the current option and marks it for the chip style', () => {
-    render(<ChipGroup options={options} value="credit" onChange={vi.fn()} label="付款方式" />)
+    render(<ChipGroup options={options} value="credit" onChange={vi.fn()} ariaLabel="付款方式" />)
     const radio = screen.getByRole('radio', { name: '信用卡' })
     expect(radio).toBeChecked()
     expect(radio).toHaveAttribute('data-selected', 'true')
@@ -30,13 +30,13 @@ describe('ChipGroup', () => {
 
   it('reports the option that was pressed', async () => {
     const onChange = vi.fn()
-    render(<ChipGroup options={options} value="cash" onChange={onChange} label="付款方式" />)
+    render(<ChipGroup options={options} value="cash" onChange={onChange} ariaLabel="付款方式" />)
     await userEvent.click(screen.getByRole('radio', { name: '行動支付' }))
     expect(onChange).toHaveBeenCalledWith('mobile')
   })
 
   it('draws the colour dot only for options that have one', () => {
-    render(<ChipGroup options={options} value="cash" onChange={vi.fn()} label="付款方式" />)
+    render(<ChipGroup options={options} value="cash" onChange={vi.fn()} ariaLabel="付款方式" />)
     const dots = screen.getAllByTestId('chip-dot')
     expect(dots).toHaveLength(1)
     expect(dots[0]).toHaveStyle({ background: 'var(--bi-accent3)' })
@@ -45,7 +45,7 @@ describe('ChipGroup', () => {
   it('moves selection and focus with the arrow keys', async () => {
     function Controlled() {
       const [v, setV] = useState('cash')
-      return <ChipGroup options={options} value={v} onChange={setV} label="付款方式" />
+      return <ChipGroup options={options} value={v} onChange={setV} ariaLabel="付款方式" />
     }
     render(<Controlled />)
     screen.getByRole('radio', { name: '現金' }).focus()

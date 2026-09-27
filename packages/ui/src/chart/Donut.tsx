@@ -12,7 +12,7 @@ export interface DonutSegment {
 
 export interface DonutProps {
   segments: readonly DonutSegment[]
-  label: string
+  ariaLabel: string
   formatValue: (value: number) => string
   emptyLabel: string
   /** 中央沒有選中任何一塊時顯示的標題，如「總計」 */
@@ -27,13 +27,13 @@ const R_INNER = 34
 /** 相鄰段落之間的背景色間隙，px（dataviz 的 2px surface gap） */
 const GAP_PX = 2
 
-export function Donut({ segments, label, formatValue, emptyLabel, totalLabel, size = 160 }: DonutProps) {
+export function Donut({ segments, ariaLabel, formatValue, emptyLabel, totalLabel, size = 160 }: DonutProps) {
   const [selected, setSelected] = useState<string | null>(null)
   const drawn = segments.filter((segment) => segment.value > 0)
 
   if (drawn.length === 0) {
     return (
-      <figure className="bi-donut" aria-label={label}>
+      <figure className="bi-donut" aria-label={ariaLabel}>
         <div className="bi-donut__plot" style={{ width: size, height: size }}>
           <svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">
             <circle className="bi-donut__empty-ring" cx={CENTER} cy={CENTER} r={(R_OUTER + R_INNER) / 2} />
@@ -55,7 +55,7 @@ export function Donut({ segments, label, formatValue, emptyLabel, totalLabel, si
   const toggle = (key: string) => setSelected((current) => (current === key ? null : key))
 
   return (
-    <figure className="bi-donut" aria-label={label}>
+    <figure className="bi-donut" aria-label={ariaLabel}>
       <div className="bi-donut__plot" style={{ width: size, height: size }}>
         {/* 圖形對輔助科技隱藏：同樣的資料在下面的圖例裡以文字完整列出 */}
         <svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">

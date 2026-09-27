@@ -7,7 +7,7 @@ export interface IconGridProps<K extends string> {
   icons: Readonly<Record<K, TablerIcon>>
   value: K
   onChange: (name: K) => void
-  label: string
+  ariaLabel: string
   /** 圖示沒有文字，每一格的名稱由呼叫端給 */
   labelFor: (name: K) => string
   /** 每列幾格，預設 6 */
@@ -18,7 +18,7 @@ export function IconGrid<K extends string>({
   icons,
   value,
   onChange,
-  label,
+  ariaLabel,
   labelFor,
   columns = 6,
 }: IconGridProps<K>) {
@@ -27,7 +27,7 @@ export function IconGrid<K extends string>({
   return (
     <div
       role="radiogroup"
-      aria-label={label}
+      aria-label={ariaLabel}
       className="bi-icon-grid"
       style={{ '--bi-icon-grid-columns': columns } as CSSProperties}
       onKeyDown={onKeyDown}
@@ -42,7 +42,7 @@ export function IconGrid<K extends string>({
           onClick={() => onChange(name)}
           {...itemProps(name)}
         >
-          <Icon glyph={icons[name]} size="lg" label={labelFor(name)} />
+          <Icon glyph={icons[name]} size="lg" ariaLabel={labelFor(name)} />
         </button>
       ))}
     </div>

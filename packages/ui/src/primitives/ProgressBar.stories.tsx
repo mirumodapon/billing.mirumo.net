@@ -4,7 +4,7 @@ import { ProgressBar } from './ProgressBar'
 const meta = {
   title: 'Primitives/ProgressBar',
   component: ProgressBar,
-  args: { label: '預算進度' },
+  args: { ariaLabel: '預算進度' },
 } satisfies Meta<typeof ProgressBar>
 export default meta
 type Story = StoryObj<typeof meta>

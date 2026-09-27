@@ -16,12 +16,12 @@ const tabs = [
 
 describe('TabBar', () => {
   it('is a tablist', () => {
-    render(<TabBar tabs={tabs} value="expenses" onChange={vi.fn()} label="旅程分頁" />)
+    render(<TabBar tabs={tabs} value="expenses" onChange={vi.fn()} ariaLabel="旅程分頁" />)
     expect(screen.getByRole('tablist', { name: '旅程分頁' })).toBeInTheDocument()
   })
 
   it('marks exactly one tab selected', () => {
-    render(<TabBar tabs={tabs} value="stats" onChange={vi.fn()} label="旅程分頁" />)
+    render(<TabBar tabs={tabs} value="stats" onChange={vi.fn()} ariaLabel="旅程分頁" />)
     expect(screen.getByRole('tab', { name: '統計' })).toHaveAttribute('aria-selected', 'true')
     expect(screen.getAllByRole('tab').filter((t) => t.getAttribute('aria-selected') === 'true'))
       .toHaveLength(1)
@@ -29,7 +29,7 @@ describe('TabBar', () => {
 
   it('reports the tab that was pressed', async () => {
     const onChange = vi.fn()
-    render(<TabBar tabs={tabs} value="expenses" onChange={onChange} label="旅程分頁" />)
+    render(<TabBar tabs={tabs} value="expenses" onChange={onChange} ariaLabel="旅程分頁" />)
     await userEvent.click(screen.getByRole('tab', { name: '結算' }))
     expect(onChange).toHaveBeenCalledWith('settle')
   })
@@ -40,14 +40,14 @@ describe('TabBar', () => {
    * 四次才能離開這一列。
    */
   it('keeps only the selected tab in the tab order', () => {
-    render(<TabBar tabs={tabs} value="stats" onChange={vi.fn()} label="旅程分頁" />)
+    render(<TabBar tabs={tabs} value="stats" onChange={vi.fn()} ariaLabel="旅程分頁" />)
     expect(screen.getByRole('tab', { name: '統計' })).toHaveAttribute('tabindex', '0')
     expect(screen.getByRole('tab', { name: '支出' })).toHaveAttribute('tabindex', '-1')
   })
 
   it('moves to the next tab with the right arrow', async () => {
     const onChange = vi.fn()
-    render(<TabBar tabs={tabs} value="expenses" onChange={onChange} label="旅程分頁" />)
+    render(<TabBar tabs={tabs} value="expenses" onChange={onChange} ariaLabel="旅程分頁" />)
     screen.getByRole('tab', { name: '支出' }).focus()
     await userEvent.keyboard('{ArrowRight}')
     expect(onChange).toHaveBeenCalledWith('stats')
@@ -55,7 +55,7 @@ describe('TabBar', () => {
 
   it('wraps from the last tab back to the first', async () => {
     const onChange = vi.fn()
-    render(<TabBar tabs={tabs} value="setup" onChange={onChange} label="旅程分頁" />)
+    render(<TabBar tabs={tabs} value="setup" onChange={onChange} ariaLabel="旅程分頁" />)
     screen.getByRole('tab', { name: '設定' }).focus()
     await userEvent.keyboard('{ArrowRight}')
     expect(onChange).toHaveBeenCalledWith('expenses')
@@ -63,7 +63,7 @@ describe('TabBar', () => {
 
   it('wraps backwards from the first tab to the last', async () => {
     const onChange = vi.fn()
-    render(<TabBar tabs={tabs} value="expenses" onChange={onChange} label="旅程分頁" />)
+    render(<TabBar tabs={tabs} value="expenses" onChange={onChange} ariaLabel="旅程分頁" />)
     screen.getByRole('tab', { name: '支出' }).focus()
     await userEvent.keyboard('{ArrowLeft}')
     expect(onChange).toHaveBeenCalledWith('setup')
@@ -82,7 +82,7 @@ describe('TabBar', () => {
   it('moves keyboard focus to the newly selected tab', async () => {
     function Controlled() {
       const [value, setValue] = useState('expenses')
-      return <TabBar tabs={tabs} value={value} onChange={setValue} label="旅程分頁" />
+      return <TabBar tabs={tabs} value={value} onChange={setValue} ariaLabel="旅程分頁" />
     }
     render(<Controlled />)
     screen.getByRole('tab', { name: '支出' }).focus()

@@ -26,11 +26,11 @@ describe('colorKey', () => {
       // @ts-expect-error 不是 accent 槽位
       <Avatar name="x" colorKey="accent13" />,
       // @ts-expect-error 不是 accent 槽位
-      <ChipGroup label="x" value="a" onChange={noop} options={[{ value: 'a', label: 'a', colorKey: 'success' }]} />,
+      <ChipGroup ariaLabel="x" value="a" onChange={noop} options={[{ value: 'a', label: 'a', colorKey: 'success' }]} />,
       // @ts-expect-error 不是 accent 槽位
-      <AvatarToggleGroup label="x" selected={[]} onChange={noop} items={[{ value: 'a', name: 'a', colorKey: 'accent' }]} />,
+      <AvatarToggleGroup ariaLabel="x" selected={[]} onChange={noop} items={[{ value: 'a', name: 'a', colorKey: 'accent' }]} />,
       <Donut
-        label="x"
+        ariaLabel="x"
         formatValue={String}
         emptyLabel="x"
         totalLabel="x"

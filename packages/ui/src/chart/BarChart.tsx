@@ -10,7 +10,7 @@ export interface BarDatum {
 
 export interface BarChartProps {
   bars: readonly BarDatum[]
-  label: string
+  ariaLabel: string
   formatValue: (value: number) => string
   /** 刻度用的格式，預設與 formatValue 相同。貨幣符號太寬時可以給精簡版 */
   formatTick?: (value: number) => string
@@ -35,7 +35,7 @@ const BOTTOM = 20
 
 export function BarChart({
   bars,
-  label,
+  ariaLabel,
   formatValue,
   formatTick = formatValue,
   budget,
@@ -58,7 +58,7 @@ export function BarChart({
   const isOver = (value: number) => budget !== undefined && value > budget
 
   return (
-    <figure className="bi-bar" aria-label={label}>
+    <figure className="bi-bar" aria-label={ariaLabel}>
       <div className="bi-bar__scroll">
         {/* 圖形對輔助科技隱藏：同一份資料在下面的表格裡 */}
         <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-hidden="true" focusable="false">
@@ -117,7 +117,7 @@ export function BarChart({
         </svg>
       </div>
       <table className="bi-visually-hidden">
-        <caption>{label}</caption>
+        <caption>{ariaLabel}</caption>
         <tbody>
           {bars.map((bar, index) => (
             <tr key={bar.key}>

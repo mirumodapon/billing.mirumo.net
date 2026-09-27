@@ -4,10 +4,10 @@ export interface ProgressBarProps {
   /** 用 core 的 budgetStatus().level：門檻是業務規則，這裡不推導 */
   level: 'normal' | 'warning' | 'over'
   /** 給輔助技術的說明,如「預算已用 72%」 */
-  label: string
+  ariaLabel: string
 }
 
-export function ProgressBar({ ratio, level, label }: ProgressBarProps) {
+export function ProgressBar({ ratio, level, ariaLabel }: ProgressBarProps) {
   // NaN（預算沒設定時的 0/0）沒有數值可報：照 ARIA 的不確定進度條，不帶 valuenow
   const known = !Number.isNaN(ratio)
   const pct = Math.round(ratio * 100)
@@ -15,7 +15,7 @@ export function ProgressBar({ ratio, level, label }: ProgressBarProps) {
   return (
     <div
       role="progressbar"
-      aria-label={label}
+      aria-label={ariaLabel}
       aria-valuenow={known ? clamped : undefined}
       aria-valuemin={0}
       aria-valuemax={100}

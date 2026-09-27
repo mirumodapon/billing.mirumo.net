@@ -9,19 +9,19 @@ import { Fab } from './Fab'
 describe('Fab', () => {
   // 只有圖示，所以 label 是輔助科技唯一的線索
   it('is a button named by its label', () => {
-    render(<Fab glyph={IconPlus} label="新增支出" onPress={vi.fn()} />)
+    render(<Fab glyph={IconPlus} ariaLabel="新增支出" onPress={vi.fn()} />)
     expect(screen.getByRole('button', { name: '新增支出' })).toBeInTheDocument()
   })
 
   it('runs its action', async () => {
     const onPress = vi.fn()
-    render(<Fab glyph={IconPlus} label="新增支出" onPress={onPress} />)
+    render(<Fab glyph={IconPlus} ariaLabel="新增支出" onPress={onPress} />)
     await userEvent.click(screen.getByRole('button'))
     expect(onPress).toHaveBeenCalledOnce()
   })
 
   it('is a type=button so it never submits a surrounding form', () => {
-    render(<Fab glyph={IconPlus} label="新增支出" onPress={vi.fn()} />)
+    render(<Fab glyph={IconPlus} ariaLabel="新增支出" onPress={vi.fn()} />)
     expect(screen.getByRole('button')).toHaveAttribute('type', 'button')
   })
 

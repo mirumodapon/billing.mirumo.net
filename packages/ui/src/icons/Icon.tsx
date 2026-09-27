@@ -5,22 +5,22 @@ export interface IconProps {
   glyph: TablerIcon
   size?: 'sm' | 'md' | 'lg'
   /** 給了才會被輔助科技讀到；純裝飾就別給 */
-  label?: string
+  ariaLabel?: string
   'data-testid'?: string
 }
 
 const PX = { sm: 16, md: 20, lg: 24 } as const
 
-export function Icon({ glyph: Glyph, size = 'md', label, ...rest }: IconProps) {
+export function Icon({ glyph: Glyph, size = 'md', ariaLabel, ...rest }: IconProps) {
   return (
     <Glyph
       className="bi-icon"
       data-size={size}
       size={PX[size]}
       stroke={1.75}
-      role={label ? 'img' : undefined}
-      aria-label={label}
-      aria-hidden={label ? undefined : true}
+      role={ariaLabel ? 'img' : undefined}
+      aria-label={ariaLabel}
+      aria-hidden={ariaLabel ? undefined : true}
       {...rest}
     />
   )

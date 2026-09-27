@@ -12,7 +12,7 @@ export interface AvatarToggleGroupProps {
   selected: readonly string[]
   /** 回傳依 items 順序排列的新選取 */
   onChange: (selected: string[]) => void
-  label: string
+  ariaLabel: string
   /** 至少要保留幾個。預設 0 */
   minSelected?: number
 }
@@ -21,7 +21,7 @@ export function AvatarToggleGroup({
   items,
   selected,
   onChange,
-  label,
+  ariaLabel,
   minSelected = 0,
 }: AvatarToggleGroupProps) {
   function toggle(value: string) {
@@ -35,7 +35,7 @@ export function AvatarToggleGroup({
   }
 
   return (
-    <div role="group" aria-label={label} className="bi-avatar-toggle">
+    <div role="group" aria-label={ariaLabel} className="bi-avatar-toggle">
       {items.map((item) => {
         const pressed = selected.includes(item.value)
         return (

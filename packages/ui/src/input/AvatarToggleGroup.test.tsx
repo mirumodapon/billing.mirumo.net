@@ -13,7 +13,7 @@ const items: AvatarToggleItem[] = [
 
 describe('AvatarToggleGroup', () => {
   it('is a named group of toggle buttons', () => {
-    render(<AvatarToggleGroup items={items} selected={['a']} onChange={vi.fn()} label="參與者" />)
+    render(<AvatarToggleGroup items={items} selected={['a']} onChange={vi.fn()} ariaLabel="參與者" />)
     expect(screen.getByRole('group', { name: '參與者' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '阿明' })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByRole('button', { name: '小美' })).toHaveAttribute('aria-pressed', 'false')
@@ -24,20 +24,20 @@ describe('AvatarToggleGroup', () => {
    * 隱藏，按鈕的名稱會變成「阿明 阿明」，每一位成員都被念兩次。
    */
   it('names each button once, not twice', () => {
-    render(<AvatarToggleGroup items={items} selected={[]} onChange={vi.fn()} label="參與者" />)
+    render(<AvatarToggleGroup items={items} selected={[]} onChange={vi.fn()} ariaLabel="參與者" />)
     expect(screen.getByRole('button', { name: '阿明' })).toHaveAccessibleName('阿明')
   })
 
   it('adds a member when pressed', async () => {
     const onChange = vi.fn()
-    render(<AvatarToggleGroup items={items} selected={['a']} onChange={onChange} label="參與者" />)
+    render(<AvatarToggleGroup items={items} selected={['a']} onChange={onChange} ariaLabel="參與者" />)
     await userEvent.click(screen.getByRole('button', { name: '大熊' }))
     expect(onChange).toHaveBeenCalledWith(['a', 'c'])
   })
 
   it('removes a member when pressed again', async () => {
     const onChange = vi.fn()
-    render(<AvatarToggleGroup items={items} selected={['a', 'b']} onChange={onChange} label="參與者" />)
+    render(<AvatarToggleGroup items={items} selected={['a', 'b']} onChange={onChange} ariaLabel="參與者" />)
     await userEvent.click(screen.getByRole('button', { name: '阿明' }))
     expect(onChange).toHaveBeenCalledWith(['b'])
   })
@@ -45,7 +45,7 @@ describe('AvatarToggleGroup', () => {
   // 結果依項目順序而非點擊順序，呼叫端比對與儲存都不必再排序
   it('reports the selection in item order, not click order', async () => {
     const onChange = vi.fn()
-    render(<AvatarToggleGroup items={items} selected={['c']} onChange={onChange} label="參與者" />)
+    render(<AvatarToggleGroup items={items} selected={['c']} onChange={onChange} ariaLabel="參與者" />)
     await userEvent.click(screen.getByRole('button', { name: '阿明' }))
     expect(onChange).toHaveBeenCalledWith(['a', 'c'])
   })
@@ -54,14 +54,14 @@ describe('AvatarToggleGroup', () => {
   it('refuses to drop below the minimum', async () => {
     const onChange = vi.fn()
     render(
-      <AvatarToggleGroup items={items} selected={['a']} onChange={onChange} label="參與者" minSelected={1} />,
+      <AvatarToggleGroup items={items} selected={['a']} onChange={onChange} ariaLabel="參與者" minSelected={1} />,
     )
     await userEvent.click(screen.getByRole('button', { name: '阿明' }))
     expect(onChange).not.toHaveBeenCalled()
   })
 
   it('draws unselected members outlined', () => {
-    render(<AvatarToggleGroup items={items} selected={['a']} onChange={vi.fn()} label="參與者" />)
+    render(<AvatarToggleGroup items={items} selected={['a']} onChange={vi.fn()} ariaLabel="參與者" />)
     expect(screen.getByRole('img', { name: '小美' })).toHaveAttribute('data-outlined', 'true')
     expect(screen.getByRole('img', { name: '阿明' })).not.toHaveAttribute('data-outlined')
   })

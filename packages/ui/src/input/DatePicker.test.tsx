@@ -11,7 +11,7 @@ function setup(overrides: Partial<Parameters<typeof DatePicker>[0]> = {}) {
     value: '2026-03-15',
     onChange: vi.fn(),
     locale: 'en-US',
-    label: '日期',
+    ariaLabel: '日期',
     labels,
     rangeStart: '2026-03-14',
     rangeEnd: '2026-03-18',
@@ -53,7 +53,7 @@ describe('DatePicker', () => {
           value={value}
           onChange={setValue}
           locale="en-US"
-          label="日期"
+          ariaLabel="日期"
           labels={labels}
           rangeStart="2026-03-14"
           rangeEnd="2026-03-18"

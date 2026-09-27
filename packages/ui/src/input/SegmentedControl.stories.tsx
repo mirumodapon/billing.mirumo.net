@@ -5,7 +5,7 @@ import { SegmentedControl } from './SegmentedControl'
 const meta = {
   title: 'Input/SegmentedControl',
   component: SegmentedControl,
-  args: { options: [], value: '', onChange: () => undefined, label: '分攤方式' },
+  args: { options: [], value: '', onChange: () => undefined, ariaLabel: '分攤方式' },
 } satisfies Meta<typeof SegmentedControl>
 export default meta
 type Story = StoryObj<typeof meta>
@@ -14,7 +14,7 @@ function Demo() {
   const [value, setValue] = useState('even')
   return (
     <SegmentedControl
-      label="分攤方式"
+      ariaLabel="分攤方式"
       value={value}
       onChange={setValue}
       options={[

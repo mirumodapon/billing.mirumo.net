@@ -12,7 +12,7 @@ export const WithBackAndAction: Story = {
   args: {
     title: '東京五日',
     onBack: () => undefined,
-    action: { glyph: IconDots, label: '更多', onPress: () => undefined },
+    action: { glyph: IconDots, ariaLabel: '更多', onPress: () => undefined },
   },
 }
 export const LongTitle: Story = {

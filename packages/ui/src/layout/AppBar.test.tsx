@@ -31,7 +31,7 @@ describe('AppBar', () => {
   it('names the icon-only action button', async () => {
     const onAction = vi.fn()
     render(
-      <AppBar title="旅程" action={{ glyph: IconDots, label: '更多', onPress: onAction }} />,
+      <AppBar title="旅程" action={{ glyph: IconDots, ariaLabel: '更多', onPress: onAction }} />,
     )
     await userEvent.click(screen.getByRole('button', { name: '更多' }))
     expect(onAction).toHaveBeenCalledOnce()

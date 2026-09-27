@@ -14,10 +14,10 @@ export interface TabBarProps {
   value: string
   onChange: (value: string) => void
   /** 整列的無障礙名稱 */
-  label: string
+  ariaLabel: string
 }
 
-export function TabBar({ tabs, value, onChange, label }: TabBarProps) {
+export function TabBar({ tabs, value, onChange, ariaLabel }: TabBarProps) {
   const { onKeyDown, itemProps } = useRovingFocus({
     values: tabs.map((tab) => tab.value),
     value,
@@ -26,7 +26,7 @@ export function TabBar({ tabs, value, onChange, label }: TabBarProps) {
 
   return (
     <SafeArea edges={['bottom', 'left', 'right']} data-testid="tabbar-safe">
-      <div role="tablist" aria-label={label} className="bi-tabbar" onKeyDown={onKeyDown}>
+      <div role="tablist" aria-label={ariaLabel} className="bi-tabbar" onKeyDown={onKeyDown}>
         {tabs.map((tab) => {
           const selected = tab.value === value
           return (

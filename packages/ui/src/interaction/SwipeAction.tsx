@@ -28,7 +28,7 @@ export function SwipeAction({ glyph, actionLabel, onAction, children }: SwipeAct
        * 所以鍵盤與輔助科技不必會滑動也能用——手勢只是捷徑，不是唯一入口
        */}
       <button type="button" className="bi-swipe__action" onClick={onAction}>
-        <Icon glyph={glyph} label={actionLabel} />
+        <Icon glyph={glyph} ariaLabel={actionLabel} />
       </button>
       <div
         data-testid="swipe-surface"

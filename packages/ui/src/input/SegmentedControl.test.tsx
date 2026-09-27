@@ -14,12 +14,12 @@ const options = [
 
 describe('SegmentedControl', () => {
   it('is a radiogroup named by its label', () => {
-    render(<SegmentedControl options={options} value="even" onChange={vi.fn()} label="分攤方式" />)
+    render(<SegmentedControl options={options} value="even" onChange={vi.fn()} ariaLabel="分攤方式" />)
     expect(screen.getByRole('radiogroup', { name: '分攤方式' })).toBeInTheDocument()
   })
 
   it('checks exactly the current option', () => {
-    render(<SegmentedControl options={options} value="items" onChange={vi.fn()} label="分攤方式" />)
+    render(<SegmentedControl options={options} value="items" onChange={vi.fn()} ariaLabel="分攤方式" />)
     expect(screen.getByRole('radio', { name: '明細' })).toBeChecked()
     expect(screen.getAllByRole('radio').filter((r) => r.getAttribute('aria-checked') === 'true'))
       .toHaveLength(1)
@@ -27,7 +27,7 @@ describe('SegmentedControl', () => {
 
   it('reports the option that was pressed', async () => {
     const onChange = vi.fn()
-    render(<SegmentedControl options={options} value="even" onChange={onChange} label="分攤方式" />)
+    render(<SegmentedControl options={options} value="even" onChange={onChange} ariaLabel="分攤方式" />)
     await userEvent.click(screen.getByRole('radio', { name: '指定' }))
     expect(onChange).toHaveBeenCalledWith('exact')
   })
@@ -35,7 +35,7 @@ describe('SegmentedControl', () => {
   it('moves selection and focus together with the arrow keys', async () => {
     function Controlled() {
       const [v, setV] = useState<(typeof options)[number]['value']>('even')
-      return <SegmentedControl options={options} value={v} onChange={setV} label="分攤方式" />
+      return <SegmentedControl options={options} value={v} onChange={setV} ariaLabel="分攤方式" />
     }
     render(<Controlled />)
     screen.getByRole('radio', { name: '均分' }).focus()
