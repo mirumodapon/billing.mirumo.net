@@ -8,19 +8,20 @@ import { SettingsScreen } from '../screens/settings/SettingsScreen'
 import { SetupTab } from '../screens/setup/SetupTab'
 import { TripListScreen } from '../screens/TripListScreen'
 import { TripShell } from '../screens/TripShell'
+import { TransferFormScreen } from '../screens/transfers/TransferFormScreen'
 
 export type PageDirection = 'forward' | 'back' | 'up' | 'down'
 
 /** 換頁動畫的單位：旅程內切 tab 不算換頁，全螢幕表單算 */
 export function pageKeyOf(pathname: string): string {
-  const form = /^\/trip\/([^/]+)\/expense\/([^/]+)/.exec(pathname)
-  if (form) return `/trip/${form[1]}/expense/${form[2]}`
+  const form = /^\/trip\/([^/]+)\/(expense|transfer)\/([^/]+)/.exec(pathname)
+  if (form) return `/trip/${form[1]}/${form[2]}/${form[3]}`
   const trip = /^\/trip\/([^/]+)/.exec(pathname)
   if (trip) return `/trip/${trip[1]}`
   return pathname === '/settings' ? '/settings' : '/'
 }
 
-const depthOf = (key: string) => (key === '/' ? 0 : key.includes('/expense/') ? 2 : 1)
+const depthOf = (key: string) => (key === '/' ? 0 : /\/(expense|transfer)\//.test(key) ? 2 : 1)
 const isForm = (key: string) => depthOf(key) === 2
 
 /**
@@ -45,6 +46,7 @@ export function AnimatedRoutes() {
         <Route path="/" element={<TripListScreen />} />
         <Route path="/settings" element={<SettingsScreen />} />
         <Route path="/trip/:tripId/expense/:expenseId" element={<ExpenseFormScreen />} />
+        <Route path="/trip/:tripId/transfer/:transferId" element={<TransferFormScreen />} />
         <Route path="/trip/:tripId" element={<TripShell />}>
           <Route path="expenses" element={<ExpensesTab />} />
           <Route path="stats" element={<PlaceholderTab />} />
