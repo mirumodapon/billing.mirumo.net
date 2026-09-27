@@ -5,6 +5,7 @@ import { exactAllocation, previewShares, type SplitDraft } from '../../domain/ex
 import { useI18n } from '../../i18n/useI18n'
 import { AmountField } from '../setup/AmountField'
 import type { FormSectionProps } from './ExpenseFormScreen'
+import { ItemsSplit } from './ItemsSplit'
 
 type Mode = SplitDraft['mode']
 
@@ -13,7 +14,7 @@ type Mode = SplitDraft['mode']
  * 勾好的人不該被清掉。
  */
 export function SplitSection({ trip, draft, change, open, onToggle }: FormSectionProps & { open: boolean; onToggle: () => void }) {
-  const { t, money } = useI18n()
+  const { t, tPlural, money } = useI18n()
   const [memory, setMemory] = useState<Partial<Record<Mode, SplitDraft>>>({})
   const split = draft.split
   const format = (v: number) => money(toMinor(v, decimalsOf(draft.currency)), draft.currency)
@@ -41,7 +42,9 @@ export function SplitSection({ trip, draft, change, open, onToggle }: FormSectio
             amount: money(Math.max(...Object.values(shares)), trip.baseCurrency),
           })
         : t('split.summaryEvenNoAmount', { count: split.participants.length })
-      : t('split.summaryExact')
+      : split.mode === 'items'
+        ? tPlural('split.summaryItems', { count: split.items.length })
+        : t('split.summaryExact')
 
   return (
     <Accordion title={t('split.title')} summary={summary} open={open} onToggle={onToggle} data-testid="section-split">
@@ -51,6 +54,7 @@ export function SplitSection({ trip, draft, change, open, onToggle }: FormSectio
           value={split.mode}
           options={[
             { value: 'even', label: t('expense.splitEven') },
+            { value: 'items', label: t('split.items') },
             { value: 'exact', label: t('split.exact') },
           ]}
           onChange={switchTo}
@@ -65,6 +69,7 @@ export function SplitSection({ trip, draft, change, open, onToggle }: FormSectio
           />
         ) : null}
         {split.mode === 'exact' ? <ExactSplit {...{ trip, draft, change, format }} /> : null}
+        {split.mode === 'items' ? <ItemsSplit {...{ trip, draft, change, format }} /> : null}
       </div>
     </Accordion>
   )
