@@ -68,6 +68,13 @@ export const zhTW = {
   'split.prorata': '按比例',
   'split.overflowEven': '均分',
   'split.removeItem': '刪除 {name}',
+  'receipt.title': '收據',
+  'receipt.none': '無',
+  'receipt.add': '拍照或選照片',
+  'receipt.remove': '移除這張收據',
+  'receipt.photo': '收據照片 {n}',
+  'receipt.missing': '照片未包含在此備份',
+  'receipt.failed': '無法讀取這張照片',
   'tripList.empty': '還沒有旅程，按右下角新增第一趟',
   'tripList.settings': '設定',
   'tripList.spent': '已花 {amount}',
@@ -148,6 +155,7 @@ export const zhTWPlurals = {
   'members.count': '{count} 人',
   'rates.count': '{count} 種幣別',
   'split.summaryItems': '明細 {count} 項',
+  'receipt.count': '{count} 張',
   'settings.usedBy': '{count} 筆支出使用中',
 } as const
 

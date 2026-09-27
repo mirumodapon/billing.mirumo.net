@@ -12,6 +12,7 @@ import { useOpenTrip } from '../useOpenTrip'
 import { useOpenSection } from '../setup/useOpenSection'
 import { AmountSection } from './AmountSection'
 import { DetailsSection } from './DetailsSection'
+import { ReceiptSection } from './ReceiptSection'
 import { SplitSection } from './SplitSection'
 
 /** 新增（/expense/new）或編輯（/expense/:id）支出的全螢幕表單（規格 4.4） */
@@ -75,6 +76,7 @@ function ExpenseForm({ trip, existing }: { trip: Trip; existing?: Expense }) {
           <TextField label={t('expense.description')} value={draft.description} onChange={(description) => change((d) => ({ ...d, description }))} />
           <DetailsSection trip={trip} draft={draft} change={change} open={sections.open === 'details'} onToggle={() => sections.toggle('details')} />
           <SplitSection trip={trip} draft={draft} change={change} open={sections.open === 'split'} onToggle={() => sections.toggle('split')} />
+          <ReceiptSection trip={trip} draft={draft} change={change} open={sections.open === 'receipt'} onToggle={() => sections.toggle('receipt')} />
         </div>
       </div>
     </div>
