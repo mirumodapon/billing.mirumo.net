@@ -23,6 +23,8 @@ describe('NewTripSheet', () => {
     const [trip] = await stores.repo.listTrips()
     expect(trip).toMatchObject({ name: '京都', baseCurrency: 'TWD', members: [{ name: '阿明' }] })
     expect(currentRoute()).toBe(`/trip/${trip!.id}/setup`)
+    // 剛建立的旅程還沒載入帳目：設定頁要照樣畫得出來，不能卡在無限重繪
+    expect(await screen.findByRole('button', { name: new RegExp(`^${t('tripMethods.title')}`) })).toBeInTheDocument()
   })
 
   it('shows what is missing instead of creating', async () => {

@@ -1,4 +1,4 @@
-import type { Trip, TripPaymentMethod } from '@billing/core'
+import type { Expense, Trip, TripPaymentMethod } from '@billing/core'
 import { Accordion, Button, Icon, TextField } from '@billing/ui'
 import { IconTrash } from '@tabler/icons-react'
 import { useState } from 'react'
@@ -12,13 +12,16 @@ export interface TripPaymentMethodsSectionProps {
   save: (change: (t: Trip) => Trip) => Promise<Trip | undefined>
 }
 
+// selector 每次都回新的 [] 會讓 useSyncExternalStore 以為狀態一直在變而無限重繪：剛建立、帳目還沒載入的旅程就是這樣
+const NO_EXPENSES: Expense[] = []
+
 /**
  * 只用於這趟旅程的付款方式（task#92）。版面與全域設定的付款方式相同（task#93）：
  * 框加固定寬的尾端欄，名稱欄的標籤只給輔助技術。這趟旅程還有支出在用的不能刪。
  */
 export function TripPaymentMethodsSection({ trip, open, onToggle, save }: TripPaymentMethodsSectionProps) {
   const { t, tPlural } = useI18n()
-  const expenses = useTrips((s) => (s.current?.tripId === trip.id ? s.current.expenses : []))
+  const expenses = useTrips((s) => (s.current?.tripId === trip.id ? s.current.expenses : NO_EXPENSES))
   const methods = trip.paymentMethods ?? []
   const [newName, setNewName] = useState('')
 
