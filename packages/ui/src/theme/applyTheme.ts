@@ -1,12 +1,19 @@
 import { DEFAULT_THEME, THEMES, type ThemeFamily, type ThemeId } from './manifest'
 
-/** 依系統的明暗偏好，在同一家族裡挑出該用的那一個 */
+/**
+ * 依系統的明暗偏好，在同一家族裡挑出該用的那一個。
+ *
+ * 每個家族只有一個淺色主題，深色則有好幾個：深色一律取淺色主題的配對
+ * （pairedWith），不是家族裡排第一的深色主題。index.html 的開機 script
+ * 做同樣的選擇，兩邊不一致的話冷啟動會先畫一個、設定載入後又換一個。
+ */
 export function resolveSystemTheme(family: ThemeFamily): ThemeId {
   const prefersDark =
     typeof globalThis.matchMedia === 'function' &&
     globalThis.matchMedia('(prefers-color-scheme: dark)').matches
-  const wanted = prefersDark ? 'dark' : 'light'
-  return THEMES.find((t) => t.family === family && t.scheme === wanted)?.id ?? DEFAULT_THEME
+  const light = THEMES.find((t) => t.family === family && t.scheme === 'light')
+  if (!light) return DEFAULT_THEME
+  return prefersDark ? light.pairedWith : light.id
 }
 
 /**

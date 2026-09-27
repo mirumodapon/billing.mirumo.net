@@ -1,6 +1,6 @@
 import { readdirSync } from 'node:fs'
 import { join } from 'node:path'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { THEMES } from './manifest'
 import { applyTheme, resolveSystemTheme } from './applyTheme'
 
@@ -45,6 +45,21 @@ describe('applyTheme', () => {
     // jsdom 的 matchMedia 預設回報 matches: false，也就是淺色
     const resolved = resolveSystemTheme('catppuccin')
     expect(resolved).toBe('catppuccin-latte')
+  })
+
+  /*
+   * 深色要挑淺色主題配對的那一個（pairedWith），不是家族裡排第一的深色主題。
+   * 家族裡有三個深色主題：挑錯的話，index.html 的開機 script 先畫 Mocha，
+   * 設定載入後又換成 Frappé，冷啟動閃一下。
+   */
+  it('resolves a dark preference to the light theme\'s pair', () => {
+    vi.stubGlobal('matchMedia', () => ({ matches: true }))
+    try {
+      expect(resolveSystemTheme('catppuccin')).toBe('catppuccin-mocha')
+      expect(resolveSystemTheme('tokyo-night')).toBe('tokyo-night')
+    } finally {
+      vi.unstubAllGlobals()
+    }
   })
 
   it('never leaves the root without a theme', () => {
