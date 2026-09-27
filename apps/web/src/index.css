@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import '@billing/ui/styles.css';
+@import './screens/screens.css';
 
 * {
   -webkit-tap-highlight-color: transparent;

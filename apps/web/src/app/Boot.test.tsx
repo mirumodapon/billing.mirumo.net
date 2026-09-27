@@ -63,6 +63,6 @@ describe('Boot', () => {
 
   it('sends unknown addresses to the trip list', async () => {
     await renderApp('/nowhere')
-    expect(currentRoute()).toBe('/')
+    await waitFor(() => expect(currentRoute()).toBe('/'))
   })
 })

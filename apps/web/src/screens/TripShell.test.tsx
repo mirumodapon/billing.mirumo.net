@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { clearSession } from '../data/session'
 import { makeTrip } from '../data/testing/fixtures'
@@ -24,7 +24,7 @@ describe('TripShell', () => {
 
   it('opens the expenses tab when no tab is named', async () => {
     await withTrip('/trip/t1')
-    expect(currentRoute()).toBe('/trip/t1/expenses')
+    await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
   })
 
   // 切 tab 不累積返回紀錄：返回鍵應該直接回旅程列表
@@ -55,6 +55,6 @@ describe('TripShell', () => {
 
   it('returns to the trip list for a trip that does not exist', async () => {
     await renderApp('/trip/nope/setup')
-    expect(currentRoute()).toBe('/')
+    await waitFor(() => expect(currentRoute()).toBe('/'))
   })
 })

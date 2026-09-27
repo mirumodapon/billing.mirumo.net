@@ -1,0 +1,81 @@
+import { screen, within } from '@testing-library/react'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { clearSession } from '../data/session'
+import { makeExpense, makeTrip } from '../data/testing/fixtures'
+import { formatDateRange, formatMoney } from '../i18n/format'
+import { t } from '../i18n'
+import { currentRoute, makeStores, renderApp } from '../test/renderApp'
+
+beforeEach(() => clearSession())
+
+async function withTrips() {
+  const stores = await makeStores()
+  await stores.repo.saveTrip(makeTrip({ id: 'a', name: '東京', startDate: '2026-03-14', endDate: '2026-03-18', budget: { total: 10000, scope: 'group' } }))
+  await stores.repo.saveTrip(makeTrip({ id: 'b', name: '首爾', startDate: '2026-01-02', endDate: '2026-01-05', budget: { scope: 'group' } }))
+  await stores.repo.saveExpense(makeExpense({ tripId: 'a', amount: 2500, currency: 'TWD', exchangeRate: 1 }))
+  return renderApp('/', stores)
+}
+
+// Intl 的日期區間與金額含細空白、不換行空白；畫面文字會被正規化成一般空白，預期值也要
+const plain = (s: string) => s.replace(/\s+/g, ' ')
+
+const card = (name: string) => screen.getByRole('button', { name: new RegExp(`^${name}`) })
+
+describe('TripListScreen', () => {
+  it('shows an empty state and a way to add the first trip', async () => {
+    await renderApp('/')
+    expect(screen.getByText(t('tripList.empty'))).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: t('trip.new') })).toBeInTheDocument()
+  })
+
+  it('lists trips newest first with their dates and spending', async () => {
+    await withTrips()
+    const titles = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)
+    expect(titles).toEqual(['東京', '首爾'])
+    expect(card('東京')).toHaveTextContent(plain(formatDateRange('2026-03-14', '2026-03-18')))
+    expect(card('東京')).toHaveTextContent(plain(t('tripList.spent', { amount: formatMoney(2500, 'TWD') })))
+  })
+
+  // 規格 3.6：沒設預算就不畫進度條
+  it('shows a budget bar only for a trip with a budget', async () => {
+    await withTrips()
+    expect(within(card('東京')).getByRole('progressbar', { name: t('tripList.budget', { percent: 25 }) })).toBeInTheDocument()
+    expect(within(card('首爾')).queryByRole('progressbar')).not.toBeInTheDocument()
+  })
+
+  it('opens a trip on its expenses tab', async () => {
+    const { user } = await withTrips()
+    await user.click(card('東京'))
+    expect(currentRoute()).toBe('/trip/a/expenses')
+  })
+
+  // 規格 4.2：刪除不跳確認，snackbar 可復原
+  it('deletes a trip without asking and brings it back with undo', async () => {
+    const { user } = await withTrips()
+    const deleteButtons = screen.getAllByRole('button', { name: t('common.delete') })
+    await user.click(deleteButtons[0]!)
+    expect(screen.queryByRole('heading', { name: '東京' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    await user.click(await screen.findByRole('button', { name: t('common.undo') }))
+    expect(await screen.findByRole('heading', { name: '東京' })).toBeInTheDocument()
+  })
+
+  it('opens global settings from the app bar', async () => {
+    const { user } = await renderApp('/')
+    await user.click(screen.getByRole('button', { name: t('tripList.settings') }))
+    expect(currentRoute()).toBe('/settings')
+  })
+})
+
+// 規格 5.5：往深處走由右滑入，回到列表由左滑回
+describe('page transition', () => {
+  it('slides forward into a trip and back out to the list', async () => {
+    const stores = await makeStores()
+    await stores.repo.saveTrip(makeTrip({ id: 't1', name: '東京' }))
+    const { user } = await renderApp('/', stores)
+    await user.click(screen.getByRole('button', { name: /東京/ }))
+    expect(screen.getByTestId('page')).toHaveAttribute('data-direction', 'forward')
+    await user.click(screen.getByRole('button', { name: t('common.back') }))
+    expect(screen.getByTestId('page')).toHaveAttribute('data-direction', 'back')
+  })
+})
