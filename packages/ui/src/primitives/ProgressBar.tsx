@@ -7,16 +7,19 @@ export interface ProgressBarProps {
 }
 
 export function ProgressBar({ ratio, level = 'normal', label }: ProgressBarProps) {
+  // NaN（預算沒設定時的 0/0）沒有數值可報：照 ARIA 的不確定進度條，不帶 valuenow
+  const known = !Number.isNaN(ratio)
   const pct = Math.round(ratio * 100)
-  const clamped = Math.min(100, Math.max(0, pct))
+  const clamped = known ? Math.min(100, Math.max(0, pct)) : 0
   return (
     <div
       role="progressbar"
       aria-label={label}
-      aria-valuenow={clamped}
+      aria-valuenow={known ? clamped : undefined}
       aria-valuemin={0}
       aria-valuemax={100}
-      aria-valuetext={`${pct}%`}
+      // Infinity（預算為 0 卻有花費）條子照樣畫滿，但「Infinity%」不是能念給人聽的數字
+      aria-valuetext={Number.isFinite(pct) ? `${pct}%` : undefined}
       className="bi-progress"
     >
       <span

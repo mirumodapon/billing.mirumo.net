@@ -34,6 +34,30 @@ describe('ProgressBar', () => {
     expect(bar).toHaveAttribute('aria-valuenow', '100')
   })
 
+  /*
+   * task#73：預算沒設定時比例是 0/0 = NaN，而 Math.min(100, Math.max(0, NaN)) 還是
+   * NaN，於是 aria-valuenow="NaN"、width: NaN%。沒有數值就該照 ARIA 的「不確定」
+   * 進度條處理：不帶 valuenow，也不念出一個不存在的百分比。
+   */
+  it('reports no value rather than NaN when the ratio is unknown', () => {
+    const { container } = render(<ProgressBar ratio={Number.NaN} label="x" />)
+    const bar = screen.getByRole('progressbar')
+    expect(bar).not.toHaveAttribute('aria-valuenow')
+    expect(bar).not.toHaveAttribute('aria-valuetext')
+    expect(screen.getByTestId('progress-fill')).toHaveStyle({ width: '0%' })
+    expect(container.innerHTML).not.toContain('NaN')
+  })
+
+  // 預算為 0 卻有花費時，core 的 budgetStatus 給 Infinity：條子畫滿沒問題，但不能念「Infinity%」
+  it('fills the bar for an infinite ratio without announcing Infinity', () => {
+    const { container } = render(<ProgressBar ratio={Number.POSITIVE_INFINITY} label="x" />)
+    const bar = screen.getByRole('progressbar')
+    expect(bar).toHaveAttribute('aria-valuenow', '100')
+    expect(bar).not.toHaveAttribute('aria-valuetext')
+    expect(screen.getByTestId('progress-fill')).toHaveStyle({ width: '100%' })
+    expect(container.innerHTML).not.toContain('Infinity')
+  })
+
   it('marks the level for the stylesheet to colour', () => {
     const { rerender } = render(<ProgressBar ratio={0.5} level="normal" label="x" />)
     expect(screen.getByTestId('progress-fill')).toHaveAttribute('data-level', 'normal')
