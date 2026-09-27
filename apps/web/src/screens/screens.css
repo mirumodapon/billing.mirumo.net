@@ -120,6 +120,14 @@
     color: var(--bi-text-muted);
   }
 
+  /* 清單列尾端的固定欄：放刪除鍵或留空，讓每一列的框左右緣都對齊（task#93） */
+  .app-slot {
+    display: inline-flex;
+    flex: none;
+    justify-content: center;
+    width: var(--bi-tap-min);
+  }
+
   /* 全螢幕表單的頂列：✕、標題、儲存（規格 4.4：儲存鍵固定在 header） */
   .app-form-header {
     display: flex;

@@ -69,3 +69,20 @@ describe('PaymentMethodsSection', () => {
     expect(section.queryByRole('button', { name: t('settings.removeItem', { name: '悠遊卡' }) })).not.toBeInTheDocument()
   })
 })
+
+describe('PaymentMethodsSection layout (task#93)', () => {
+  // 一列列都是名稱：可見標籤只是重複，還讓框和內建列對不齊
+  it('names custom rows for assistive tech only', async () => {
+    const { section } = await setup()
+    expect(section.getByText(t('settings.paymentMethodName', { name: '悠遊卡' }))).toHaveClass('bi-visually-hidden')
+    expect(section.getByText(t('settings.newPaymentMethod'), { selector: 'label' })).toHaveClass('bi-visually-hidden')
+  })
+
+  // 框的寬度對齊靠每一列都有同樣的尾端欄；實際寬度在瀏覽器量過
+  it('gives every row the same trailing slot', async () => {
+    const { section } = await setup()
+    const rows = section.getAllByRole('listitem')
+    expect(rows).toHaveLength(5)
+    for (const row of rows) expect(row.querySelector('.app-slot')).not.toBeNull()
+  })
+})

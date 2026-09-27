@@ -56,12 +56,14 @@ export function CategoriesSection({ usage }: { usage: RecordUsage | null }) {
                   {category.builtin ? t('settings.builtin') : used > 0 ? tPlural('settings.usedBy', { count: used }) : null}
                 </span>
               </button>
-              {/* 使用次數讀到之前不給刪：不知道有沒有被引用，就當作有 */}
-              {!category.builtin && usage && used === 0 ? (
-                <Button variant="ghost" aria-label={t('settings.removeItem', { name })} onClick={() => remove(category.id)}>
-                  <Icon glyph={IconTrash} />
-                </Button>
-              ) : null}
+              {/* 固定寬的尾端欄，與付款方式同樣讓每一列的框對齊（task#93）。使用次數讀到之前不給刪 */}
+              <span className="app-slot">
+                {!category.builtin && usage && used === 0 ? (
+                  <Button variant="ghost" aria-label={t('settings.removeItem', { name })} onClick={() => remove(category.id)}>
+                    <Icon glyph={IconTrash} />
+                  </Button>
+                ) : null}
+              </span>
             </li>
           )
         })}
