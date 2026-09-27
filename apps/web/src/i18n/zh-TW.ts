@@ -32,6 +32,7 @@ export const zhTW = {
   'common.cancel': '取消',
   'expense.deleted': '已刪除「{name}」',
   'expense.untitled': '未命名支出',
+  'transfer.deleted': '已刪除 {from} → {to} 的轉帳',
   'expense.new': '新增支出',
   'expense.edit': '編輯支出',
   'expense.save': '儲存',

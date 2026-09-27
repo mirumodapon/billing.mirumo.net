@@ -32,6 +32,7 @@ export const enUS: Record<TranslationKey, string> = {
   'common.cancel': 'Cancel',
   'expense.deleted': 'Deleted "{name}"',
   'expense.untitled': 'Untitled expense',
+  'transfer.deleted': 'Deleted the transfer from {from} to {to}',
   'expense.new': 'New expense',
   'expense.edit': 'Edit expense',
   'expense.save': 'Save',
