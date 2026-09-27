@@ -22,6 +22,15 @@ describe('TextField', () => {
     expect(screen.getByRole('textbox')).toHaveValue('拉麵')
   })
 
+  it('reports leaving the field', async () => {
+    const onBlur = vi.fn()
+    render(<TextField label="名稱" value="" onChange={() => {}} onBlur={onBlur} />)
+    await userEvent.click(screen.getByLabelText('名稱'))
+    expect(onBlur).not.toHaveBeenCalled()
+    await userEvent.tab()
+    expect(onBlur).toHaveBeenCalledOnce()
+  })
+
   it('marks itself invalid and points at the message when there is an error', () => {
     render(<TextField label="姓名" value="" onChange={vi.fn()} error="姓名不能空白" />)
     const input = screen.getByRole('textbox', { name: '姓名' })
