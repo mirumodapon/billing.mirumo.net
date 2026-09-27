@@ -1,3 +1,4 @@
+import { countsInTotals } from './records'
 import { convertToBaseMinor } from './money'
 import { sharesOf } from './split'
 import type { Expense, Transfer, Trip } from './types'
@@ -12,7 +13,6 @@ export interface Balance {
   netMinor: number
 }
 
-const alive = <T extends { deletedAt?: string }>(x: T) => x.deletedAt === undefined
 
 /**
  * 各成員的收支淨額。
@@ -36,7 +36,7 @@ export function netBalances(
     moved[id] = 0
   }
 
-  for (const e of expenses.filter(alive)) {
+  for (const e of expenses.filter(countsInTotals)) {
     const totalMinor = convertToBaseMinor(e.amount, e.exchangeRate, trip.baseCurrency)
     paid[e.paidBy] = (paid[e.paidBy] ?? 0) + totalMinor
     for (const [id, share] of Object.entries(sharesOf(e, trip.baseCurrency, memberOrder))) {
@@ -45,7 +45,7 @@ export function netBalances(
   }
 
   // 轉帳只改變「誰欠誰」，不改變「花了多少」，所以不進 paid/owed
-  for (const t of transfers.filter(alive)) {
+  for (const t of transfers.filter(countsInTotals)) {
     const amountMinor = convertToBaseMinor(t.amount, t.exchangeRate, trip.baseCurrency)
     moved[t.from] = (moved[t.from] ?? 0) + amountMinor
     moved[t.to] = (moved[t.to] ?? 0) - amountMinor

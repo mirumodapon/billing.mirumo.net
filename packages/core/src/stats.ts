@@ -1,8 +1,8 @@
+import { countsInTotals } from './records'
 import { convertToBaseMinor } from './money'
 import { itemShares, sharesOf } from './split'
 import type { Expense, Scope, Trip } from './types'
 
-const alive = <T extends { deletedAt?: string }>(x: T) => x.deletedAt === undefined
 
 export interface StatsOptions {
   scope: Scope
@@ -44,7 +44,7 @@ export interface ByCategoryOptions extends StatsOptions {
 
 export function byCategory(expenses: Expense[], opts: ByCategoryOptions): CategoryStat[] {
   const totals: Record<string, number> = {}
-  for (const e of expenses.filter(alive)) {
+  for (const e of expenses.filter(countsInTotals)) {
     const value = contributionOf(e, opts.scope, opts.selfMemberId, opts.baseCurrency, opts.memberOrder)
     totals[e.categoryId] = (totals[e.categoryId] ?? 0) + value
   }
@@ -123,7 +123,7 @@ function eachDate(startDate: string, endDate: string): string[] {
  */
 export function byDay(expenses: Expense[], opts: ByDayOptions): DayStat[] {
   const totals: Record<string, number> = {}
-  for (const e of expenses.filter(alive)) {
+  for (const e of expenses.filter(countsInTotals)) {
     const value = contributionOf(e, opts.scope, opts.selfMemberId, opts.baseCurrency, opts.memberOrder)
     totals[e.date] = (totals[e.date] ?? 0) + value
   }
@@ -200,7 +200,7 @@ export function itemBreakdown(
   const items: ItemShare[] = []
   let overflowMinor = 0
 
-  for (const e of expenses.filter(alive)) {
+  for (const e of expenses.filter(countsInTotals)) {
     const myShare = sharesOf(e, baseCurrency, memberOrder)[selfMemberId] ?? 0
     if (myShare === 0) continue
 

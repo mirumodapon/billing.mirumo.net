@@ -300,3 +300,19 @@ describe('itemBreakdown', () => {
     expect(itemBreakdown([], opts)).toEqual({ items: [], overflowMinor: 0 })
   })
 })
+
+// task#96：草稿不算進任何統計
+describe('stats: drafts', () => {
+  const opts = { scope: 'group' as const, selfMemberId: 'a', baseCurrency: 'TWD', memberOrder: ORDER }
+  const finished = expense({ id: '1', categoryId: 'cat.food', amount: 300, date: '2026-03-15' })
+  const draft = expense({ id: '2', categoryId: 'cat.transport', amount: 500, date: '2026-03-15', draft: true })
+
+  it('leaves drafts out of the category breakdown', () => {
+    expect(byCategory([finished, draft], opts)).toEqual(byCategory([finished], opts))
+  })
+
+  it('leaves drafts out of daily spending', () => {
+    const dayOpts = { ...opts, trip }
+    expect(byDay([finished, draft], dayOpts)).toEqual(byDay([finished], dayOpts))
+  })
+})

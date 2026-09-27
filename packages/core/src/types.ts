@@ -103,6 +103,8 @@ export interface Expense {
 
   split: Split
   attachments: AttachmentMeta[]
+  /** 草稿：看得到、改得了，但不算進任何合計（task#96）。選填，舊資料沒有這個欄位 */
+  draft?: boolean
 
   /** ISO 8601 UTC，如 `2026-03-15T08:30:00.000Z`。儲存層與匯出格式都依賴這個形狀 */
   createdAt: string
@@ -126,6 +128,8 @@ export interface Transfer {
   exchangeRate: number
   kind: TransferKind
   note: string
+  /** 草稿：不算進淨額（task#96） */
+  draft?: boolean
   /** ISO 8601 UTC，如 `2026-03-15T08:30:00.000Z`。儲存層與匯出格式都依賴這個形狀 */
   createdAt: string
   updatedAt: string
