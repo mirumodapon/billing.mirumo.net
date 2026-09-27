@@ -6,14 +6,22 @@ export function parseDate(iso: string): Date {
   return new Date(`${iso}T00:00:00Z`)
 }
 
+/**
+ * 同一個「$」在兩個語系指不同的錢：zh-TW 的新台幣是 $、en-US 的美元是 $（task#98）。
+ * 這兩個幣別一律寫明，其餘沿用平台的符號（人民幣本來就是 CN¥，不會與日圓 ¥ 混淆）。
+ */
+const EXPLICIT_SYMBOL: Record<string, string> = { TWD: 'NT$', USD: 'US$' }
+
 export function formatMoney(minor: number, currency: string): string {
   const decimals = decimalsOf(currency)
-  return new Intl.NumberFormat(getLocale(), {
+  const parts = new Intl.NumberFormat(getLocale(), {
     style: 'currency',
     currency,
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
-  }).format(fromMinor(minor, decimals))
+  }).formatToParts(fromMinor(minor, decimals))
+  const symbol = EXPLICIT_SYMBOL[currency]
+  return parts.map((p) => (p.type === 'currency' && symbol ? symbol : p.value)).join('')
 }
 
 export function formatDate(iso: string): string {
