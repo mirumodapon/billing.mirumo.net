@@ -4,6 +4,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
+import { formatExpression } from './calc/calcEngine'
 import { CalcKeypad } from './CalcKeypad'
 
 const labels = { done: '完成', clear: '清除', backspace: '刪除一位' }
@@ -62,6 +63,23 @@ describe('CalcKeypad', () => {
     render(<Harness onDone={onDone} />)
     await tap('9', '0', '0', '÷', '3', '完成')
     expect(onDone).toHaveBeenCalledWith(300)
+  })
+
+  // task#95：= 只求值、把算式換成結果，鍵盤留著可以接著算
+  it('replaces the expression with its result on =, keeping the keypad open', async () => {
+    const onDone = vi.fn()
+    render(<Harness onDone={onDone} />)
+    await tap('1', '2', '0', '0', '+', '8', '0', '0', '×', '2', '=')
+    expect(screen.getByTestId('calc-expression')).toHaveTextContent('2,800')
+    expect(onDone).not.toHaveBeenCalled()
+    await tap('+', '2', '0', '0', '=')
+    expect(screen.getByTestId('calc-expression')).toHaveTextContent('3,000')
+  })
+
+  it('leaves an expression that cannot be worked out as it is on =', async () => {
+    render(<Harness />)
+    await tap('5', '÷', '0', '=')
+    expect(screen.getByTestId('calc-expression')).toHaveTextContent(formatExpression('5÷0'))
   })
 
   it('reports null when done is pressed with nothing typed', async () => {

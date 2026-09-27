@@ -63,9 +63,8 @@
   background: var(--bi-surface-raised);
 }
 
-/* 完成佔兩格：最常按的鍵要最好按 */
+/* 完成用主色：最常按的鍵要一眼找到（加了 = 鍵之後不再佔兩格） */
 .bi-keypad__key[data-kind='done'] {
-  grid-column: span 2;
   color: var(--bi-accent);
   font-weight: 600;
 }
