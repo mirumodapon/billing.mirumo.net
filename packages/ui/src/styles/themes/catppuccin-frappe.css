@@ -2,7 +2,7 @@
  * Catppuccin Frappe — https://catppuccin.com/ （MIT）
  * 由 scripts/generate-themes.ts 產生，不要手改。
  */
-[data-theme='catppuccin-frappe'] {
+:root[data-theme='catppuccin-frappe'] {
   color-scheme: dark;
 
   --bi-p-accent1: #e78284;

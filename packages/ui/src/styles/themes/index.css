@@ -1,4 +1,5 @@
-/* 由 scripts/generate-themes.ts 產生，不要手改。 */
+/* 由 scripts/generate-themes.ts 產生，不要手改。default.css 必須排第一。 */
+@import './default.css';
 @import './catppuccin-latte.css';
 @import './catppuccin-frappe.css';
 @import './catppuccin-macchiato.css';

@@ -19,9 +19,9 @@ const PALETTE_SLOTS = [
 ]
 
 function themeFiles(): string[] {
-  // index.css 是 generate-themes.ts 產生的 @import 聚合檔，不是主題本身：
-  // 它既沒有 palette slots 也沒有 color-scheme，混進來掃會誤判成漏寫。
-  return readdirSync(THEME_DIR).filter((f) => f.endsWith('.css') && f !== 'index.css')
+  // index.css 是 @import 聚合檔、default.css 是沒設 data-theme 時的預設值，
+  // 兩者都不是一個可選的主題，混進來會讓清單多出兩個「主題」。
+  return readdirSync(THEME_DIR).filter((f) => f.endsWith('.css') && f !== 'index.css' && f !== 'default.css')
 }
 
 /**
@@ -56,8 +56,10 @@ describe('theme files', () => {
    */
   it('index.css imports every theme file', () => {
     const index = readFileSync(join(THEME_DIR, 'index.css'), 'utf8')
-    const imported = [...index.matchAll(/@import\s+'\.\/(.+?)\.css'/g)].map((m) => m[1]!).sort()
-    expect(imported).toEqual(themeFiles().map((f) => f.replace('.css', '')).sort())
+    const imported = [...index.matchAll(/@import\s+'\.\/(.+?)\.css'/g)].map((m) => m[1]!)
+    expect(imported.filter((id) => id !== 'default').sort()).toEqual(themeFiles().map((f) => f.replace('.css', '')).sort())
+    // 預設值必須排第一：jsdom 只看來源順序，排在後面的話它會蓋掉前面的主題
+    expect(imported[0]).toBe('default')
   })
 
   it('every theme defines all 34 palette slots', () => {
@@ -92,16 +94,13 @@ describe('theme files', () => {
    * index.html 的 inline script 在無痕模式下讀 localStorage 會拋錯，
    * 它的 catch 什麼都不做，正是因為 :root 已經是預設主題。
    */
-  it('exactly one theme doubles as the :root default', () => {
-    const defaults = themeFiles().filter((file) => {
-      // 先去掉註解，否則說明文字裡提到 :root 也會被算進來
-      const css = readFileSync(join(THEME_DIR, file), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
-      return /:root\s*[,{]/.test(css)
-    })
-    expect(defaults, `expected one :root default, found: ${defaults.join(', ') || 'none'}`)
-      .toHaveLength(1)
-  })
-})
+  it('provides the default in default.css and nowhere else', () => {
+    const strip = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, '')
+    expect(strip(readFileSync(join(THEME_DIR, 'default.css'), 'utf8'))).toMatch(/^\s*:root\s*{/)
+    // 主題檔若再掛一個裸 :root，就回到了當初的 bug：同分時由順序決定誰贏
+    const bare = themeFiles().filter((f) => /(^|[\s,}]):root\s*[,{]/.test(strip(readFileSync(join(THEME_DIR, f), 'utf8'))))
+    expect(bare, `these themes also claim :root: ${bare.join(', ')}`).toEqual([])
+  })})
 
 /** WCAG 的相對亮度。0 是黑、1 是白 */
 function relativeLuminance([r, g, b]: [number, number, number]): number {
@@ -236,6 +235,54 @@ describe('text on accent fills (task#71)', () => {
           expect(hex(css, `accent${n}-fg`), `${file} accent${n}`).toBe(deepest)
         }
       }
+    }
+  })
+})
+
+describe('switching themes at runtime (task#80)', () => {
+  /*
+   * 這是真正的行為測試：把主題檔依 index.css 的順序載進文件，逐一在 <html> 設
+   * data-theme，讀實際算出來的值——前面的測試只檢查檔案內容，看不到層疊結果。
+   *
+   * 當初的 bug：預設主題寫成 `:root, [data-theme='catppuccin-mocha']`。`:root` 與
+   * `[data-theme='…']` 特異度相同，同分時後寫的贏，而 Mocha 排在 Latte、Frappé、
+   * Macchiato 之後——這三個主題在 Storybook 與正式 app 裡都永遠套不上，
+   * 使用者選 Latte 拿到的是 Mocha。已在 headless Chromium 裡重現確認。
+   */
+  it('applies every theme when its id is set on <html>, whatever the import order', () => {
+    const index = readFileSync(join(THEME_DIR, 'index.css'), 'utf8')
+    const files = [...index.matchAll(/@import\s+'\.\/(.+?)\.css'/g)].map((m) => m[1]!)
+    const order = files.filter((id) => id !== 'default')
+    expect(order.length).toBe(8)
+    const style = document.createElement('style')
+    style.textContent = files.map((id) => readFileSync(join(THEME_DIR, `${id}.css`), 'utf8')).join('\n')
+    document.head.append(style)
+    try {
+      const wrong: string[] = []
+      for (const id of order) {
+        const declared = readFileSync(join(THEME_DIR, `${id}.css`), 'utf8').match(/--bi-p-bg:\s*(#[0-9a-fA-F]{6});/)![1]
+        document.documentElement.dataset.theme = id
+        const actual = getComputedStyle(document.documentElement).getPropertyValue('--bi-p-bg').trim()
+        if (actual !== declared) wrong.push(`${id}: expected ${declared}, got ${actual}`)
+      }
+      expect(wrong).toEqual([])
+    } finally {
+      style.remove()
+      delete document.documentElement.dataset.theme
+    }
+  })
+
+  // 沒設 data-theme 時仍要有完整的預設主題（無痕模式下 inline script 會失敗）
+  it('falls back to the default theme when no theme is set', () => {
+    const style = document.createElement('style')
+    style.textContent = ['default.css', ...themeFiles()].map((f) => readFileSync(join(THEME_DIR, f), 'utf8')).join('\n')
+    document.head.append(style)
+    try {
+      delete document.documentElement.dataset.theme
+      const mocha = readFileSync(join(THEME_DIR, 'catppuccin-mocha.css'), 'utf8').match(/--bi-p-bg:\s*(#[0-9a-fA-F]{6});/)![1]
+      expect(getComputedStyle(document.documentElement).getPropertyValue('--bi-p-bg').trim()).toBe(mocha)
+    } finally {
+      style.remove()
     }
   })
 })

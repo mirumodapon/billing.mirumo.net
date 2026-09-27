@@ -7,7 +7,7 @@ import { applyTheme, resolveSystemTheme } from './applyTheme'
 describe('THEMES', () => {
   it('has one entry per generated theme file', () => {
     const files = readdirSync(join(import.meta.dirname, '../styles/themes'))
-      .filter((f) => f.endsWith('.css') && f !== 'index.css')
+      .filter((f) => f.endsWith('.css') && f !== 'index.css' && f !== 'default.css')
       .map((f) => f.replace('.css', ''))
       .sort()
     expect(THEMES.map((t) => t.id).sort()).toEqual(files)

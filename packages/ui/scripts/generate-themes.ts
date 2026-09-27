@@ -71,21 +71,44 @@ const DEFAULT_ID = 'catppuccin-mocha'
 
 mkdirSync(OUT, { recursive: true })
 
-for (const spec of specs) {
-  const selector = spec.id === DEFAULT_ID ? `:root,\n[data-theme='${spec.id}']` : `[data-theme='${spec.id}']`
-  const body = Object.entries(spec.slots)
+const cssBody = (spec: ThemeSpec) =>
+  Object.entries(spec.slots)
     .map(([slot, hex]) => `  --bi-p-${slot}: ${hex};`)
     .join('\n')
 
+const header = (text: string) => `/*\n * ${text}\n * 由 scripts/generate-themes.ts 產生，不要手改。\n */\n`
+
+for (const spec of specs) {
+  /*
+   * 主題選擇器寫成 :root[data-theme='…']（特異度 0,2,0），而不是單純的
+   * [data-theme='…']（0,1,0），好贏過 default.css 的 :root（0,1,0）。
+   *
+   * 當初的 bug（task#80）：預設主題寫成 `:root, [data-theme='catppuccin-mocha']`，
+   * 兩者同分時由匯入順序決定，而 Mocha 排在 Latte、Frappé、Macchiato 之後——
+   * 那三個主題在 Storybook 與正式 app 裡永遠套不上。已在 headless Chromium 重現。
+   */
   writeFileSync(
     join(OUT, `${spec.id}.css`),
-    `/*\n * ${spec.label} — ${spec.source}\n * 由 scripts/generate-themes.ts 產生，不要手改。\n */\n${selector} {\n  color-scheme: ${spec.scheme};\n\n${body}\n}\n`,
+    `${header(`${spec.label} — ${spec.source}`)}:root[data-theme='${spec.id}'] {\n  color-scheme: ${spec.scheme};\n\n${cssBody(spec)}\n}\n`,
   )
 }
 
+/*
+ * 沒設 data-theme 時的預設主題，獨立成一個檔、在 index.css 第一個匯入。
+ *
+ * 特異度已經讓任何明確主題贏過它；再把它排在最前面是第二道保險：jsdom 對
+ * 自訂屬性的層疊只看來源順序、不看特異度，排在最前面，測試套件才驗證得了
+ * 「每個主題都套得上」這件事。
+ */
+const defaultSpec = specs.find((s) => s.id === DEFAULT_ID)!
+writeFileSync(
+  join(OUT, 'default.css'),
+  `${header(`預設主題（${defaultSpec.label}），供沒有 data-theme 的頁面使用`)}:root {\n  color-scheme: ${defaultSpec.scheme};\n\n${cssBody(defaultSpec)}\n}\n`,
+)
+
 writeFileSync(
   join(OUT, 'index.css'),
-  `/* 由 scripts/generate-themes.ts 產生，不要手改。 */\n${specs
+  `/* 由 scripts/generate-themes.ts 產生，不要手改。default.css 必須排第一。 */\n@import './default.css';\n${specs
     .map((s) => `@import './${s.id}.css';`)
     .join('\n')}\n`,
 )

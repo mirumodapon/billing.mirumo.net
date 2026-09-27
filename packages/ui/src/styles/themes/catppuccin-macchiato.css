@@ -2,7 +2,7 @@
  * Catppuccin Macchiato — https://catppuccin.com/ （MIT）
  * 由 scripts/generate-themes.ts 產生，不要手改。
  */
-[data-theme='catppuccin-macchiato'] {
+:root[data-theme='catppuccin-macchiato'] {
   color-scheme: dark;
 
   --bi-p-accent1: #ed8796;

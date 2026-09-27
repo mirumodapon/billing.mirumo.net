@@ -2,7 +2,7 @@
  * Catppuccin Latte — https://catppuccin.com/ （MIT）
  * 由 scripts/generate-themes.ts 產生，不要手改。
  */
-[data-theme='catppuccin-latte'] {
+:root[data-theme='catppuccin-latte'] {
   color-scheme: light;
 
   --bi-p-accent1: #d20f39;
