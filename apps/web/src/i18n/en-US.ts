@@ -5,6 +5,15 @@ export const enUS: Record<TranslationKey, string> = {
   'expense.splitEven': 'Split evenly',
   'settle.owes': '{from} pays {to}',
   'stats.myExpense': 'My spending',
+  'cat.food': 'Food',
+  'cat.transport': 'Transport',
+  'cat.lodging': 'Lodging',
+  'cat.shopping': 'Shopping',
+  'cat.ticket': 'Tickets',
+  'cat.other': 'Other',
+  'pay.cash': 'Cash',
+  'pay.credit': 'Credit card',
+  'pay.mobile': 'Mobile pay',
 }
 
 export const enUSPlurals: Record<PluralKey, { one: string; other: string }> = {
