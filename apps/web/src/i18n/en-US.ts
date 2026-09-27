@@ -88,10 +88,26 @@ export const enUS: Record<TranslationKey, string> = {
   'settings.theme': 'Theme',
   'settings.themeSystem': 'Match system light and dark',
   'settings.themeFamily': 'Palette',
+  'settings.categories': 'Categories',
+  'settings.paymentMethods': 'Payment methods',
+  'settings.addCategory': 'Add category',
+  'settings.addPaymentMethod': 'Add',
+  'settings.newPaymentMethod': 'New payment method',
+  'settings.editCategory': 'Edit category',
+  'settings.categoryName': 'Name',
+  'settings.categoryIcon': 'Icon',
+  'settings.categoryColor': 'Colour',
+  'settings.colorN': 'Colour {n}',
+  'settings.save': 'Save',
+  'settings.nameRequired': 'Enter a name',
+  'settings.builtin': 'Built in',
+  'settings.removeItem': 'Remove {name}',
+  'settings.paymentMethodName': 'Name of {name}',
 }
 
 export const enUSPlurals: Record<PluralKey, { one: string; other: string }> = {
   'settle.transferCount': { one: '{count} transfer', other: '{count} transfers' },
   'members.count': { one: '{count} person', other: '{count} people' },
   'rates.count': { one: '{count} currency', other: '{count} currencies' },
+  'settings.usedBy': { one: 'Used by {count} expense', other: 'Used by {count} expenses' },
 }

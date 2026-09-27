@@ -88,12 +88,28 @@ export const zhTW = {
   'settings.theme': '主題',
   'settings.themeSystem': '跟隨系統明暗',
   'settings.themeFamily': '配色家族',
+  'settings.categories': '類別',
+  'settings.paymentMethods': '付款方式',
+  'settings.addCategory': '新增類別',
+  'settings.addPaymentMethod': '新增',
+  'settings.newPaymentMethod': '新付款方式的名稱',
+  'settings.editCategory': '編輯類別',
+  'settings.categoryName': '名稱',
+  'settings.categoryIcon': '圖示',
+  'settings.categoryColor': '顏色',
+  'settings.colorN': '顏色 {n}',
+  'settings.save': '儲存',
+  'settings.nameRequired': '請輸入名稱',
+  'settings.builtin': '內建',
+  'settings.removeItem': '移除 {name}',
+  'settings.paymentMethodName': '{name} 的名稱',
 } as const
 
 export const zhTWPlurals = {
   'settle.transferCount': '{count} 筆轉帳',
   'members.count': '{count} 人',
   'rates.count': '{count} 種幣別',
+  'settings.usedBy': '{count} 筆支出使用中',
 } as const
 
 export type TranslationKey = keyof typeof zhTW
