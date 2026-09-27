@@ -1,3 +1,4 @@
+import { ACCENT_ORDER } from '@billing/ui'
 import type { TranslationKey } from '../i18n'
 import type { AppSettings, Category, PaymentMethod } from './types'
 import { SETTINGS_VERSION } from './types'
@@ -9,16 +10,17 @@ import { SETTINGS_VERSION } from './types'
 type Builtin<T> = T & { id: TranslationKey; builtin: true }
 
 /*
- * 顏色槽位刻意跳著選。12 個 accent 裡有幾對在多數主題下幾乎一樣
- * （task#81：accent5/accent6、accent8/accent9 等），內建的六類不該撞在一起。
+ * 顏色依 ACCENT_ORDER 的前六格（task#81）：那個順序是挑來讓先指派出去的幾格
+ * 彼此差最多的。12 個 accent 裡有幾對在多數主題下幾乎一樣，內建的六類不該撞在一起。
  */
+const [c1, c2, c3, c4, c5, c6] = ACCENT_ORDER
 export const BUILTIN_CATEGORIES: readonly Builtin<Category>[] = [
-  { id: 'cat.food', icon: 'IconToolsKitchen2', colorKey: 'accent1', builtin: true },
-  { id: 'cat.transport', icon: 'IconCar', colorKey: 'accent8', builtin: true },
-  { id: 'cat.lodging', icon: 'IconBed', colorKey: 'accent10', builtin: true },
-  { id: 'cat.shopping', icon: 'IconShoppingBag', colorKey: 'accent4', builtin: true },
-  { id: 'cat.ticket', icon: 'IconTicket', colorKey: 'accent2', builtin: true },
-  { id: 'cat.other', icon: 'IconDots', colorKey: 'accent12', builtin: true },
+  { id: 'cat.food', icon: 'IconToolsKitchen2', colorKey: c1, builtin: true },
+  { id: 'cat.transport', icon: 'IconCar', colorKey: c2, builtin: true },
+  { id: 'cat.lodging', icon: 'IconBed', colorKey: c3, builtin: true },
+  { id: 'cat.shopping', icon: 'IconShoppingBag', colorKey: c4, builtin: true },
+  { id: 'cat.ticket', icon: 'IconTicket', colorKey: c5, builtin: true },
+  { id: 'cat.other', icon: 'IconDots', colorKey: c6, builtin: true },
 ]
 
 export const BUILTIN_PAYMENT_METHODS: readonly Builtin<PaymentMethod>[] = [

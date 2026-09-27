@@ -1,3 +1,4 @@
+import { ACCENT_ORDER } from '@billing/ui'
 import { describe, expect, it } from 'vitest'
 import { t, setLocale } from '../i18n'
 import { BUILTIN_CATEGORIES, BUILTIN_PAYMENT_METHODS, defaultSettings } from './defaults'
@@ -20,19 +21,18 @@ describe('defaults', () => {
     expect(t('pay.credit')).toBe('Credit card')
   })
 
-  // task#81：內建六類不能挑到兩個幾乎一樣的槽位
-  it('gives every built-in category a different colour slot', () => {
-    const slots = BUILTIN_CATEGORIES.map((c) => c.colorKey)
-    expect(new Set(slots).size).toBe(slots.length)
+  // task#81：內建六類取指派順序的前六格——那是彼此差最多的六個
+  it('colours the built-in categories with the first six slots of the assignment order', () => {
+    expect(BUILTIN_CATEGORIES.map((c) => c.colorKey)).toEqual(ACCENT_ORDER.slice(0, 6))
   })
 
   // 回傳的是新物件：呼叫端改了設定不能污染下一次的預設值
   it('returns a fresh copy every time', () => {
     const a = defaultSettings()
-    a.categories[0]!.colorKey = 'accent3'
+    a.categories[0]!.colorKey = 'accent12'
     a.lastUsed.currency = 'JPY'
     const b = defaultSettings()
-    expect(b.categories[0]!.colorKey).toBe('accent1')
+    expect(b.categories[0]!.colorKey).toBe(ACCENT_ORDER[0])
     expect(b.lastUsed.currency).toBeUndefined()
   })
 })
