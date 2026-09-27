@@ -88,3 +88,6 @@ export {
   startOfMonth,
   toIso,
 } from './input/date/isoDate'
+
+export { DatePicker } from './input/DatePicker'
+export type { DatePickerLabels, DatePickerProps } from './input/DatePicker'
