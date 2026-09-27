@@ -5,15 +5,24 @@ import { useState } from 'react'
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router'
 import { BootSkeleton } from '../../app/BootSkeleton'
 import { todayIso } from '../../domain/dates'
-import { draftFromExpense, newDraft, problemsOf, toExpense, type ExpenseDraft } from '../../domain/expenseDraft'
+import {
+  draftFromExpense,
+  isExpenseDraft,
+  newDraft,
+  problemsOf,
+  toExpense,
+  withAutoRate,
+  withManualRate,
+  type ExpenseDraft,
+} from '../../domain/expenseDraft'
 import { useI18n } from '../../i18n/useI18n'
 import { useStores, useTrips } from '../../stores/StoresProvider'
 import { useOpenTrip } from '../useOpenTrip'
-import { AmountSection } from './AmountSection'
+import { MoneyInput } from '../forms/MoneyInput'
 import { DetailsSection } from './DetailsSection'
 import { ReceiptSection } from './ReceiptSection'
 import { SplitSection } from './SplitSection'
-import { useExpenseDraft } from './useExpenseDraft'
+import { useFormDraft } from '../forms/useFormDraft'
 
 /** 新增（/expense/new）或編輯（/expense/:id）支出的全螢幕表單（規格 4.4） */
 export function ExpenseFormScreen() {
@@ -45,7 +54,7 @@ function ExpenseForm({ trip, existing }: { trip: Trip; existing?: Expense }) {
       ? draftFromExpense(existing)
       : newDraft({ trip, expenses: trips.getState().current?.expenses ?? [], settings: settings.getState().settings, today: todayIso() }),
   )
-  const drafted = useExpenseDraft(location.pathname, initial)
+  const drafted = useFormDraft(location.pathname, initial, isExpenseDraft)
   // 捨棄還原的草稿時整個表單重新掛載：金額欄自己保留了算式，不重掛會顯示舊的
   const [version, setVersion] = useState(0)
   const [asking, setAsking] = useState(false)
@@ -112,7 +121,16 @@ function ExpenseForm({ trip, existing }: { trip: Trip; existing?: Expense }) {
       ) : null}
       <div className="app-scroll">
         <div key={version} className="app-form">
-          <AmountSection trip={trip} draft={draft} change={change} autoFocus={!existing} />
+          <MoneyInput
+            baseCurrency={trip.baseCurrency}
+            currency={draft.currency}
+            amount={draft.amount}
+            exchangeRate={draft.exchangeRate}
+            autoFocus={!existing}
+            onAmount={(amount) => change((d) => ({ ...d, amount }))}
+            onCurrency={(currency) => change((d) => withAutoRate({ ...d, currency }, trip))}
+            onManualRate={(rate) => change((d) => withManualRate(d, rate))}
+          />
           <TextField label={t('expense.description')} value={draft.description} onChange={(description) => change((d) => ({ ...d, description }))} />
           <DetailsSection trip={trip} draft={draft} change={change} open={sections.open === 'details'} onToggle={() => sections.toggle('details')} />
           <SplitSection trip={trip} draft={draft} change={change} open={sections.open === 'split'} onToggle={() => sections.toggle('split')} />
