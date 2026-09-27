@@ -84,6 +84,16 @@ describe('newDraft: defaults (spec 4.4)', () => {
   })
 })
 
+describe('newDraft: trip payment methods (task#92)', () => {
+  it('reuses a trip-only payment method as the last one used', () => {
+    const withSuica = { ...trip, paymentMethods: [{ id: 'suica', name: 'Suica' }] }
+    const settings = { ...defaultSettings(), lastUsed: { paymentMethodId: 'suica' } }
+    expect(newDraft({ ...ctx({ settings }), trip: withSuica }).paymentMethodId).toBe('suica')
+    // 另一趟旅程沒有這個付款方式：退回第一個
+    expect(newDraft(ctx({ settings })).paymentMethodId).toBe('pay.cash')
+  })
+})
+
 describe('exchange rate (spec 4.4, 2.5)', () => {
   it('takes the rate for the currency and payment method first', () => {
     const settings = { ...defaultSettings(), lastUsed: { currency: 'JPY', paymentMethodId: 'pay.cash' } }

@@ -1,6 +1,7 @@
 import { Accordion, ChipGroup } from '@billing/ui'
 import { withAutoRate } from '../../domain/expenseDraft'
 import { displayName } from '../../domain/names'
+import { paymentMethodsFor } from '../../domain/paymentMethods'
 import { useI18n } from '../../i18n/useI18n'
 import { useSettings } from '../../stores/StoresProvider'
 import { DateField } from '../forms/DateField'
@@ -13,7 +14,8 @@ import type { FormSectionProps } from './ExpenseFormScreen'
 export function DetailsSection({ trip, draft, change, open, onToggle }: FormSectionProps & { open: boolean; onToggle: () => void }) {
   const { t, date } = useI18n()
   const categories = useSettings((s) => s.settings.categories)
-  const methods = useSettings((s) => s.settings.paymentMethods)
+  const globalMethods = useSettings((s) => s.settings.paymentMethods)
+  const methods = paymentMethodsFor(globalMethods, trip)
   const category = categories.find((c) => c.id === draft.categoryId)
   const method = methods.find((m) => m.id === draft.paymentMethodId)
   const payer = trip.members.find((m) => m.id === draft.paidBy)

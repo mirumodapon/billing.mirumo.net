@@ -140,3 +140,20 @@ describe('validateSnapshot', () => {
     expect(problems.length).toBeGreaterThanOrEqual(3)
   })
 })
+
+describe('validateSnapshot: trip payment methods (task#92)', () => {
+  it('accepts a trip with its own payment methods, and older trips without the field', () => {
+    const trip = makeTrip({ paymentMethods: [{ id: 'suica', name: 'Suica' }] })
+    expect(validateSnapshot(snapshot({ trips: [trip] }))).toMatchObject({ ok: true })
+    expect(validateSnapshot(snapshot({ trips: [makeTrip()] }))).toMatchObject({ ok: true })
+  })
+
+  it('rejects malformed or duplicated trip payment methods', () => {
+    const malformed = makeTrip({ paymentMethods: [{ id: '', name: 'x' }] })
+    expect(problemsOf(snapshot({ trips: [malformed] }))).toContain('trip t1: malformed payment methods')
+    const notArray = { ...makeTrip(), paymentMethods: 'suica' } as unknown as ReturnType<typeof makeTrip>
+    expect(problemsOf(snapshot({ trips: [notArray] }))).toContain('trip t1: malformed payment methods')
+    const twice = makeTrip({ paymentMethods: [{ id: 'suica', name: 'A' }, { id: 'suica', name: 'B' }] })
+    expect(problemsOf(snapshot({ trips: [twice] }))).toContain('trip t1: payment method suica appears more than once')
+  })
+})

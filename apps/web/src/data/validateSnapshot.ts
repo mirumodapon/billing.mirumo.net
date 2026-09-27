@@ -67,6 +67,14 @@ export function validateSnapshot(input: unknown): SnapshotCheck {
     for (const id of duplicates(members.map((m) => m.id))) problems.push(`${at}: member ${id} appears more than once`)
     const ids = new Set(members.map((m) => m.id))
     if (!ids.has(trip.selfMemberId)) problems.push(`${at}: selfMemberId ${trip.selfMemberId} is not a member`)
+    // task#92：旅程專用的付款方式是選填的；有的話每一筆都要有 id 與名稱，id 不能重複
+    if (trip.paymentMethods !== undefined) {
+      const methods = Array.isArray(trip.paymentMethods) ? trip.paymentMethods : []
+      if (!Array.isArray(trip.paymentMethods) || methods.some((m) => !isText(m?.id) || typeof m?.name !== 'string')) {
+        problems.push(`${at}: malformed payment methods`)
+      }
+      for (const id of duplicates(methods.map((m) => m?.id))) problems.push(`${at}: payment method ${id} appears more than once`)
+    }
     membersByTrip.set(trip.id, ids)
   }
 

@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { CURRENCIES, currencyName } from '../../domain/currencies'
 import { fetchRate } from '../../domain/fetchRate'
 import { displayName } from '../../domain/names'
+import { paymentMethodsFor } from '../../domain/paymentMethods'
 import { useI18n } from '../../i18n/useI18n'
 import { useSettings, useStores } from '../../stores/StoresProvider'
 import { AmountField } from './AmountField'
@@ -43,7 +44,8 @@ function currenciesIn(rates: ExchangeRateTable): string[] {
 export function RatesSection({ trip, open, onToggle, save }: RatesSectionProps) {
   const { t, tPlural, locale } = useI18n()
   const { ui } = useStores()
-  const methods = useSettings((s) => s.settings.paymentMethods)
+  const globalMethods = useSettings((s) => s.settings.paymentMethods)
+  const methods = paymentMethodsFor(globalMethods, trip)
   // 剛加入、還沒輸入任何匯率的幣別與付款方式：沒有值就不存，所以先放在畫面上
   const [addedCurrencies, setAddedCurrencies] = useState<string[]>([])
   const [addedMethods, setAddedMethods] = useState<string[]>([])
