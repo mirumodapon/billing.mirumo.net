@@ -14,6 +14,8 @@ export const zhTW = {
   'pay.cash': '現金',
   'pay.credit': '信用卡',
   'pay.mobile': '行動支付',
+  'error.saveFailed': '儲存失敗，已還原變更',
+  'error.loadFailed': '讀取資料失敗',
 } as const
 
 export const zhTWPlurals = {
