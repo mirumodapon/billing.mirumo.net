@@ -84,6 +84,12 @@ describe('ProgressBar', () => {
    * 這一半只能讀原始碼——證明三個層級各自對到該對的語意 token,不證明
    * 瀏覽器真的畫出那個顏色。
    */
+  // 在 surface 卡片上時，與卡片同色的底會讓 0% 的條子整條消失（Plan 6 走查時發現）
+  it('draws its track in a colour that shows on cards as well as the page', () => {
+    const css = readFileSync(join(import.meta.dirname, 'ProgressBar.css'), 'utf8')
+    expect(css).toMatch(/\.bi-progress\s*\{[^}]*background:\s*var\(--bi-border\)/)
+  })
+
   it('maps every level to its own semantic colour', () => {
     const css = readFileSync(join(import.meta.dirname, 'ProgressBar.css'), 'utf8')
     expect(css).toMatch(/\[data-level='normal'\]\s*{[^}]*background:\s*var\(--bi-accent\)/)

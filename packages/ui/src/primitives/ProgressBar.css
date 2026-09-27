@@ -2,7 +2,11 @@
   width: 100%;
   height: var(--bi-space-2);
   border-radius: var(--bi-radius-full);
-  background: var(--bi-surface);
+  /*
+   * 底色用 border 而不是 surface：進度條常放在 surface 卡片上（旅程列表的預算條），
+   * 與卡片同色時 0% 的條子整條看不見。border 在頁面底色與 surface 上都看得出來。
+   */
+  background: var(--bi-border);
   overflow: hidden;
 }
 
