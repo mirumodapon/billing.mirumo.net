@@ -3,8 +3,8 @@ import type { ReactNode } from 'react'
 export interface PageTransitionProps {
   /** 每個路由一個穩定的值。它同時是 React key，換值就重播動畫 */
   routeKey: string
-  /** forward 由右滑入，back 由左滑回 */
-  direction: 'forward' | 'back'
+  /** forward 由右滑入，back 由左滑回；up 由下推入（全螢幕表單），down 是它的反向 */
+  direction: 'forward' | 'back' | 'up' | 'down'
   children: ReactNode
 }
 
