@@ -48,6 +48,8 @@ export const zhTW = {
   'date.calendarTitle': '選擇日期',
   'date.prevMonth': '上個月',
   'date.nextMonth': '下個月',
+  'setup.basic': '基本資料',
+  'setup.baseCurrencyLocked': '已有帳目，不能再改本位幣：每筆的匯率都是對它算的',
 } as const
 
 export const zhTWPlurals = {

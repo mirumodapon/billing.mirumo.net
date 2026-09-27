@@ -48,6 +48,8 @@ export const enUS: Record<TranslationKey, string> = {
   'date.calendarTitle': 'Pick a date',
   'date.prevMonth': 'Previous month',
   'date.nextMonth': 'Next month',
+  'setup.basic': 'Details',
+  'setup.baseCurrencyLocked': 'Home currency is locked once there are records: every rate was set against it.',
 }
 
 export const enUSPlurals: Record<PluralKey, { one: string; other: string }> = {
