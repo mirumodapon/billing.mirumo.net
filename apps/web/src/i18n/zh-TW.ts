@@ -30,6 +30,8 @@ export const zhTW = {
   'common.loading': '載入中',
   'common.delete': '刪除',
   'common.cancel': '取消',
+  'expense.deleted': '已刪除「{name}」',
+  'expense.untitled': '未命名支出',
   'tripList.empty': '還沒有旅程，按右下角新增第一趟',
   'tripList.settings': '設定',
   'tripList.spent': '已花 {amount}',

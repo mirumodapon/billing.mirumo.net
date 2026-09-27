@@ -30,6 +30,8 @@ export const enUS: Record<TranslationKey, string> = {
   'common.loading': 'Loading',
   'common.delete': 'Delete',
   'common.cancel': 'Cancel',
+  'expense.deleted': 'Deleted "{name}"',
+  'expense.untitled': 'Untitled expense',
   'tripList.empty': 'No trips yet. Tap the button to add your first.',
   'tripList.settings': 'Settings',
   'tripList.spent': 'Spent {amount}',

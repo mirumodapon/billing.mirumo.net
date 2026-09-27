@@ -163,3 +163,88 @@ describe('tripStore: deleting', () => {
     expect(trips.getState().current).toBeUndefined()
   })
 })
+
+describe('tripStore: expenses', () => {
+  async function opened() {
+    const stores = await withTrip()
+    await stores.trips.getState().loadTrips()
+    await stores.trips.getState().openTrip('t1')
+    return stores
+  }
+  const ids = (s: Awaited<ReturnType<typeof opened>>) => s.trips.getState().current!.expenses.map((e) => e.id)
+
+  it('shows a new expense at once, newest date first, then keeps the repository’s timestamps', async () => {
+    const stores = await opened()
+    const saving = stores.trips.getState().saveExpense(makeExpense({ id: 'new', tripId: 't1', date: '2026-03-17' }))
+    expect(ids(stores)).toEqual(['new', 'e1'])
+    const saved = await saving
+    expect(saved?.createdAt).toBeTruthy()
+    expect(stores.trips.getState().current!.expenses[0]!.updatedAt).toBe(saved?.updatedAt)
+  })
+
+  it('updates an edited expense in place', async () => {
+    const stores = await opened()
+    const [e1] = stores.trips.getState().current!.expenses
+    await stores.trips.getState().saveExpense({ ...e1!, description: '改過' })
+    expect(stores.trips.getState().current!.expenses.map((e) => e.description)).toEqual(['改過'])
+  })
+
+  it('refreshes the trip’s spending summary', async () => {
+    const stores = await opened()
+    await stores.trips.getState().saveExpense(makeExpense({ id: 'new', tripId: 't1', amount: 500, currency: 'TWD', exchangeRate: 1 }))
+    expect(stores.trips.getState().summaries.t1?.spentMinor).toBe(1500)
+  })
+
+  it('rolls back a failed save and reports it', async () => {
+    const stores = await opened()
+    vi.spyOn(stores.repo, 'saveExpense').mockRejectedValueOnce(new StorageError('write', 'expense'))
+    expect(await stores.trips.getState().saveExpense(makeExpense({ id: 'new', tripId: 't1' }))).toBeUndefined()
+    expect(ids(stores)).toEqual(['e1'])
+    expect(stores.ui.getState().queue[0]?.message).toBe(t('error.saveFailed'))
+  })
+
+  it('restores the previous version when an edit fails', async () => {
+    const stores = await opened()
+    const [e1] = stores.trips.getState().current!.expenses
+    vi.spyOn(stores.repo, 'saveExpense').mockRejectedValueOnce(new StorageError('write', 'expense'))
+    await stores.trips.getState().saveExpense({ ...e1!, description: '改過' })
+    expect(stores.trips.getState().current!.expenses[0]!.description).toBe(e1!.description)
+  })
+
+  it('removes a deleted expense at once and brings it back on undo', async () => {
+    const stores = await opened()
+    await stores.trips.getState().deleteExpense('e1')
+    expect(ids(stores)).toEqual([])
+    expect(await stores.repo.listExpenses('t1')).toEqual([])
+    expect(stores.trips.getState().summaries.t1?.spentMinor).toBe(0)
+    const snack = stores.ui.getState().queue[0]!
+    expect(snack).toMatchObject({ message: t('expense.deleted', { name: '一蘭拉麵' }), actionLabel: t('common.undo') })
+    snack.onAction!()
+    await vi.waitFor(async () => expect(await stores.repo.listExpenses('t1')).toHaveLength(1))
+    expect(ids(stores)).toEqual(['e1'])
+  })
+
+  it('names an untitled expense in the undo message', async () => {
+    const stores = await opened()
+    const [e1] = stores.trips.getState().current!.expenses
+    await stores.trips.getState().saveExpense({ ...e1!, description: '  ' })
+    await stores.trips.getState().deleteExpense('e1')
+    expect(stores.ui.getState().queue.at(-1)?.message).toBe(t('expense.deleted', { name: t('expense.untitled') }))
+  })
+
+  it('puts the expense back if deleting fails', async () => {
+    const stores = await opened()
+    vi.spyOn(stores.repo, 'deleteExpense').mockRejectedValueOnce(new StorageError('delete', 'expense'))
+    await stores.trips.getState().deleteExpense('e1')
+    expect(ids(stores)).toEqual(['e1'])
+    expect(stores.ui.getState().queue[0]?.message).toBe(t('error.saveFailed'))
+  })
+
+  it('saves an expense for another trip without touching the open one', async () => {
+    const stores = await opened()
+    await stores.repo.saveTrip(makeTrip({ id: 't2' }))
+    await stores.trips.getState().saveExpense(makeExpense({ id: 'other', tripId: 't2' }))
+    expect(ids(stores)).toEqual(['e1'])
+    expect(await stores.repo.listExpenses('t2')).toHaveLength(1)
+  })
+})
