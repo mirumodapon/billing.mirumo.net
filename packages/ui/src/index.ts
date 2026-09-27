@@ -71,3 +71,6 @@ export type { SegmentedControlProps, SegmentOption } from './input/SegmentedCont
 
 export { ChipGroup } from './input/ChipGroup'
 export type { ChipGroupProps, ChipOption } from './input/ChipGroup'
+
+export { AvatarToggleGroup } from './input/AvatarToggleGroup'
+export type { AvatarToggleGroupProps, AvatarToggleItem } from './input/AvatarToggleGroup'
