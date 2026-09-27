@@ -99,6 +99,7 @@ export const enUS: Record<TranslationKey, string> = {
   'expenses.summary': '{spent} of {budget}',
   'expenses.spent': 'Spent {amount}',
   'expenses.budget': '{percent}% of budget used',
+  'expenses.showBase': 'Show home currency',
   'tripList.empty': 'No trips yet. Tap the button to add your first.',
   'tripList.settings': 'Settings',
   'tripList.spent': 'Spent {amount}',

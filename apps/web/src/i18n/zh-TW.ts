@@ -99,6 +99,7 @@ export const zhTW = {
   'expenses.summary': '{spent} / {budget}',
   'expenses.spent': '已花 {amount}',
   'expenses.budget': '預算已用 {percent}%',
+  'expenses.showBase': '顯示本位幣',
   'tripList.empty': '還沒有旅程，按右下角新增第一趟',
   'tripList.settings': '設定',
   'tripList.spent': '已花 {amount}',

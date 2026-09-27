@@ -135,3 +135,28 @@ describe('adding from the list', () => {
     await waitFor(() => expect(currentRoute()).toBe('/'))
   })
 })
+
+describe('home-currency toggle (task#99)', () => {
+  it('shows both amounts by default, and only the original once switched off', async () => {
+    const { user, stores } = await setup()
+    const toggle = screen.getByRole('button', { name: t('expenses.showBase') })
+    expect(toggle).toHaveAttribute('aria-pressed', 'true')
+    expect(row('一蘭拉麵')).toHaveTextContent(plain(formatMoney(630, 'TWD')))
+    await user.click(toggle)
+    expect(toggle).toHaveAttribute('aria-pressed', 'false')
+    expect(row('一蘭拉麵')).toHaveTextContent(plain(formatMoney(3000, 'JPY')))
+    expect(row('一蘭拉麵')).not.toHaveTextContent(plain(formatMoney(630, 'TWD')))
+    // 本位幣的支出本來就只有一個金額，照常顯示
+    expect(row('淺草寺門票')).toHaveTextContent(plain(formatMoney(500, 'TWD')))
+    await waitFor(async () => expect((await stores.repo.getSettings()).showBaseAmounts).toBe(false))
+  })
+
+  // 合計與摘要是全團的帳，一律用本位幣
+  it('keeps day totals and the summary in the home currency', async () => {
+    const { user } = await setup()
+    await user.click(screen.getByRole('button', { name: t('expenses.showBase') }))
+    const dayTotal = formatMoney(convertToBaseMinor(3000, 0.21, 'TWD') + 500, 'TWD')
+    expect(screen.getAllByRole('region')[1]).toHaveTextContent(plain(t('expenses.dayTotal', { amount: dayTotal })))
+    expect(screen.getByText(plain(t('expenses.spent', { amount: formatMoney(1330, 'TWD') })))).toBeInTheDocument()
+  })
+})

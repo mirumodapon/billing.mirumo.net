@@ -10,10 +10,12 @@ export interface ExpenseRowProps {
   category?: Category
   onOpen: () => void
   onDelete: () => void
+  /** 外幣支出要不要同時顯示換算後的本位幣（task#99），預設顯示 */
+  showBase?: boolean
 }
 
 /** 支出列表的一筆（規格 4.3）：類別圖示、說明、誰付與怎麼分、原幣與本位幣金額 */
-export function ExpenseRow({ expense, trip, category, onOpen, onDelete }: ExpenseRowProps) {
+export function ExpenseRow({ expense, trip, category, onOpen, onDelete, showBase = true }: ExpenseRowProps) {
   const { t, tPlural, money } = useI18n()
   const payer = trip.members.find((m) => m.id === expense.paidBy)?.name ?? ''
   const split =
@@ -24,6 +26,8 @@ export function ExpenseRow({ expense, trip, category, onOpen, onDelete }: Expens
         : t('split.summaryExact')
   const name = expense.description.trim() || t('expense.untitled')
   const foreign = expense.currency !== trip.baseCurrency
+  const original = money(toMinor(expense.amount, decimalsOf(expense.currency)), expense.currency)
+  const base = money(convertToBaseMinor(expense.amount, expense.exchangeRate, trip.baseCurrency), trip.baseCurrency)
   const glyph = category ? CATEGORY_ICONS[category.icon] : IconDots
   const color = category?.colorKey
 
@@ -49,10 +53,9 @@ export function ExpenseRow({ expense, trip, category, onOpen, onDelete }: Expens
           <span className="app-field-label m-0">{t('expenses.paidSplit', { payer, split })}</span>
         </span>
         <span className="app-expense__amounts">
-          {foreign ? (
-            <span className="app-field-label m-0 block">{money(toMinor(expense.amount, decimalsOf(expense.currency)), expense.currency)}</span>
-          ) : null}
-          <span className="block">{money(convertToBaseMinor(expense.amount, expense.exchangeRate, trip.baseCurrency), trip.baseCurrency)}</span>
+          {foreign && showBase ? <span className="app-field-label m-0 block">{original}</span> : null}
+          {/* 關掉本位幣時，外幣支出只顯示原幣（task#99）；本位幣支出本來就只有一個金額 */}
+          <span className="block">{foreign && !showBase ? original : base}</span>
         </span>
       </button>
     </SwipeAction>

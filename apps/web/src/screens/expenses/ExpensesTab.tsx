@@ -1,5 +1,5 @@
 import { convertToBaseMinor, type Expense } from '@billing/core'
-import { Fab, ProgressBar } from '@billing/ui'
+import { Chip, Fab, ProgressBar } from '@billing/ui'
 import { IconPlus } from '@tabler/icons-react'
 import { useNavigate, useParams } from 'react-router'
 import { formatWeekday } from '../../i18n/format'
@@ -19,11 +19,13 @@ export function ExpensesTab() {
   const { tripId = '' } = useParams()
   const { t, money, date } = useI18n()
   const navigate = useNavigate()
-  const { trips } = useStores()
+  const { trips, settings } = useStores()
   const trip = useTrips((s) => s.trips.find((x) => x.id === tripId))
   const expenses = useTrips((s) => (s.current?.tripId === tripId ? s.current.expenses : undefined))
   const summary = useTrips((s) => s.summaries[tripId])
   const categories = useSettings((s) => s.settings.categories)
+  // 沒設定過就是顯示（task#99）
+  const showBase = useSettings((s) => s.settings.showBaseAmounts ?? true)
   if (!trip || !expenses) return null
 
   const budget = summary?.budget
@@ -42,6 +44,13 @@ export function ExpensesTab() {
             ariaLabel={t('expenses.budget', { percent: Math.min(999, Math.round(budget.ratio * 100)) })}
           />
         ) : null}
+        <div>
+          <Chip
+            label={t('expenses.showBase')}
+            selected={showBase}
+            onSelect={() => void settings.getState().update((s) => ({ ...s, showBaseAmounts: !showBase }))}
+          />
+        </div>
       </div>
       {expenses.length === 0 ? <p className="app-empty">{t('expenses.empty')}</p> : null}
       <div className="pb-24">
@@ -68,6 +77,7 @@ export function ExpensesTab() {
                 category={categories.find((c) => c.id === expense.categoryId)}
                 onOpen={() => navigate(`/trip/${tripId}/expense/${expense.id}`)}
                 onDelete={() => void trips.getState().deleteExpense(expense.id)}
+                showBase={showBase}
               />
             ))}
           </section>
