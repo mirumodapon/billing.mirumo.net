@@ -37,3 +37,48 @@ describe('Chip', () => {
     expect(screen.queryByTestId('chip-dot')).toBeNull()
   })
 })
+
+/*
+ * task#76：ChipGroup 要對子元件取 ref 做焦點管理，也要掛 id 讓別處 aria-labelledby 指過來。
+ * 兩種形態（純標籤、可點的 button）都要支援，因為呼叫端事先不一定知道會拿到哪一種。
+ */
+describe('Chip as a DOM element', () => {
+  it('forwards its ref in both forms', () => {
+    const plain = { current: null as HTMLElement | null }
+    const { unmount } = render(<Chip ref={plain} label="現金" />)
+    expect(plain.current).toBeInstanceOf(HTMLSpanElement)
+    unmount()
+    const pressable = { current: null as HTMLElement | null }
+    render(<Chip ref={pressable} label="現金" onSelect={vi.fn()} />)
+    expect(pressable.current).toBeInstanceOf(HTMLButtonElement)
+  })
+
+  it('passes native attributes through in both forms', () => {
+    const { unmount } = render(<Chip label="現金" id="c1" data-kind="pay" aria-describedby="hint" />)
+    const plain = screen.getByText('現金')
+    expect(plain).toHaveAttribute('id', 'c1')
+    expect(plain).toHaveAttribute('data-kind', 'pay')
+    expect(plain).toHaveAttribute('aria-describedby', 'hint')
+    unmount()
+    render(<Chip label="現金" onSelect={vi.fn()} id="c2" data-kind="pay" />)
+    const button = screen.getByRole('button', { name: '現金' })
+    expect(button).toHaveAttribute('id', 'c2')
+    expect(button).toHaveAttribute('data-kind', 'pay')
+  })
+
+  // 選取狀態與停用是元件自己的語意，透傳的屬性不能把它們蓋掉
+  it('keeps its own state attributes over passed-through ones', async () => {
+    const onSelect = vi.fn()
+    render(<Chip label="現金" selected={false} disabled onSelect={onSelect} aria-pressed onClick={onSelect} />)
+    const button = screen.getByRole('button', { name: '現金' })
+    expect(button).toHaveAttribute('aria-pressed', 'false')
+    await userEvent.click(button)
+    expect(onSelect).not.toHaveBeenCalled()
+  })
+
+  // 純標籤的選取樣式只看 data-selected，同樣不能被透傳的值打開
+  it('keeps its own selected marker in the plain form', () => {
+    render(<Chip label="現金" selected={false} data-selected="true" />)
+    expect(screen.getByText('現金')).not.toHaveAttribute('data-selected')
+  })
+})

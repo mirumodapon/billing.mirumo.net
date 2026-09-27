@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { render, screen } from '@testing-library/react'
+import type { CSSProperties } from 'react'
 import { describe, expect, it } from 'vitest'
 import { Avatar } from './Avatar'
 
@@ -70,5 +71,43 @@ describe('Avatar', () => {
   it('keeps the outlined border inside the fixed size', () => {
     const css = readFileSync(join(import.meta.dirname, 'Avatar.css'), 'utf8')
     expect(css).toMatch(/\.bi-avatar\s*{[^}]*box-sizing:\s*border-box/)
+  })
+})
+
+// task#76：AvatarToggleGroup 要對頭像取 ref，也要能掛 id 與 data-*
+describe('Avatar as a DOM element', () => {
+  it('forwards its ref', () => {
+    const ref = { current: null as HTMLSpanElement | null }
+    render(<Avatar ref={ref} name="阿明" />)
+    expect(ref.current).toBeInstanceOf(HTMLSpanElement)
+  })
+
+  it('passes native attributes through', () => {
+    render(<Avatar name="阿明" id="m1" data-member="a" aria-describedby="hint" />)
+    const avatar = screen.getByRole('img', { name: '阿明' })
+    expect(avatar).toHaveAttribute('id', 'm1')
+    expect(avatar).toHaveAttribute('data-member', 'a')
+    expect(avatar).toHaveAttribute('aria-describedby', 'hint')
+  })
+
+  // 呼叫端的 style 要跟身分色合併，不能互相取代：取代掉身分色，頭像就沒有顏色
+  it('merges a passed style with its identity colour', () => {
+    render(<Avatar name="阿明" colorKey="accent5" style={{ marginInlineStart: '4px' }} />)
+    const avatar = screen.getByRole('img', { name: '阿明' })
+    expect(avatar.style.marginInlineStart).toBe('4px')
+    expect(avatar.style.getPropertyValue('--bi-avatar-color')).toBe('var(--bi-accent5)')
+  })
+
+  // 身分色只能來自 colorKey：style 帶同名變數也不能把它換掉，否則兩個人可能撞同一個顏色
+  it('takes its identity colour from colorKey even when style names the same variable', () => {
+    render(<Avatar name="阿明" colorKey="accent5" style={{ '--bi-avatar-color': 'var(--bi-danger)' } as CSSProperties} />)
+    const avatar = screen.getByRole('img', { name: '阿明' })
+    expect(avatar.style.getPropertyValue('--bi-avatar-color')).toBe('var(--bi-accent5)')
+  })
+
+  // 名字就是頭像的無障礙名稱；透傳的 role 或 aria-label 不能讓它變成別的東西
+  it('keeps its own role and name over passed-through ones', () => {
+    render(<Avatar name="阿明" role="button" aria-label="別的名字" />)
+    expect(screen.getByRole('img', { name: '阿明' })).toBeInTheDocument()
   })
 })

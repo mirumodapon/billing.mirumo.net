@@ -102,3 +102,26 @@ describe('ProgressBar', () => {
     expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuetext', '73%')
   })
 })
+
+// task#76：預算卡片要能用 aria-describedby 把進度條連到說明文字，也要能掛 id
+describe('ProgressBar as a DOM element', () => {
+  it('forwards its ref', () => {
+    const ref = { current: null as HTMLDivElement | null }
+    render(<ProgressBar ref={ref} ratio={0.5} level="normal" ariaLabel="x" />)
+    expect(ref.current).toBeInstanceOf(HTMLDivElement)
+  })
+
+  it('passes native attributes through', () => {
+    render(<ProgressBar ratio={0.5} level="normal" ariaLabel="x" id="p1" data-trip="t" aria-describedby="hint" />)
+    const bar = screen.getByRole('progressbar')
+    expect(bar).toHaveAttribute('id', 'p1')
+    expect(bar).toHaveAttribute('data-trip', 't')
+    expect(bar).toHaveAttribute('aria-describedby', 'hint')
+  })
+
+  // 數值屬性是元件從 ratio 算出來的；透傳的值蓋過去，輔助技術就會念錯
+  it('keeps its own role and values over passed-through ones', () => {
+    render(<ProgressBar ratio={0.5} level="normal" ariaLabel="x" role="meter" aria-valuenow={9} />)
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '50')
+  })
+})
