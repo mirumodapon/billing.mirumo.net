@@ -68,3 +68,6 @@ export type { TextFieldProps } from './input/TextField'
 
 export { SegmentedControl } from './input/SegmentedControl'
 export type { SegmentedControlProps, SegmentOption } from './input/SegmentedControl'
+
+export { ChipGroup } from './input/ChipGroup'
+export type { ChipGroupProps, ChipOption } from './input/ChipGroup'

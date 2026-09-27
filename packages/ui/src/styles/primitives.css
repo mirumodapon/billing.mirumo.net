@@ -1,5 +1,6 @@
 @import '../primitives/Button.css';
 @import '../primitives/Chip.css';
+@import '../input/ChipGroup.css';
 @import '../primitives/Avatar.css';
 @import '../primitives/ProgressBar.css';
 @import '../primitives/Skeleton.css';
