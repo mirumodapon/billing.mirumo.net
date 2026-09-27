@@ -64,6 +64,9 @@ export type { PageTransitionProps } from './motion/PageTransition'
 
 export { CalcKeypad } from './input/CalcKeypad'
 export type { CalcKeypadLabels, CalcKeypadProps } from './input/CalcKeypad'
+// app 要在使用者沒按「完成」就離開金額欄時，仍拿得到算式的值（Plan 7）
+export { evaluate } from './input/calc/calcEngine'
+export type { EvalResult } from './input/calc/calcEngine'
 
 export { TextField } from './input/TextField'
 export type { TextFieldProps } from './input/TextField'
