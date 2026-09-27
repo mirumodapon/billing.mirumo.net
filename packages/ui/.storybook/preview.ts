@@ -2,6 +2,7 @@ import type { Preview } from '@storybook/react-vite'
 import { withThemeByDataAttribute } from '@storybook/addon-themes'
 import { DEFAULT_THEME, THEMES } from '../src/theme/manifest'
 import '../src/styles/tokens.css'
+import './preview.css'
 
 const preview: Preview = {
   parameters: {

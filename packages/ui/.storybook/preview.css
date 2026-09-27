@@ -1,0 +1,12 @@
+/*
+ * 讓 story 的畫布跟著主題走（task#80）。
+ *
+ * 正式 app 在 apps/web/src/index.css 裡把 body 設成 --bi-bg 與 --bi-text；
+ * Storybook 沒有這一層，畫布永遠是預設的白色。切到深色主題時，元件的淺色字
+ * 就畫在白底上，看起來像主題沒有作用。
+ */
+html,
+body {
+  background: var(--bi-bg);
+  color: var(--bi-text);
+}

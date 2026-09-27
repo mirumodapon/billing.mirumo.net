@@ -9,7 +9,7 @@ const THEME_DIR = join(import.meta.dirname, '../styles/themes')
 /** 八個主題各自的 12 個 accent，依槽位編號排 */
 function themeAccents(): string[][] {
   return readdirSync(THEME_DIR)
-    .filter((f) => f.endsWith('.css') && f !== 'index.css')
+    .filter((f) => f.endsWith('.css') && f !== 'index.css' && f !== 'default.css')
     .map((f) => {
       const css = readFileSync(join(THEME_DIR, f), 'utf8')
       return Array.from({ length: 12 }, (_, i) => css.match(new RegExp(`--bi-p-accent${i + 1}:\\s*(#[0-9a-fA-F]{6});`))![1]!)

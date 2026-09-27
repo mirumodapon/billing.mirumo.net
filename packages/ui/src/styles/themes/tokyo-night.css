@@ -2,7 +2,7 @@
  * Tokyo Night — https://github.com/folke/tokyonight.nvim （MIT）
  * 由 scripts/generate-themes.ts 產生，不要手改。
  */
-[data-theme='tokyo-night'] {
+:root[data-theme='tokyo-night'] {
   color-scheme: dark;
 
   --bi-p-accent1: #f7768e;

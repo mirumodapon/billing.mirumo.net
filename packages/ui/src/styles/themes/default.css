@@ -1,8 +1,8 @@
 /*
- * Catppuccin Mocha — https://catppuccin.com/ （MIT）
+ * 預設主題（Catppuccin Mocha），供沒有 data-theme 的頁面使用
  * 由 scripts/generate-themes.ts 產生，不要手改。
  */
-:root[data-theme='catppuccin-mocha'] {
+:root {
   color-scheme: dark;
 
   --bi-p-accent1: #f38ba8;
