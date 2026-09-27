@@ -50,8 +50,17 @@ export const enUS: Record<TranslationKey, string> = {
   'date.nextMonth': 'Next month',
   'setup.basic': 'Details',
   'setup.baseCurrencyLocked': 'Home currency is locked once there are records: every rate was set against it.',
+  'members.title': 'Members',
+  'members.add': 'Add',
+  'members.newName': "New member's name",
+  'members.name': "{name}'s name",
+  'members.self': 'Which one is you',
+  'members.selfBadge': 'Me',
+  'members.remove': 'Remove {name}',
+  'members.inUse': "{names} still appear in expenses or transfers and can't be removed. Reassign or delete those first.",
 }
 
 export const enUSPlurals: Record<PluralKey, { one: string; other: string }> = {
   'settle.transferCount': { one: '{count} transfer', other: '{count} transfers' },
+  'members.count': { one: '{count} person', other: '{count} people' },
 }

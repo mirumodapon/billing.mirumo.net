@@ -50,10 +50,19 @@ export const zhTW = {
   'date.nextMonth': '下個月',
   'setup.basic': '基本資料',
   'setup.baseCurrencyLocked': '已有帳目，不能再改本位幣：每筆的匯率都是對它算的',
+  'members.title': '成員',
+  'members.add': '新增',
+  'members.newName': '新成員的名字',
+  'members.name': '{name} 的名字',
+  'members.self': '我是誰',
+  'members.selfBadge': '我',
+  'members.remove': '移除 {name}',
+  'members.inUse': '{names} 還有支出或轉帳，不能移除。先把那幾筆改給別人或刪掉。',
 } as const
 
 export const zhTWPlurals = {
   'settle.transferCount': '{count} 筆轉帳',
+  'members.count': '{count} 人',
 } as const
 
 export type TranslationKey = keyof typeof zhTW
