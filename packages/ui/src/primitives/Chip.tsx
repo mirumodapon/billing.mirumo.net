@@ -1,3 +1,5 @@
+import type { AccentSlot } from '../theme/accentOrder'
+
 export interface ChipProps {
   label: string
   selected?: boolean
@@ -5,7 +7,7 @@ export interface ChipProps {
   /** 有值時渲染成可點的 button；沒有時是純標籤 */
   onSelect?: () => void
   /** accent 槽位名稱，如 'accent3'。不給則不顯示圓點 */
-  colorKey?: string
+  colorKey?: AccentSlot
 }
 
 export function Chip({ label, selected = false, disabled = false, onSelect, colorKey }: ChipProps) {

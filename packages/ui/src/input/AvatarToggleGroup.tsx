@@ -1,9 +1,10 @@
 import { Avatar } from '../primitives/Avatar'
+import type { AccentSlot } from '../theme/accentOrder'
 
 export interface AvatarToggleItem {
   value: string
   name: string
-  colorKey: string
+  colorKey: AccentSlot
 }
 
 export interface AvatarToggleGroupProps {

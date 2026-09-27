@@ -1,9 +1,10 @@
 import type { CSSProperties } from 'react'
+import type { AccentSlot } from '../theme/accentOrder'
 
 export interface AvatarProps {
   name: string
   /** accent 槽位名稱，如 'accent5' */
-  colorKey?: string
+  colorKey?: AccentSlot
   size?: 'sm' | 'md' | 'lg'
   /** 空心樣式，供 Plan 3 的 AvatarToggleGroup 表示未選中 */
   outlined?: boolean

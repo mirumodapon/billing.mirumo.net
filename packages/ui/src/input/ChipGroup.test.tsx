@@ -2,9 +2,9 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
-import { ChipGroup } from './ChipGroup'
+import { ChipGroup, type ChipOption } from './ChipGroup'
 
-const options = [
+const options: ChipOption[] = [
   { value: 'cash', label: '現金' },
   { value: 'credit', label: '信用卡', colorKey: 'accent3' },
   { value: 'mobile', label: '行動支付' },

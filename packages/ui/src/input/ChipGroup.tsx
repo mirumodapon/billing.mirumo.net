@@ -1,10 +1,11 @@
 import { useRovingFocus } from '../hooks/rovingFocus'
+import type { AccentSlot } from '../theme/accentOrder'
 
 export interface ChipOption {
   value: string
   label: string
   /** accent 槽位名稱，給了才畫色點 */
-  colorKey?: string
+  colorKey?: AccentSlot
 }
 
 export interface ChipGroupProps {

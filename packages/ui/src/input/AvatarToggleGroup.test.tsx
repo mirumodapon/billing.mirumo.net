@@ -3,9 +3,9 @@ import { join } from 'node:path'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { AvatarToggleGroup } from './AvatarToggleGroup'
+import { AvatarToggleGroup, type AvatarToggleItem } from './AvatarToggleGroup'
 
-const items = [
+const items: AvatarToggleItem[] = [
   { value: 'a', name: '阿明', colorKey: 'accent1' },
   { value: 'b', name: '小美', colorKey: 'accent2' },
   { value: 'c', name: '大熊', colorKey: 'accent3' },

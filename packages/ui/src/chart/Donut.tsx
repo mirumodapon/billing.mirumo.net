@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { arcPath, donutArcs, percentages } from './donutMath'
+import type { AccentSlot } from '../theme/accentOrder'
 
 export interface DonutSegment {
   key: string
   label: string
   /** 金額的最小單位，整數 */
   value: number
-  colorKey: string
+  colorKey: AccentSlot
 }
 
 export interface DonutProps {
