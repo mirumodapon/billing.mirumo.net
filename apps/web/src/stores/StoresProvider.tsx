@@ -1,5 +1,7 @@
 import { createContext, useContext, type ReactNode } from 'react'
 import { useStore, type StoreApi } from 'zustand'
+import type { BlobStore } from '../data/blobStore'
+import type { DraftStore } from '../data/drafts'
 import type { TripRepository } from '../data/tripRepository'
 import type { SettingsState } from './settingsStore'
 import type { TripState } from './tripStore'
@@ -8,6 +10,10 @@ import type { UiState } from './uiStore'
 /** 整個 app 共用的 store 與 repository。以工廠建立、由這裡注入，測試才能換成自己的 */
 export interface Stores {
   repo: TripRepository
+  /** 填到一半的表單（規格 7.9） */
+  drafts: Pick<DraftStore, 'save' | 'load' | 'discard'>
+  /** 收據照片（規格 7.3） */
+  blobs: BlobStore
   ui: StoreApi<UiState>
   settings: StoreApi<SettingsState>
   trips: StoreApi<TripState>

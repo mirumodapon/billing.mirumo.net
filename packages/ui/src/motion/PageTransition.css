@@ -26,3 +26,25 @@
     filter: brightness(0.8);
   }
 }
+
+/* 全螢幕表單（新增支出）由下往上推入、關閉時往下收（規格 4.1） */
+.bi-page[data-direction='up'] {
+  animation: bi-page-up var(--bi-dur-page) var(--bi-ease-out);
+}
+
+.bi-page[data-direction='down'] {
+  animation: bi-page-down var(--bi-dur-page) var(--bi-ease-out);
+}
+
+@keyframes bi-page-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes bi-page-down {
+  from {
+    /* 表單往下收走後，底下的頁面從稍暗的狀態亮回來 */
+    filter: brightness(0.8);
+  }
+}

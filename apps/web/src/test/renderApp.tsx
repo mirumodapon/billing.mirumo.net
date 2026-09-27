@@ -6,6 +6,8 @@ import { createSettingsStore } from '../stores/settingsStore'
 import { createTripStore } from '../stores/tripStore'
 import type { Stores } from '../stores/StoresProvider'
 import { createUiStore } from '../stores/uiStore'
+import { IdbBlobStore } from '../data/blobStore'
+import { DraftStore } from '../data/drafts'
 import { IdbTripRepository } from '../data/tripRepository'
 import { freshDbName, tickingClock } from '../data/testing/fixtures'
 
@@ -16,10 +18,15 @@ export async function openTestRepo(): Promise<IdbTripRepository> {
 
 /** 測試用的一整組 store，接在一個全新的資料庫上 */
 export async function makeStores(): Promise<Stores> {
-  const repo = await openTestRepo()
+  const name = freshDbName()
+  const [repo, drafts, blobs] = await Promise.all([
+    IdbTripRepository.open(name, { now: tickingClock() }),
+    DraftStore.open(name),
+    IdbBlobStore.open(name),
+  ])
   const ui = createUiStore()
   const settings = createSettingsStore({ repo, ui })
-  return { repo, ui, settings, trips: createTripStore({ repo, ui }) }
+  return { repo, drafts, blobs, ui, settings, trips: createTripStore({ repo, ui }) }
 }
 
 /**

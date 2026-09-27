@@ -15,11 +15,11 @@ async function withTrip(route = '/trip/t1/expenses') {
 
 describe('TripShell', () => {
   it('shows the trip name, the tab content and four tabs', async () => {
-    await withTrip()
+    await withTrip('/trip/t1/stats')
     expect(screen.getByRole('heading', { name: '東京' })).toBeInTheDocument()
     expect(screen.getByText(t('placeholder.comingSoon'))).toBeInTheDocument()
     expect(screen.getAllByRole('tab')).toHaveLength(4)
-    expect(screen.getByRole('tab', { name: t('tab.expenses') })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('tab', { name: t('tab.stats') })).toHaveAttribute('aria-selected', 'true')
   })
 
   it('opens the expenses tab when no tab is named', async () => {

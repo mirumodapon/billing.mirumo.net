@@ -55,7 +55,8 @@ async function guard<T>(op: StorageError['op'], entity: string, run: () => Promi
   }
 }
 
-const byDateDesc = <T extends { date: string; createdAt: string }>(a: T, b: T) =>
+/** 支出與轉帳的順序：日期新的在前；同一天的依建立時間。store 重排時用同一個函式 */
+export const byDateDesc = <T extends { date: string; createdAt: string }>(a: T, b: T) =>
   b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)
 
 /** 旅程列表的順序：出發日新的在前；同一天出發的依建立時間。store 重排時用同一個函式 */

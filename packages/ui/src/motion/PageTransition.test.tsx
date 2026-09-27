@@ -51,9 +51,10 @@ describe('PageTransition', () => {
    * 兩個方向各有自己的 keyframes，而且都走 --bi-dur-page，所以
    * prefers-reduced-motion 會把它們一起歸零。
    */
-  it('animates both directions off the page duration token', () => {
+  it('animates every direction off the page duration token', () => {
     const css = readFileSync(join(import.meta.dirname, 'PageTransition.css'), 'utf8')
-    expect(css).toMatch(/\[data-direction='forward'\][^{]*{[^}]*animation:[^;]*--bi-dur-page/)
-    expect(css).toMatch(/\[data-direction='back'\][^{]*{[^}]*animation:[^;]*--bi-dur-page/)
+    for (const direction of ['forward', 'back', 'up', 'down']) {
+      expect(css, direction).toMatch(new RegExp(`\\[data-direction='${direction}'\\][^{]*{[^}]*animation:[^;]*--bi-dur-page`))
+    }
   })
 })
