@@ -58,6 +58,10 @@ async function guard<T>(op: StorageError['op'], entity: string, run: () => Promi
 const byDateDesc = <T extends { date: string; createdAt: string }>(a: T, b: T) =>
   b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)
 
+/** 旅程列表的順序：出發日新的在前；同一天出發的依建立時間。store 重排時用同一個函式 */
+export const byStartDesc = (a: Trip, b: Trip) =>
+  b.startDate.localeCompare(a.startDate) || b.createdAt.localeCompare(a.createdAt)
+
 export class IdbTripRepository implements TripRepository {
   private constructor(
     protected readonly db: TravelDatabase,
@@ -81,7 +85,7 @@ export class IdbTripRepository implements TripRepository {
       // 出發日新的在前；同一天出發的依建立時間
       return all
         .filter((trip) => !trip.deletedAt)
-        .sort((a, b) => b.startDate.localeCompare(a.startDate) || b.createdAt.localeCompare(a.createdAt))
+        .sort(byStartDesc)
     })
   }
 

@@ -16,6 +16,8 @@ export const zhTW = {
   'pay.mobile': '行動支付',
   'error.saveFailed': '儲存失敗，已還原變更',
   'error.loadFailed': '讀取資料失敗',
+  'tripList.deleted': '已刪除「{name}」',
+  'common.undo': '復原',
 } as const
 
 export const zhTWPlurals = {

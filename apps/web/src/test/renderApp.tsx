@@ -1,4 +1,5 @@
 import { createSettingsStore } from '../stores/settingsStore'
+import { createTripStore } from '../stores/tripStore'
 import type { Stores } from '../stores/StoresProvider'
 import { createUiStore } from '../stores/uiStore'
 import { IdbTripRepository } from '../data/tripRepository'
@@ -14,5 +15,5 @@ export async function makeStores(): Promise<Stores> {
   const repo = await openTestRepo()
   const ui = createUiStore()
   const settings = createSettingsStore({ repo, ui })
-  return { repo, ui, settings }
+  return { repo, ui, settings, trips: createTripStore({ repo, ui }) }
 }

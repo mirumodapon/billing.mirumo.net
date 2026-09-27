@@ -16,6 +16,8 @@ export const enUS: Record<TranslationKey, string> = {
   'pay.mobile': 'Mobile pay',
   'error.saveFailed': "Couldn't save. Your change was undone.",
   'error.loadFailed': "Couldn't load your data.",
+  'tripList.deleted': 'Deleted "{name}"',
+  'common.undo': 'Undo',
 }
 
 export const enUSPlurals: Record<PluralKey, { one: string; other: string }> = {
