@@ -136,7 +136,7 @@ export const zhTW = {
   'budget.notSet': '未設定',
   'budget.summaryNone': '未設定預算',
   'keypad.done': '完成',
-  'keypad.clear': '清除',
+  'keypad.clear': 'AC',
   'keypad.backspace': '退格',
   'rates.title': '匯率',
   'rates.addCurrency': '新增幣別',

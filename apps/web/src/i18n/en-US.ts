@@ -136,7 +136,7 @@ export const enUS: Record<TranslationKey, string> = {
   'budget.notSet': 'Not set',
   'budget.summaryNone': 'No budget',
   'keypad.done': 'Done',
-  'keypad.clear': 'Clear',
+  'keypad.clear': 'AC',
   'keypad.backspace': 'Backspace',
   'rates.title': 'Exchange rates',
   'rates.addCurrency': 'Add currency',
