@@ -5,6 +5,8 @@
   bottom: 0;
   z-index: var(--bi-z-sheet);
   max-height: 85vh;
+  /* 行動瀏覽器的 vh 含網址列收起後的高度，dvh 才是實際看得到的高度 */
+  max-height: 85dvh;
   display: flex;
   flex-direction: column;
   background: var(--bi-surface);
@@ -45,9 +47,25 @@
   color: var(--bi-text);
 }
 
+/*
+ * 內容比 sheet 高時要能捲（task#100）。body 外面包著 SafeArea，它是 sheet 的 flex
+ * 子元素，預設會跟著內容長高；不給 min-height: 0 的話 body 永遠不會被限制高度，
+ * overflow-y: auto 形同虛設，超出的部分直接掉到螢幕外面。
+ */
+.bi-sheet > .bi-safe {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .bi-sheet__body {
+  flex: 1 1 auto;
+  min-height: 0;
   padding: 0 var(--bi-space-4) var(--bi-space-4);
   overflow-y: auto;
+  /* 捲到底不要把手勢傳給後面的頁面 */
+  overscroll-behavior: contain;
 }
 
 @keyframes bi-sheet-in {

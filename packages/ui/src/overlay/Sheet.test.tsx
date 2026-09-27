@@ -123,3 +123,15 @@ describe('Sheet', () => {
     expect(screen.getByRole('dialog')).not.toHaveAttribute('data-dragging')
   })
 })
+
+/*
+ * task#100：內容比 sheet 高時要能捲。CSS 不進 jsdom，這裡只能證明規則寫了；
+ * 真正的效果在瀏覽器量過（修正前「建立」鍵在 y=773、視窗 667，沒有任何可捲的元素）。
+ */
+describe('Sheet: tall content', () => {
+  const css = readFileSync(join(import.meta.dirname, 'Sheet.css'), 'utf8')
+  it('lets its body shrink below its content so it scrolls instead of running off screen', () => {
+    expect(css).toMatch(/\.bi-sheet > \.bi-safe\s*{[^}]*min-height:\s*0/)
+    expect(css).toMatch(/\.bi-sheet__body\s*{[^}]*min-height:\s*0[^}]*overflow-y:\s*auto/)
+  })
+})
