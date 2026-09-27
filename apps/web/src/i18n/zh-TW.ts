@@ -69,11 +69,24 @@ export const zhTW = {
   'keypad.done': '完成',
   'keypad.clear': '清除',
   'keypad.backspace': '退格',
+  'rates.title': '匯率',
+  'rates.addCurrency': '新增幣別',
+  'rates.default': '預設',
+  'rates.addMethod': '新增付款方式匯率',
+  'rates.fetch': '抓 {currency} 的市場匯率',
+  'rates.fetched': '已填入市場匯率，確認後按完成',
+  'rates.offline': '離線中，抓不到市場匯率',
+  'rates.unsupported': '這個幣別沒有市場匯率',
+  'rates.failed': '抓匯率失敗',
+  'rates.hint': '1 {currency} = ? {base}',
+  'rates.removeCurrency': '移除 {currency}',
+  'rates.empty': '還沒有其他幣別。旅程中用到外幣時，在這裡設定它對 {base} 的匯率。',
 } as const
 
 export const zhTWPlurals = {
   'settle.transferCount': '{count} 筆轉帳',
   'members.count': '{count} 人',
+  'rates.count': '{count} 種幣別',
 } as const
 
 export type TranslationKey = keyof typeof zhTW

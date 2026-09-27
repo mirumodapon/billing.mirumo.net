@@ -24,6 +24,14 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,woff2,svg,png}'],
+        // 規格 7.6：匯率回應快取一小時，離線時還拿得到最後一次抓到的值
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/api\.frankfurter\.app\//,
+            handler: 'NetworkFirst',
+            options: { cacheName: 'fx', expiration: { maxAgeSeconds: 3600 } },
+          },
+        ],
       },
     }),
   ],

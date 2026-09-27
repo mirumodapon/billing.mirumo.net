@@ -1,6 +1,7 @@
 import { BasicInfoSection } from './BasicInfoSection'
 import { BudgetSection } from './BudgetSection'
 import { MembersSection } from './MembersSection'
+import { RatesSection } from './RatesSection'
 import { useOpenSection } from './useOpenSection'
 import { useTripEditor } from './useTripEditor'
 
@@ -15,6 +16,7 @@ export function SetupTab() {
       <BasicInfoSection trip={trip} hasRecords={hasRecords} open={open === 'basic'} onToggle={() => toggle('basic')} save={save} />
       <MembersSection trip={trip} open={open === 'members'} onToggle={() => toggle('members')} save={save} />
       <BudgetSection trip={trip} open={open === 'budget'} onToggle={() => toggle('budget')} save={save} />
+      <RatesSection trip={trip} open={open === 'rates'} onToggle={() => toggle('rates')} save={save} />
     </div>
   )
 }

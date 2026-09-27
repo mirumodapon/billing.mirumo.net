@@ -69,9 +69,22 @@ export const enUS: Record<TranslationKey, string> = {
   'keypad.done': 'Done',
   'keypad.clear': 'Clear',
   'keypad.backspace': 'Backspace',
+  'rates.title': 'Exchange rates',
+  'rates.addCurrency': 'Add currency',
+  'rates.default': 'Default',
+  'rates.addMethod': 'Add a rate for a payment method',
+  'rates.fetch': 'Fetch the market rate for {currency}',
+  'rates.fetched': 'Market rate filled in. Check it, then tap Done.',
+  'rates.offline': "You're offline, so the market rate isn't available.",
+  'rates.unsupported': 'No market rate for this currency.',
+  'rates.failed': "Couldn't fetch the rate.",
+  'rates.hint': '1 {currency} = ? {base}',
+  'rates.removeCurrency': 'Remove {currency}',
+  'rates.empty': 'No other currencies yet. When the trip uses one, set its rate to {base} here.',
 }
 
 export const enUSPlurals: Record<PluralKey, { one: string; other: string }> = {
   'settle.transferCount': { one: '{count} transfer', other: '{count} transfers' },
   'members.count': { one: '{count} person', other: '{count} people' },
+  'rates.count': { one: '{count} currency', other: '{count} currencies' },
 }
