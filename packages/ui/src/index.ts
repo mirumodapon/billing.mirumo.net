@@ -59,3 +59,6 @@ export type { SwipeActionProps } from './interaction/SwipeAction'
 
 export { PageTransition } from './motion/PageTransition'
 export type { PageTransitionProps } from './motion/PageTransition'
+
+export { CalcKeypad } from './input/CalcKeypad'
+export type { CalcKeypadLabels, CalcKeypadProps } from './input/CalcKeypad'
