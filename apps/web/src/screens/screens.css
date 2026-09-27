@@ -147,3 +147,67 @@
   text-align: end;
   caret-color: transparent;
 }
+
+/* 支出列表：黏頂摘要列、日期小標、每一筆 */
+.app-sticky {
+  position: sticky;
+  top: 0;
+  z-index: var(--bi-z-sticky);
+  display: flex;
+  flex-direction: column;
+  gap: var(--bi-space-2);
+  padding: var(--bi-space-3) var(--bi-space-4);
+  background: var(--bi-bg);
+  border-bottom: 1px solid var(--bi-border);
+}
+
+.app-day {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--bi-space-3) var(--bi-space-4) var(--bi-space-1);
+  color: var(--bi-text-muted);
+  font-size: var(--bi-text-sm);
+}
+
+.app-expense {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: var(--bi-space-3);
+  width: 100%;
+  min-height: var(--bi-tap-min);
+  padding: var(--bi-space-2) var(--bi-space-4);
+  border: 0;
+  background: var(--bi-bg);
+  color: var(--bi-text);
+  font: inherit;
+  text-align: start;
+}
+
+.app-expense__icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--bi-tap-min);
+  height: var(--bi-tap-min);
+  border-radius: var(--bi-radius-md);
+}
+
+.app-expense__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.app-expense__body > * {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.app-expense__amounts {
+  flex: none;
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
