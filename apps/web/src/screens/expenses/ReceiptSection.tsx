@@ -64,7 +64,10 @@ export function ReceiptSection({ draft, change, open, onToggle }: FormSectionPro
           }}
         />
         <Button variant="secondary" onClick={() => input.current?.click()}>
-          <Icon glyph={IconCamera} /> {t('receipt.add')}
+          <span className="inline-flex items-center gap-2">
+            <Icon glyph={IconCamera} />
+            {t('receipt.add')}
+          </span>
         </Button>
       </div>
     </Accordion>

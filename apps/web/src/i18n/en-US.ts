@@ -2,7 +2,7 @@ import type { PluralKey, TranslationKey } from './zh-TW'
 
 export const enUS: Record<TranslationKey, string> = {
   'trip.new': 'New Trip',
-  'expense.splitEven': 'Split evenly',
+  'expense.splitEven': 'Evenly',
   'settle.owes': '{from} pays {to}',
   'stats.myExpense': 'My spending',
   'cat.food': 'Food',
