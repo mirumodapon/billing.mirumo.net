@@ -1,5 +1,5 @@
 import type { OverflowRule } from '@billing/core'
-import { decimalsOf } from '@billing/core'
+import { decimalsOf, minDisplayDecimalsOf } from '@billing/core'
 import { AvatarToggleGroup, Button, SegmentedControl, SwipeAction, TextField } from '@billing/ui'
 import { IconTrash } from '@tabler/icons-react'
 import { addItem, itemsTotals, type ItemDraft } from '../../domain/expenseDraft'
@@ -43,6 +43,7 @@ export function ItemsSplit({ trip, draft, change, format }: FormSectionProps & {
                 label={t('split.itemAmount', { name })}
                 value={item.amount}
                 decimals={decimalsOf(draft.currency)}
+                minDecimals={minDisplayDecimalsOf(draft.currency)}
                 format={format}
                 onChange={(amount) => updateItem(item.id, (i) => ({ ...i, amount }))}
               />

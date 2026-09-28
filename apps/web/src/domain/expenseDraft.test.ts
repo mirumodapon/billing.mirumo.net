@@ -291,7 +291,7 @@ describe('previewShares', () => {
         ],
       },
     })
-    expect(previewShares(d, trip)).toEqual({ a: 1900, b: 1118, c: 782 })
+    expect(previewShares(d, trip)).toEqual({ a: 190000, b: 111765, c: 78235 })
   })
 })
 

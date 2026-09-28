@@ -17,6 +17,8 @@ export interface CalcKeypadProps {
   expression: string
   /** 幣別的小數位數。0 時小數點鍵停用 */
   decimals: number
+  /** 結果至少寫幾位小數，預設等於 decimals。整數計價的幣別傳 0（task#136） */
+  minDecimals?: number
   onExpressionChange: (expression: string) => void
   /** 按下完成：算得出來給數值，什麼都沒輸入給 null */
   onDone: (value: number | null) => void
@@ -46,6 +48,7 @@ export function CalcKeypad({
   open,
   expression,
   decimals,
+  minDecimals,
   onExpressionChange,
   onDone,
   labels,
@@ -75,7 +78,7 @@ export function CalcKeypad({
             {formatExpression(expression)}
           </div>
           <output className="bi-keypad__result" data-testid="calc-result" aria-live="polite">
-            {result.ok ? `= ${formatResult(result.value, decimals)}` : ''}
+            {result.ok ? `= ${formatResult(result.value, decimals, minDecimals)}` : ''}
           </output>
         </div>
         <div className="bi-keypad__grid">

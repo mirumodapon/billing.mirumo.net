@@ -53,8 +53,8 @@ describe('ExpenseViewScreen (task#101)', () => {
     await setup('/trip/t1/expense/e1')
     expect(screen.getByText(t('expense.paidBy')).parentElement).toHaveTextContent('小美')
     const shares = within(screen.getByRole('region', { name: t('view.shares') }))
-    expect(shares.getByText('阿明').parentElement).toHaveTextContent(plain(formatMoney(1000, 'TWD')))
-    expect(shares.getByText('大熊').parentElement).toHaveTextContent(plain(formatMoney(1000, 'TWD')))
+    expect(shares.getByText('阿明').parentElement).toHaveTextContent(plain(formatMoney(100000, 'TWD')))
+    expect(shares.getByText('大熊').parentElement).toHaveTextContent(plain(formatMoney(100000, 'TWD')))
   })
 
   it('edits through the form and comes back to the updated view', async () => {
@@ -117,7 +117,7 @@ describe('view layout (task#107)', () => {
     await setup('/trip/t1/expense/e1')
     const hero = within(screen.getByRole('region', { name: t('view.summary') }))
     expect(hero.getByText(t('cat.food'))).toBeInTheDocument()
-    expect(hero.getByText(plain(formatMoney(3000, 'TWD')))).toBeInTheDocument()
+    expect(hero.getByText(plain(formatMoney(300000, 'TWD')))).toBeInTheDocument()
     expect(hero.getByText(/3\/15/)).toBeInTheDocument()
   })
 
@@ -137,7 +137,7 @@ describe('view layout (task#107)', () => {
     await setup('/trip/t1/transfer/x1')
     const hero = within(screen.getByRole('region', { name: t('view.summary') }))
     expect(hero.getAllByText(/^(大熊|阿明)$/).map((n) => n.textContent)).toEqual(['大熊', '阿明'])
-    expect(hero.getByText(plain(formatMoney(500, 'TWD')))).toBeInTheDocument()
+    expect(hero.getByText(plain(formatMoney(50000, 'TWD')))).toBeInTheDocument()
   })
 })
 

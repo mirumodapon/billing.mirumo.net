@@ -13,7 +13,7 @@ export type * from './types'
  * 而且沒有任何測試抓得到。全部經由 `sharesOf` 進來就不會有這個問題。
  */
 
-export { CURRENCY_DECIMALS, convertToBaseMinor, decimalsOf, fromMinor, toMinor } from './money'
+export { CURRENCY_DECIMALS, convertToBaseMinor, decimalsOf, fromMinor, minDisplayDecimalsOf, toMinor, WHOLE_UNIT_CURRENCIES } from './money'
 
 export { countsInTotals, isLive } from './records'
 

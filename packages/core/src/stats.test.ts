@@ -45,12 +45,12 @@ function expense(over: Partial<Expense>): Expense {
 describe('contributionOf', () => {
   it('counts only my share under the self scope, regardless of who paid', () => {
     const e = expense({ paidBy: 'b', amount: 200 })
-    expect(contributionOf(e, 'self', 'a', 'TWD', ORDER)).toBe(100)
+    expect(contributionOf(e, 'self', 'a', 'TWD', ORDER)).toBe(10000)
   })
 
   it('counts the whole amount under the group scope', () => {
     const e = expense({ paidBy: 'b', amount: 200 })
-    expect(contributionOf(e, 'group', 'a', 'TWD', ORDER)).toBe(200)
+    expect(contributionOf(e, 'group', 'a', 'TWD', ORDER)).toBe(20000)
   })
 
   it('returns zero under the self scope when I did not participate', () => {
@@ -72,7 +72,7 @@ describe('byCategory', () => {
       opts,
     )
     expect(result.map((r) => r.categoryId)).toEqual(['cat.food', 'cat.transport'])
-    expect(result[0]!.totalMinor).toBe(500)
+    expect(result[0]!.totalMinor).toBe(50000)
     expect(result[0]!.ratio).toBeCloseTo(0.5)
   })
 
@@ -99,7 +99,7 @@ describe('byCategory', () => {
       { ...opts, mergeThreshold: 0.03 },
     )
     expect(result.map((r) => r.categoryId)).toEqual(['cat.food', 'cat.other'])
-    expect(result[1]!.totalMinor).toBe(200)
+    expect(result[1]!.totalMinor).toBe(20000)
   })
 
   // task#64：「其他」的 id 是 app 的類別設定決定的，core 不該寫死
@@ -113,8 +113,8 @@ describe('byCategory', () => {
       { ...opts, mergeThreshold: 0.03, otherCategoryId: 'misc' },
     )
     expect(result.map((r) => [r.categoryId, r.totalMinor])).toEqual([
-      ['cat.food', 9800],
-      ['misc', 200],
+      ['cat.food', 980000],
+      ['misc', 20000],
     ])
   })
 
@@ -130,8 +130,8 @@ describe('byCategory', () => {
       { ...opts, mergeThreshold: 0.05 },
     )
     // 總額 970：退款併進 cat.other，錢仍然有去處
-    expect(result.reduce((acc, r) => acc + r.totalMinor, 0)).toBe(970)
-    expect(result.find((r) => r.categoryId === 'cat.other')!.totalMinor).toBe(-30)
+    expect(result.reduce((acc, r) => acc + r.totalMinor, 0)).toBe(97000)
+    expect(result.find((r) => r.categoryId === 'cat.other')!.totalMinor).toBe(-3000)
   })
 
   // 上面那筆退款夠小，帶號比較和絕對值比較都判定該合併，所以分辨不出兩者。
@@ -146,7 +146,7 @@ describe('byCategory', () => {
       { ...opts, mergeThreshold: 0.05 },
     )
     expect(result.map((r) => r.categoryId)).toEqual(['cat.food', 'cat.refund'])
-    expect(result.find((r) => r.categoryId === 'cat.refund')!.totalMinor).toBe(-500)
+    expect(result.find((r) => r.categoryId === 'cat.refund')!.totalMinor).toBe(-50000)
   })
 
   it('ignores soft-deleted expenses', () => {
@@ -166,7 +166,7 @@ describe('byDay', () => {
     const result = byDay([expense({ date: '2026-03-15', amount: 300 })], { ...opts, trip })
     expect(result.map((d) => d.date)).toEqual(['2026-03-14', '2026-03-15', '2026-03-16'])
     expect(result[0]!.totalMinor).toBe(0)
-    expect(result[1]!.totalMinor).toBe(300)
+    expect(result[1]!.totalMinor).toBe(30000)
   })
 
   it('includes days outside the trip range that have spending', () => {
@@ -179,7 +179,7 @@ describe('byDay', () => {
     const result = byDay([expense({ date: '2026-03-15', amount: 800 })], {
       ...opts,
       trip,
-      dailyBudgetMinor: 500,
+      dailyBudgetMinor: 50000,
     })
     expect(result.find((d) => d.date === '2026-03-15')!.overBudget).toBe(true)
     expect(result.find((d) => d.date === '2026-03-14')!.overBudget).toBe(false)
@@ -191,7 +191,7 @@ describe('byDay', () => {
     const result = byDay([expense({ date: '2026-03-15', amount: 500 })], {
       ...opts,
       trip,
-      dailyBudgetMinor: 500,
+      dailyBudgetMinor: 50000,
     })
     expect(result.find((d) => d.date === '2026-03-15')!.overBudget).toBe(false)
   })
@@ -247,8 +247,8 @@ describe('itemBreakdown', () => {
     const result = itemBreakdown([e], opts)
     // 拉麵 1200 兩人分 → 600；煎餃 480 我獨享 → 480。降冪所以拉麵在前。
     expect(result.items.map((i) => i.name)).toEqual(['拉麵', '煎餃'])
-    expect(result.items.find((i) => i.name === '拉麵')!.shareMinor).toBe(600)
-    expect(result.items.find((i) => i.name === '煎餃')!.shareMinor).toBe(480)
+    expect(result.items.find((i) => i.name === '拉麵')!.shareMinor).toBe(60000)
+    expect(result.items.find((i) => i.name === '煎餃')!.shareMinor).toBe(48000)
   })
 
   it('sorts entries by share amount descending', () => {
@@ -282,8 +282,8 @@ describe('itemBreakdown', () => {
       },
     })
     const result = itemBreakdown([e], opts)
-    expect(result.items.reduce((acc, i) => acc + i.shareMinor, 0)).toBe(1680)
-    expect(result.overflowMinor).toBe(120)
+    expect(result.items.reduce((acc, i) => acc + i.shareMinor, 0)).toBe(168000)
+    expect(result.overflowMinor).toBe(12000)
   })
 
   it('represents a non-itemized expense as a single entry with a null itemId', () => {
@@ -296,7 +296,7 @@ describe('itemBreakdown', () => {
         name: '淺草寺門票',
         date: '2026-03-15',
         categoryId: 'cat.food',
-        shareMinor: 200,
+        shareMinor: 20000,
       },
     ])
     expect(result.overflowMinor).toBe(0)

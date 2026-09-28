@@ -35,13 +35,13 @@ describe('StatsTab: scope (spec 4.5, Plan 9 T1)', () => {
   it('starts on the group, the same figure as the expense list', async () => {
     const { scope } = await setup()
     expect(scope().getByRole('radio', { name: t('stats.group') })).toBeChecked()
-    expect(total()).toHaveTextContent(plain(t('stats.total', { amount: formatMoney(4200, 'TWD') })))
+    expect(total()).toHaveTextContent(plain(t('stats.total', { amount: formatMoney(420000, 'TWD') })))
   })
 
   it('switches to my share and remembers it', async () => {
     const { user, scope, stores } = await setup()
     await user.click(scope().getByRole('radio', { name: t('stats.memberSelf', { name: '阿明' }) }))
-    expect(total()).toHaveTextContent(plain(t('stats.total', { amount: formatMoney(1000, 'TWD') })))
+    expect(total()).toHaveTextContent(plain(t('stats.total', { amount: formatMoney(100000, 'TWD') })))
     expect(readSession()?.statsScope).toBe('self')
     cleanup()
     await renderApp('/trip/t1/stats', stores)
@@ -54,7 +54,7 @@ describe('StatsTab: overview, categories, daily (Plan 9 Task 3)', () => {
     await setup({ budget: { total: 5000, scope: 'group' } })
     expect(screen.getByRole('progressbar')).toBeInTheDocument()
     expect(screen.getByTestId('stats-budget')).toHaveTextContent(
-      plain(t('stats.budget', { scope: t('stats.group'), budget: formatMoney(5000, 'TWD'), remaining: formatMoney(800, 'TWD') })),
+      plain(t('stats.budget', { scope: t('stats.group'), budget: formatMoney(500000, 'TWD'), remaining: formatMoney(80000, 'TWD') })),
     )
   })
 
@@ -68,8 +68,8 @@ describe('StatsTab: overview, categories, daily (Plan 9 Task 3)', () => {
   it('lists each category with its amount', async () => {
     await setup()
     const donut = within(screen.getByRole('figure', { name: t('stats.categories') }))
-    expect(donut.getByText(t('cat.food')).closest('li')).toHaveTextContent(plain(formatMoney(3000, 'TWD')))
-    expect(donut.getByText(t('cat.transport')).closest('li')).toHaveTextContent(plain(formatMoney(1200, 'TWD')))
+    expect(donut.getByText(t('cat.food')).closest('li')).toHaveTextContent(plain(formatMoney(300000, 'TWD')))
+    expect(donut.getByText(t('cat.transport')).closest('li')).toHaveTextContent(plain(formatMoney(120000, 'TWD')))
   })
 
   it('has a bar per trip day and flags days over the daily budget', async () => {
@@ -108,9 +108,9 @@ describe('StatsTab: members and my items (Plan 9 Task 4)', () => {
     await setup()
     const rows = within(screen.getByTestId('stats-members-panel')).getAllByTestId('stats-member')
     const expected: [string, number][] = [
-      ['阿明', 1000],
-      ['小美', 1600],
-      ['大熊', 1600],
+      ['阿明', 100000],
+      ['小美', 160000],
+      ['大熊', 160000],
     ]
     expected.forEach(([name, minor], i) => {
       expect(within(rows[i]!).getByText(name)).toBeInTheDocument()
@@ -144,7 +144,7 @@ describe('StatsTab: members and my items (Plan 9 Task 4)', () => {
     // task#112：品項底下寫出是哪一筆
     expect(items.getAllByTestId('stats-item')[1]).toHaveTextContent('居酒屋')
     expect(items.getAllByTestId('stats-item')[0]).not.toHaveTextContent('・')
-    expect(items.getByTestId('stats-overflow')).toHaveTextContent(plain(formatMoney(50, 'TWD')))
+    expect(items.getByTestId('stats-overflow')).toHaveTextContent(plain(formatMoney(5000, 'TWD')))
     expect(screen.queryByTestId('stats-members')).not.toBeInTheDocument()
   })
 
@@ -164,7 +164,7 @@ describe('StatsTab: from any member (per-member stats)', () => {
   it('shows another member’s share and what they shared in, and remembers who', async () => {
     const { user, scope, stores } = await setup()
     await user.click(scope().getByRole('radio', { name: '小美' }))
-    expect(total()).toHaveTextContent(plain(t('stats.total', { amount: formatMoney(1600, 'TWD') })))
+    expect(total()).toHaveTextContent(plain(t('stats.total', { amount: formatMoney(160000, 'TWD') })))
     expect(screen.getByRole('button', { name: new RegExp(`^${t('stats.memberItems', { name: '小美' })}`) })).toBeInTheDocument()
     expect(readSession()).toMatchObject({ statsScope: 'self', statsMember: 'b' })
     cleanup()
@@ -177,6 +177,6 @@ describe('StatsTab: from any member (per-member stats)', () => {
     writeSession({ route: '/trip/t1/stats', statsScope: 'self', statsMember: 'gone' })
     const { scope } = await setup()
     expect(scope().getByRole('radio', { name: t('stats.memberSelf', { name: '阿明' }) })).toBeChecked()
-    expect(total()).toHaveTextContent(plain(t('stats.total', { amount: formatMoney(1000, 'TWD') })))
+    expect(total()).toHaveTextContent(plain(t('stats.total', { amount: formatMoney(100000, 'TWD') })))
   })
 })

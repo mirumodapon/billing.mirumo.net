@@ -8,6 +8,8 @@ export interface AmountFieldProps {
   value: number | undefined
   /** 小數位數：本位幣金額用幣別的位數，匯率給足夠的位數 */
   decimals: number
+  /** 算式結果至少寫幾位小數，預設等於 decimals（task#136） */
+  minDecimals?: number
   format: (value: number) => string
   /** 清空後按完成回 undefined（規格 2.2：未設就是 undefined，不是 0） */
   onChange: (value: number | undefined) => void
@@ -24,7 +26,7 @@ export interface AmountFieldProps {
  * 一列金額，點開計算機鍵盤（規格 5.2：不用原生數字鍵盤）。
  * 按「完成」才回傳並收起，中途的算式不會寫進資料。
  */
-export function AmountField({ label, value, decimals, format, onChange, autoOpen, note }: AmountFieldProps) {
+export function AmountField({ label, value, decimals, minDecimals, format, onChange, autoOpen, note }: AmountFieldProps) {
   const { t } = useI18n()
   const [open, setOpen] = useState(false)
   const [expression, setExpression] = useState('')
@@ -53,6 +55,7 @@ export function AmountField({ label, value, decimals, format, onChange, autoOpen
         open={open}
         expression={expression}
         decimals={decimals}
+        minDecimals={minDecimals}
         onExpressionChange={setExpression}
         onDone={(result) => {
           setOpen(false)

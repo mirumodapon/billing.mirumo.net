@@ -1,4 +1,4 @@
-import { decimalsOf, toMinor } from '@billing/core'
+import { decimalsOf, minDisplayDecimalsOf, toMinor } from '@billing/core'
 import { Accordion, AvatarToggleGroup, SegmentedControl } from '@billing/ui'
 import { useState } from 'react'
 import { exactAllocation, previewShares, type SplitDraft } from '../../domain/expenseDraft'
@@ -111,6 +111,7 @@ function ExactSplit({ trip, draft, change, format }: FormSectionProps & { format
           label={m.name}
           value={amounts[m.id]}
           decimals={decimalsOf(draft.currency)}
+          minDecimals={minDisplayDecimalsOf(draft.currency)}
           format={format}
           onChange={(value) =>
             change((d) => (d.split.mode === 'exact' ? { ...d, split: { mode: 'exact', amounts: { ...d.split.amounts, [m.id]: value } } } : d))

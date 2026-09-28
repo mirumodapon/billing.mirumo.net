@@ -35,9 +35,9 @@ describe('SettleTab', () => {
 
   it('shows each balance with its sign and a status in words', async () => {
     await setup()
-    expect(balance('a')).toHaveTextContent(plain(`阿明+${formatMoney(1500, 'TWD')}${t('settle.receive')}`))
-    expect(balance('b')).toHaveTextContent(plain(`小美${formatMoney(-400, 'TWD')}${t('settle.pay')}`))
-    expect(balance('c')).toHaveTextContent(plain(`大熊${formatMoney(-1100, 'TWD')}${t('settle.pay')}`))
+    expect(balance('a')).toHaveTextContent(plain(`阿明+${formatMoney(150000, 'TWD')}${t('settle.receive')}`))
+    expect(balance('b')).toHaveTextContent(plain(`小美${formatMoney(-40000, 'TWD')}${t('settle.pay')}`))
+    expect(balance('c')).toHaveTextContent(plain(`大熊${formatMoney(-110000, 'TWD')}${t('settle.pay')}`))
   })
 
   it('lists transfers with who, how much, what kind and the note', async () => {
@@ -45,14 +45,14 @@ describe('SettleTab', () => {
     const row = screen.getByRole('button', { name: /大熊 → 阿明/ })
     expect(row).toHaveTextContent(t('transfer.loan'))
     expect(row).toHaveTextContent('現金不夠')
-    expect(row).toHaveTextContent(plain(formatMoney(500, 'TWD')))
+    expect(row).toHaveTextContent(plain(formatMoney(50000, 'TWD')))
   })
 
   it('suggests the fewest transfers to settle up', async () => {
     await setup()
     expect(pending().map((p) => plain(p.textContent ?? ''))).toEqual([
-      plain(`大熊 → 阿明 ${formatMoney(1100, 'TWD')}${t('settle.markSettled')}`),
-      plain(`小美 → 阿明 ${formatMoney(400, 'TWD')}${t('settle.markSettled')}`),
+      plain(`大熊 → 阿明 ${formatMoney(110000, 'TWD')}${t('settle.markSettled')}`),
+      plain(`小美 → 阿明 ${formatMoney(40000, 'TWD')}${t('settle.markSettled')}`),
     ])
   })
 
@@ -76,9 +76,9 @@ describe('SettleTab', () => {
     const swipe = screen.getByRole('button', { name: /大熊 → 阿明/ }).closest('.bi-swipe') as HTMLElement
     await user.click(within(swipe).getByRole('button', { name: t('common.delete') }))
     await confirmDelete(user, '大熊 → 阿明')
-    await waitFor(() => expect(balance('c')).toHaveTextContent(plain(formatMoney(-1600, 'TWD'))))
+    await waitFor(() => expect(balance('c')).toHaveTextContent(plain(formatMoney(-160000, 'TWD'))))
     await user.click(await screen.findByRole('button', { name: t('common.undo') }))
-    await waitFor(() => expect(balance('c')).toHaveTextContent(plain(formatMoney(-1100, 'TWD'))))
+    await waitFor(() => expect(balance('c')).toHaveTextContent(plain(formatMoney(-110000, 'TWD'))))
     await user.click(screen.getByRole('button', { name: /大熊 → 阿明/ }))
     expect(currentRoute()).toBe('/trip/t1/transfer/x1')
   })

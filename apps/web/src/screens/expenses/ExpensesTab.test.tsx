@@ -48,15 +48,15 @@ describe('ExpensesTab', () => {
       `${formatDate('2026-03-16')} ${formatWeekday('2026-03-16')}`,
       `${formatDate('2026-03-15')} ${formatWeekday('2026-03-15')}`,
     ])
-    const dayTotal = formatMoney(convertToBaseMinor(3000, 0.21, 'TWD') + 500, 'TWD')
+    const dayTotal = formatMoney(convertToBaseMinor(3000, 0.21, 'TWD') + 50000, 'TWD')
     expect(days[1]).toHaveTextContent(plain(t('expenses.dayTotal', { amount: dayTotal })))
   })
 
   it('shows the original and home amounts for a foreign expense, and one amount otherwise', async () => {
     await setup()
-    expect(row('一蘭拉麵')).toHaveTextContent(plain(formatMoney(3000, 'JPY')))
-    expect(row('一蘭拉麵')).toHaveTextContent(plain(formatMoney(630, 'TWD')))
-    const once = plain(formatMoney(500, 'TWD'))
+    expect(row('一蘭拉麵')).toHaveTextContent(plain(formatMoney(300000, 'JPY')))
+    expect(row('一蘭拉麵')).toHaveTextContent(plain(formatMoney(63000, 'TWD')))
+    const once = plain(formatMoney(50000, 'TWD'))
     expect(plain(row('淺草寺門票').textContent ?? '').split(once)).toHaveLength(2)
   })
 
@@ -81,13 +81,13 @@ describe('ExpensesTab', () => {
   it('shows spending against the budget only when there is one', async () => {
     await setup({ budget: 10000 })
     expect(screen.getByRole('progressbar')).toBeInTheDocument()
-    expect(screen.getByText(plain(t('expenses.summary', { spent: formatMoney(1330, 'TWD'), budget: formatMoney(10000, 'TWD') })))).toBeInTheDocument()
+    expect(screen.getByText(plain(t('expenses.summary', { spent: formatMoney(133000, 'TWD'), budget: formatMoney(1000000, 'TWD') })))).toBeInTheDocument()
   })
 
   it('shows plain spending without a budget', async () => {
     await setup()
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
-    expect(screen.getByText(plain(t('expenses.spent', { amount: formatMoney(1330, 'TWD') })))).toBeInTheDocument()
+    expect(screen.getByText(plain(t('expenses.spent', { amount: formatMoney(133000, 'TWD') })))).toBeInTheDocument()
   })
 
   it('deletes an expense and brings it back with undo', async () => {
@@ -144,13 +144,13 @@ describe('home-currency toggle (task#99)', () => {
     const { user, stores } = await setup()
     const toggle = screen.getByRole('button', { name: t('expenses.showBase') })
     expect(toggle).toHaveAttribute('aria-pressed', 'true')
-    expect(row('一蘭拉麵')).toHaveTextContent(plain(formatMoney(630, 'TWD')))
+    expect(row('一蘭拉麵')).toHaveTextContent(plain(formatMoney(63000, 'TWD')))
     await user.click(toggle)
     expect(toggle).toHaveAttribute('aria-pressed', 'false')
-    expect(row('一蘭拉麵')).toHaveTextContent(plain(formatMoney(3000, 'JPY')))
-    expect(row('一蘭拉麵')).not.toHaveTextContent(plain(formatMoney(630, 'TWD')))
+    expect(row('一蘭拉麵')).toHaveTextContent(plain(formatMoney(300000, 'JPY')))
+    expect(row('一蘭拉麵')).not.toHaveTextContent(plain(formatMoney(63000, 'TWD')))
     // 本位幣的支出本來就只有一個金額，照常顯示
-    expect(row('淺草寺門票')).toHaveTextContent(plain(formatMoney(500, 'TWD')))
+    expect(row('淺草寺門票')).toHaveTextContent(plain(formatMoney(50000, 'TWD')))
     await waitFor(async () => expect((await stores.repo.getSettings()).showBaseAmounts).toBe(false))
   })
 
@@ -158,9 +158,9 @@ describe('home-currency toggle (task#99)', () => {
   it('keeps day totals and the summary in the home currency', async () => {
     const { user } = await setup()
     await user.click(screen.getByRole('button', { name: t('expenses.showBase') }))
-    const dayTotal = formatMoney(convertToBaseMinor(3000, 0.21, 'TWD') + 500, 'TWD')
+    const dayTotal = formatMoney(convertToBaseMinor(3000, 0.21, 'TWD') + 50000, 'TWD')
     expect(screen.getAllByRole('region')[1]).toHaveTextContent(plain(t('expenses.dayTotal', { amount: dayTotal })))
-    expect(screen.getByText(plain(t('expenses.spent', { amount: formatMoney(1330, 'TWD') })))).toBeInTheDocument()
+    expect(screen.getByText(plain(t('expenses.spent', { amount: formatMoney(133000, 'TWD') })))).toBeInTheDocument()
   })
 })
 
@@ -178,10 +178,10 @@ describe('expense filter (task#106)', () => {
     expect(screen.getByRole('button', { name: /^淺草寺門票/ })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /^一蘭拉麵/ })).not.toBeInTheDocument()
     expect(screen.getAllByRole('region')).toHaveLength(1)
-    expect(screen.getByRole('region')).toHaveTextContent(plain(t('expenses.dayTotal', { amount: formatMoney(500, 'TWD') })))
-    expect(screen.getByRole('status')).toHaveTextContent(plain(t('expenses.filtered', { count: 1, amount: formatMoney(500, 'TWD') })))
+    expect(screen.getByRole('region')).toHaveTextContent(plain(t('expenses.dayTotal', { amount: formatMoney(50000, 'TWD') })))
+    expect(screen.getByRole('status')).toHaveTextContent(plain(t('expenses.filtered', { count: 1, amount: formatMoney(50000, 'TWD') })))
     // 摘要與預算是整趟旅程的帳，不跟著篩選
-    expect(screen.getByText(plain(t('expenses.spent', { amount: formatMoney(1330, 'TWD') })))).toBeInTheDocument()
+    expect(screen.getByText(plain(t('expenses.spent', { amount: formatMoney(133000, 'TWD') })))).toBeInTheDocument()
     expect(screen.getByRole('button', { name: t('expenses.filter') })).toHaveAttribute('data-active')
   })
 

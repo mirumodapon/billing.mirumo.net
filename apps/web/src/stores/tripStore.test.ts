@@ -20,7 +20,7 @@ describe('tripStore: loading', () => {
     const s = trips.getState()
     expect(s.loaded).toBe(true)
     expect(s.trips.map((x) => x.id)).toEqual(['t1'])
-    expect(s.summaries.t1?.spentMinor).toBe(1000)
+    expect(s.summaries.t1?.spentMinor).toBe(100000)
     expect(s.current).toBeUndefined()
   })
 
@@ -73,7 +73,7 @@ describe('tripStore: saving', () => {
     const { trips } = await withTrip()
     await trips.getState().loadTrips()
     await trips.getState().saveTrip({ ...trips.getState().trips[0]!, budget: { total: 2000, scope: 'group' } })
-    expect(trips.getState().summaries.t1).toMatchObject({ spentMinor: 1000, budget: { level: 'normal' } })
+    expect(trips.getState().summaries.t1).toMatchObject({ spentMinor: 100000, budget: { level: 'normal' } })
   })
 
   // task#61：成員區塊要說得出「誰還被引用」，所以這個錯誤回到呼叫端而不是變成通用 snackbar
@@ -192,7 +192,7 @@ describe('tripStore: expenses', () => {
   it('refreshes the trip’s spending summary', async () => {
     const stores = await opened()
     await stores.trips.getState().saveExpense(makeExpense({ id: 'new', tripId: 't1', amount: 500, currency: 'TWD', exchangeRate: 1 }))
-    expect(stores.trips.getState().summaries.t1?.spentMinor).toBe(1500)
+    expect(stores.trips.getState().summaries.t1?.spentMinor).toBe(150000)
   })
 
   it('rolls back a failed save and reports it', async () => {

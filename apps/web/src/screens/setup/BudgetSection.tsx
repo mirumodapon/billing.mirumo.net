@@ -1,4 +1,4 @@
-import { decimalsOf, toMinor, type Trip, type TripBudget } from '@billing/core'
+import { decimalsOf, minDisplayDecimalsOf, toMinor, type Trip, type TripBudget } from '@billing/core'
 import { Accordion, SegmentedControl } from '@billing/ui'
 import { useI18n } from '../../i18n/useI18n'
 import { AmountField } from './AmountField'
@@ -35,8 +35,8 @@ export function BudgetSection({ trip, open, onToggle, save }: BudgetSectionProps
   return (
     <Accordion title={t('budget.title')} summary={summary} open={open} onToggle={onToggle} data-testid="section-budget">
       <div className="app-form">
-        <AmountField label={t('budget.total')} value={total} decimals={decimals} format={format} onChange={setAmount('total')} />
-        <AmountField label={t('budget.daily')} value={daily} decimals={decimals} format={format} onChange={setAmount('daily')} />
+        <AmountField label={t('budget.total')} value={total} decimals={decimals} minDecimals={minDisplayDecimalsOf(trip.baseCurrency)} format={format} onChange={setAmount('total')} />
+        <AmountField label={t('budget.daily')} value={daily} decimals={decimals} minDecimals={minDisplayDecimalsOf(trip.baseCurrency)} format={format} onChange={setAmount('daily')} />
         <div>
           <p className="app-field-label">{t('budget.scope')}</p>
           <SegmentedControl<'self' | 'group'>

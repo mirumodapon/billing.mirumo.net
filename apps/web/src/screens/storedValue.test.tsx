@@ -60,7 +60,7 @@ describe('stored-value cards in trip setup (task#115)', () => {
     ])
     const panel = await openMethods(user)
     expect(panel.getByRole('button', { name: t('stored.toggle', { name: 'Suica' }) })).toBeDisabled()
-    expect(panel.getByTestId('balance-suica')).toHaveTextContent(plain(t('stored.balance', { amount: formatMoney(4800, 'JPY') })))
+    expect(panel.getByTestId('balance-suica')).toHaveTextContent(plain(t('stored.balance', { amount: formatMoney(480000, 'JPY') })))
   })
 
   it('counts a top-up alone as use, so the setting locks', async () => {
@@ -102,7 +102,7 @@ describe('paying with the card (task#115)', () => {
     await user.click(screen.getByRole('button', { name: new RegExp(`^${t('expense.details')}`) }))
     expect(screen.getByRole('button', { name: new RegExp(t('expense.currency')) })).toHaveTextContent('TWD')
     await user.click(within(screen.getByRole('radiogroup', { name: t('expense.paymentMethod') })).getByRole('radio', { name: 'Suica' }))
-    expect(screen.getByTestId('stored-note')).toHaveTextContent(plain(t('stored.fromBalance', { name: 'Suica', amount: formatMoney(5000, 'JPY') })))
+    expect(screen.getByTestId('stored-note')).toHaveTextContent(plain(t('stored.fromBalance', { name: 'Suica', amount: formatMoney(500000, 'JPY') })))
     await user.click(screen.getByLabelText(t('expense.amount')))
     for (const k of ['2', '0', '0']) await user.click(screen.getByRole('button', { name: k }))
     await user.click(screen.getByLabelText(t('expense.description')))
@@ -118,8 +118,8 @@ describe('paying with the card (task#115)', () => {
       { id: 'top', date: '2026-03-15', description: '儲值', amount: 5000, currency: 'JPY', exchangeRate: 0.2, paymentMethodId: 'pay.credit', topUpFor: 'suica' },
       { id: 'ride', date: '2026-03-15', description: '地鐵', amount: 200, currency: 'JPY', exchangeRate: 0.2, paymentMethodId: 'suica', fromBalance: true },
     ])
-    expect(screen.getByText(plain(t('expenses.spent', { amount: formatMoney(40, 'TWD') })))).toBeInTheDocument()
-    expect(screen.getByRole('region')).toHaveTextContent(plain(t('expenses.dayTotal', { amount: formatMoney(40, 'TWD') })))
+    expect(screen.getByText(plain(t('expenses.spent', { amount: formatMoney(4000, 'TWD') })))).toBeInTheDocument()
+    expect(screen.getByRole('region')).toHaveTextContent(plain(t('expenses.dayTotal', { amount: formatMoney(4000, 'TWD') })))
     expect(screen.getByRole('button', { name: /^地鐵/ })).toHaveTextContent(t('stored.paidWith', { name: 'Suica' }))
     expect(screen.getByRole('button', { name: /^儲值/ })).toHaveTextContent(t('stored.topUpTag', { name: 'Suica' }))
   })
@@ -144,8 +144,8 @@ describe('paying with the card (task#115)', () => {
       makeExpense({ id: 'ride', amount: 200, currency: 'JPY', exchangeRate: 0.2, paidBy: 'a', paymentMethodId: 'suica', fromBalance: true, split: { mode: 'even', participants: ['a', 'b'] } }),
     ]
     const net = netBalances(trip, records, [])
-    expect(net.find((b) => b.memberId === 'b')?.netMinor).toBe(-20)
-    expect(net.find((b) => b.memberId === 'a')?.netMinor).toBe(20)
+    expect(net.find((b) => b.memberId === 'b')?.netMinor).toBe(-2000)
+    expect(net.find((b) => b.memberId === 'a')?.netMinor).toBe(2000)
   })
 })
 
@@ -185,7 +185,7 @@ describe('stored-value balances in the stats (task#137)', () => {
       { id: 'ride', amount: 200, currency: 'JPY', exchangeRate: 0.2, paymentMethodId: 'suica', fromBalance: true },
     ])
     expect(await screen.findByTestId('stats-balance-suica')).toHaveTextContent('Suica')
-    expect(screen.getByTestId('stats-balance-suica')).toHaveTextContent(plain(formatMoney(4800, 'JPY')))
+    expect(screen.getByTestId('stats-balance-suica')).toHaveTextContent(plain(formatMoney(480000, 'JPY')))
   })
 
   it('has no balances section on a trip without stored-value cards', async () => {

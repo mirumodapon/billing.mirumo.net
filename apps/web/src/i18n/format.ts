@@ -1,4 +1,4 @@
-import { decimalsOf, fromMinor } from '@billing/core'
+import { decimalsOf, fromMinor, minDisplayDecimalsOf } from '@billing/core'
 import { getLocale } from './index'
 
 /** 'YYYY-MM-DD' → Date，一律以 UTC 解析，避免時區讓日期差一天 */
@@ -17,7 +17,8 @@ export function formatMoney(minor: number, currency: string): string {
   const parts = new Intl.NumberFormat(getLocale(), {
     style: 'currency',
     currency,
-    minimumFractionDigits: decimals,
+    // 台幣這類日常以整數計價的幣別，整數金額不補 .00；有小數才寫（task#136）
+    minimumFractionDigits: minDisplayDecimalsOf(currency),
     maximumFractionDigits: decimals,
   }).formatToParts(fromMinor(minor, decimals))
   const symbol = EXPLICIT_SYMBOL[currency]

@@ -49,7 +49,7 @@ describe('BudgetSection', () => {
   it('summarises the budget while closed', async () => {
     const { header, user } = await setup({ total: 30000, scope: 'self' })
     await user.click(header())
-    expect(header()).toHaveTextContent(formatMoney(30000, 'TWD').replace(/\s+/g, ' '))
+    expect(header()).toHaveTextContent(formatMoney(3000000, 'TWD').replace(/\s+/g, ' '))
   })
 
   it('says there is no budget when none is set', async () => {

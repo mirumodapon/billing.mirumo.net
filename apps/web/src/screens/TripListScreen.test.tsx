@@ -45,7 +45,7 @@ describe('TripListScreen', () => {
     const titles = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)
     expect(titles).toEqual(['東京', '首爾'])
     expect(card('東京')).toHaveTextContent(plain(formatDateRange('2026-03-14', '2026-03-18')))
-    expect(card('東京')).toHaveTextContent(plain(t('tripList.spent', { amount: formatMoney(2500, 'TWD') })))
+    expect(card('東京')).toHaveTextContent(plain(t('tripList.spent', { amount: formatMoney(250000, 'TWD') })))
   })
 
   // 規格 3.6：沒設預算就不畫進度條

@@ -78,10 +78,11 @@ describe('reconcile', () => {
 })
 
 describe('splitExact', () => {
+  // task#136 起 TWD 也是兩位小數：最小單位是 0.01 元
   it('converts each member amount to base minor units', () => {
-    // 各 ¥1,900，匯率 0.21 → NT$399 各自
-    const result = splitExact({ a: 1900, b: 1900 }, 0.21, 798, 'TWD', ORDER)
-    expect(result).toEqual({ a: 399, b: 399 })
+    // 各 ¥1,900，匯率 0.21 → 各 NT$399
+    const result = splitExact({ a: 1900, b: 1900 }, 0.21, 79800, 'TWD', ORDER)
+    expect(result).toEqual({ a: 39900, b: 39900 })
   })
 
   it('reconciles rounding drift so the shares still sum to the total', () => {
@@ -89,46 +90,46 @@ describe('splitExact', () => {
     const result = splitExact(
       { a: 1266.67, b: 1266.67, c: 1266.66 },
       0.21,
-      798,
+      79800,
       'TWD',
       ORDER,
     )
-    expect(Object.values(result).reduce((x, y) => x + y, 0)).toBe(798)
+    expect(Object.values(result).reduce((x, y) => x + y, 0)).toBe(79800)
   })
 
   // 上面那組數字剛好無漂移，所以它無法證明 reconcile 是必要的。
   // 以下兩組是實際會漂移的輸入：拿掉 reconcile 就會失敗。
   it('absorbs positive drift, where per-member conversion undershoots the total', () => {
-    // 173.58×0.21 → 36，3739.91×0.21 → 785，逐筆加總 821；
-    // 整筆 3913.49×0.21 → 822。差額 +1 要落在 memberOrder 的第一人身上。
-    const result = splitExact({ a: 173.58, b: 3739.91 }, 0.21, 822, 'TWD', ORDER)
-    expect(result).toEqual({ a: 37, b: 785 })
-    expect(sum(result)).toBe(822)
+    // 1.10×0.21 → 0.23，3.40×0.21 → 0.71，逐筆加總 0.94；
+    // 整筆 4.50×0.21 → 0.95。差額 +1 分要落在 memberOrder 的第一人身上。
+    const result = splitExact({ a: 1.1, b: 3.4 }, 0.21, 95, 'TWD', ORDER)
+    expect(result).toEqual({ a: 24, b: 71 })
+    expect(sum(result)).toBe(95)
   })
 
   it('absorbs negative drift, where per-member conversion overshoots the total', () => {
-    // 3907.26×0.21 → 821，3154.78×0.21 → 663，逐筆加總 1484；
-    // 整筆 7062.04×0.21 → 1483。差額 −1 同樣從第一人身上扣。
-    const result = splitExact({ a: 3907.26, b: 3154.78 }, 0.21, 1483, 'TWD', ORDER)
-    expect(sum(result)).toBe(1483)
-    expect(result).toEqual({ a: 820, b: 663 })
+    // 1.08×0.21 → 0.23，3.36×0.21 → 0.71，逐筆加總 0.94；
+    // 整筆 4.44×0.21 → 0.93。差額 −1 分同樣從第一人身上扣。
+    const result = splitExact({ a: 1.08, b: 3.36 }, 0.21, 93, 'TWD', ORDER)
+    expect(sum(result)).toBe(93)
+    expect(result).toEqual({ a: 22, b: 71 })
   })
 
   it('supports a member paying nothing', () => {
-    const result = splitExact({ a: 3800, b: 0 }, 0.21, 798, 'TWD', ORDER)
-    expect(result).toEqual({ a: 798, b: 0 })
+    const result = splitExact({ a: 3800, b: 0 }, 0.21, 79800, 'TWD', ORDER)
+    expect(result).toEqual({ a: 79800, b: 0 })
   })
 
   // 其他案例的 amounts 鍵序剛好與 ORDER 一致，所以它們無法分辨
   // 「有把 memberOrder 傳下去」和「用了物件自己的鍵序」。這裡刻意倒著寫。
   it('settles drift by memberOrder, not by the key order of the amounts object', () => {
     // 與上面的正向漂移同一組數字，只是 b 先寫。差額 +1 仍必須落在 a 身上。
-    const result = splitExact({ b: 3739.91, a: 173.58 }, 0.21, 822, 'TWD', ORDER)
-    expect(result).toEqual({ a: 37, b: 785 })
+    const result = splitExact({ b: 3.4, a: 1.1 }, 0.21, 95, 'TWD', ORDER)
+    expect(result).toEqual({ a: 24, b: 71 })
   })
 
   it('returns an empty record when there are no amounts', () => {
-    expect(splitExact({}, 0.21, 798, 'TWD', ORDER)).toEqual({})
+    expect(splitExact({}, 0.21, 79800, 'TWD', ORDER)).toEqual({})
   })
 })
 
@@ -222,48 +223,48 @@ describe('splitByItems', () => {
 
   it('splits each item among its own participants and sums to the total', () => {
     // 小計 3400，實付 3800，差額 400 按比例攤回
-    const result = splitByItems(items, 'prorata', 1, 3800, 'TWD', ORDER)
-    expect(Object.values(result).reduce((x, y) => x + y, 0)).toBe(3800)
+    const result = splitByItems(items, 'prorata', 1, 380000, 'TWD', ORDER)
+    expect(Object.values(result).reduce((x, y) => x + y, 0)).toBe(380000)
   })
 
   it('charges a member only for the items they participated in', () => {
-    const result = splitByItems(items, 'prorata', 1, 3400, 'TWD', ORDER)
-    // c 只參與生啤：1720 / 3 人
-    expect(result.c).toBe(573)
+    const result = splitByItems(items, 'prorata', 1, 340000, 'TWD', ORDER)
+    // c 只參與生啤：1720 / 3 人 = 573.33
+    expect(result.c).toBe(57333)
   })
 
   it('excludes members who participated in nothing', () => {
-    const result = splitByItems(items, 'prorata', 1, 3400, 'TWD', ORDER)
+    const result = splitByItems(items, 'prorata', 1, 340000, 'TWD', ORDER)
     expect(result.d).toBeUndefined()
   })
 
   it('handles a discount (items exceed the paid total)', () => {
-    const result = splitByItems(items, 'prorata', 1, 3000, 'TWD', ORDER)
-    expect(Object.values(result).reduce((x, y) => x + y, 0)).toBe(3000)
+    const result = splitByItems(items, 'prorata', 1, 300000, 'TWD', ORDER)
+    expect(Object.values(result).reduce((x, y) => x + y, 0)).toBe(300000)
   })
 
   // 上面幾條只斷言加總，而加總光靠 reconcile 就會對——就算 distribute 什麼都沒做。
   // 以下釘住完整分佈，這樣「跳過 distribute」或「把 prorata 當 even」都會被抓到。
   it('spreads the service charge in proportion to what each member consumed', () => {
-    // 明細分攤：a 1654、b 1173、c 573，小計 3400；實付 3800 的差額 400 按比例攤回
-    expect(splitByItems(items, 'prorata', 1, 3400, 'TWD', ORDER)).toEqual({
-      a: 1654,
-      b: 1173,
-      c: 573,
+    // 明細分攤：a 1653.34、b 1173.33、c 573.33，小計 3400；實付 3800 的差額 400 按比例攤回
+    expect(splitByItems(items, 'prorata', 1, 340000, 'TWD', ORDER)).toEqual({
+      a: 165334,
+      b: 117333,
+      c: 57333,
     })
-    expect(splitByItems(items, 'prorata', 1, 3800, 'TWD', ORDER)).toEqual({
-      a: 1849,
-      b: 1311,
-      c: 640,
+    expect(splitByItems(items, 'prorata', 1, 380000, 'TWD', ORDER)).toEqual({
+      a: 184785,
+      b: 131137,
+      c: 64078,
     })
   })
 
   it('spreads the difference evenly under the even rule', () => {
     // 同一筆差額，even 規則的分佈與 prorata 明顯不同
-    expect(splitByItems(items, 'even', 1, 3800, 'TWD', ORDER)).toEqual({
-      a: 1788,
-      b: 1306,
-      c: 706,
+    expect(splitByItems(items, 'even', 1, 380000, 'TWD', ORDER)).toEqual({
+      a: 178668,
+      b: 130666,
+      c: 70666,
     })
   })
 
@@ -271,24 +272,24 @@ describe('splitByItems', () => {
   // 所以它們分辨不出「有排序」和「照原陣列順序分」。這裡刻意倒著寫。
   it('splits an item by memberOrder, not by the order its participants were listed', () => {
     const shared: LineItem[] = [
-      { id: 'i1', name: '共享拼盤', amount: 1001, participants: ['c', 'a'] },
+      { id: 'i1', name: '共享拼盤', amount: 10.01, participants: ['c', 'a'] },
     ]
-    // 1001 分兩人，餘數 1 必須歸 memberOrder 在前的 a；未排序的話會歸 c
+    // 10.01 元分兩人，餘數 1 分必須歸 memberOrder 在前的 a；未排序的話會歸 c
     expect(splitByItems(shared, 'prorata', 1, 1001, 'TWD', ORDER)).toEqual({ a: 501, c: 500 })
   })
 
   it('returns the discount in proportion to consumption', () => {
-    expect(splitByItems(items, 'prorata', 1, 3000, 'TWD', ORDER)).toEqual({
-      a: 1459,
-      b: 1035,
-      c: 506,
+    expect(splitByItems(items, 'prorata', 1, 300000, 'TWD', ORDER)).toEqual({
+      a: 145883,
+      b: 103529,
+      c: 50588,
     })
   })
 
   it('applies the exchange rate to item amounts', () => {
     const one: LineItem[] = [{ id: 'i1', name: '', amount: 1000, participants: ['a', 'b'] }]
-    const result = splitByItems(one, 'prorata', 0.21, 210, 'TWD', ORDER)
-    expect(result).toEqual({ a: 105, b: 105 })
+    const result = splitByItems(one, 'prorata', 0.21, 21000, 'TWD', ORDER)
+    expect(result).toEqual({ a: 10500, b: 10500 })
   })
 
   // 一張「退貨 + 折扣 + 新商品」的收據，負數品項是使用者輸入優惠券的自然方式。
@@ -299,8 +300,8 @@ describe('splitByItems', () => {
       { id: 'i2', name: '折扣', amount: -1, participants: ['b'] },
       { id: 'i3', name: '新商品', amount: 398, participants: ['c'] },
     ]
-    const result = splitByItems(mixed, 'prorata', 1, 250, 'TWD', ORDER)
-    expect(sum(result)).toBe(250)
+    const result = splitByItems(mixed, 'prorata', 1, 25000, 'TWD', ORDER)
+    expect(sum(result)).toBe(25000)
   })
 
   it('returns an empty record for no items', () => {
@@ -329,20 +330,21 @@ function makeExpense(split: Split, amount = 3800, exchangeRate = 0.21): Expense 
 
 describe('sharesOf', () => {
   it('dispatches to splitEven and sums to the converted total', () => {
-    const e = makeExpense({ mode: 'even', participants: ['a', 'b', 'c', 'd'] })
+    // ¥3,801.05 × 0.21 = NT$798.22：四人分，餘下的 2 分歸 memberOrder 前兩人
+    const e = makeExpense({ mode: 'even', participants: ['a', 'b', 'c', 'd'] }, 3801.05)
     const result = sharesOf(e, 'TWD', ORDER)
-    // 3800 × 0.21 = 798
-    expect(Object.values(result).reduce((x, y) => x + y, 0)).toBe(798)
-    expect(result).toEqual({ a: 200, b: 200, c: 199, d: 199 })
+    expect(Object.values(result).reduce((x, y) => x + y, 0)).toBe(79822)
+    expect(result).toEqual({ a: 19956, b: 19956, c: 19955, d: 19955 })
   })
 
   it('dispatches to splitExact', () => {
     const e = makeExpense({ mode: 'exact', amounts: { a: 2000, b: 1800 } })
     const result = sharesOf(e, 'TWD', ORDER)
-    expect(Object.values(result).reduce((x, y) => x + y, 0)).toBe(798)
+    // 3800 × 0.21 = 798
+    expect(Object.values(result).reduce((x, y) => x + y, 0)).toBe(79800)
     // 只斷言加總分辨不出模式——均分兩人也是 798。要釘住分佈：
     // ¥2,000×0.21 = 420、¥1,800×0.21 = 378，而均分會是 {a:399, b:399}。
-    expect(result).toEqual({ a: 420, b: 378 })
+    expect(result).toEqual({ a: 42000, b: 37800 })
   })
 
   it('dispatches to splitByItems', () => {
@@ -355,9 +357,9 @@ describe('sharesOf', () => {
       ],
     })
     const result = sharesOf(e, 'TWD', ORDER)
-    expect(Object.values(result).reduce((x, y) => x + y, 0)).toBe(798)
+    expect(Object.values(result).reduce((x, y) => x + y, 0)).toBe(79800)
     // a 獨享拉麵又分了啤酒，b 只分啤酒，所以差距遠大於均分
-    expect(result).toEqual({ a: 634, b: 164 })
+    expect(result).toEqual({ a: 63371, b: 16429 })
   })
 
   // 型別合法但無意義的分攤設定。UI 不該產生，匯入的備份可能帶進來。
@@ -371,12 +373,12 @@ describe('sharesOf', () => {
     ] satisfies Split[]) {
       const e = makeExpense(split)
       // 3800 × 0.21 = 798，付款人是 a
-      expect(sharesOf(e, 'TWD', ORDER)).toEqual({ a: 798 })
+      expect(sharesOf(e, 'TWD', ORDER)).toEqual({ a: 79800 })
     }
   })
 
   it('sorts even-split participants into member order regardless of input order', () => {
-    const e = makeExpense({ mode: 'even', participants: ['d', 'b', 'a', 'c'] })
-    expect(sharesOf(e, 'TWD', ORDER)).toEqual({ a: 200, b: 200, c: 199, d: 199 })
+    const e = makeExpense({ mode: 'even', participants: ['d', 'b', 'a', 'c'] }, 3801.05)
+    expect(sharesOf(e, 'TWD', ORDER)).toEqual({ a: 19956, b: 19956, c: 19955, d: 19955 })
   })
 })

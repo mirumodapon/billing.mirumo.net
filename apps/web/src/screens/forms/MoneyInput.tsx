@@ -1,4 +1,4 @@
-import { convertToBaseMinor, decimalsOf } from '@billing/core'
+import { convertToBaseMinor, decimalsOf, minDisplayDecimalsOf } from '@billing/core'
 import { Button, CalcKeypad, evaluate, Icon, SheetPicker } from '@billing/ui'
 import { IconChevronDown, IconPencil } from '@tabler/icons-react'
 import { useId, useState } from 'react'
@@ -109,6 +109,7 @@ export function MoneyInput({ baseCurrency, currency, amount, exchangeRate, autoF
         open={keypad === 'amount'}
         expression={expression}
         decimals={decimals}
+        minDecimals={minDisplayDecimalsOf(currency)}
         onExpressionChange={onExpression}
         onDone={() => {
           setKeypad(null)

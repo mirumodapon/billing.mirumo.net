@@ -171,10 +171,13 @@ export function formatExpression(expr: string): string {
     .trim()
 }
 
-/** 結果顯示用：千分位、固定小數位數 */
-export function formatResult(value: number, decimals: number): string {
+/**
+ * 結果顯示用：千分位、最多 decimals 位小數。minDecimals 是至少寫幾位，預設等於 decimals（USD 12.50）；
+ * 台幣這類日常以整數計價的幣別傳 0，整數結果就不補 .00（task#136）
+ */
+export function formatResult(value: number, decimals: number, minDecimals: number = decimals): string {
   return value.toLocaleString('en-US', {
-    minimumFractionDigits: decimals,
+    minimumFractionDigits: minDecimals,
     maximumFractionDigits: decimals,
   })
 }
