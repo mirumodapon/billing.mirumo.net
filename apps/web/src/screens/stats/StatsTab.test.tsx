@@ -46,3 +46,53 @@ describe('StatsTab: scope (spec 4.5, Plan 9 T1)', () => {
     expect(within(screen.getByRole('radiogroup', { name: t('stats.scope') })).getByRole('radio', { name: t('stats.self') })).toBeChecked()
   })
 })
+
+describe('StatsTab: overview, categories, daily (Plan 9 Task 3)', () => {
+  it('shows the budget in its own scope, with what is left', async () => {
+    await setup({ budget: { total: 5000, scope: 'group' } })
+    expect(screen.getByRole('progressbar')).toBeInTheDocument()
+    expect(screen.getByTestId('stats-budget')).toHaveTextContent(
+      plain(t('stats.budget', { scope: t('stats.group'), budget: formatMoney(5000, 'TWD'), remaining: formatMoney(800, 'TWD') })),
+    )
+  })
+
+  // 規格 3.6：沒設預算就什麼都不畫
+  it('draws no budget at all when none is set', async () => {
+    await setup()
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('stats-budget')).not.toBeInTheDocument()
+  })
+
+  it('lists each category with its amount', async () => {
+    await setup()
+    const donut = within(screen.getByRole('figure', { name: t('stats.categories') }))
+    expect(donut.getByText(t('cat.food')).closest('li')).toHaveTextContent(plain(formatMoney(3000, 'TWD')))
+    expect(donut.getByText(t('cat.transport')).closest('li')).toHaveTextContent(plain(formatMoney(1200, 'TWD')))
+  })
+
+  it('has a bar per trip day and flags days over the daily budget', async () => {
+    await setup({ budget: { daily: 2000, scope: 'group' } })
+    const daily = within(screen.getByRole('figure', { name: t('stats.daily') }))
+    expect(daily.getAllByRole('row')).toHaveLength(3)
+    expect(daily.getByTestId('budget-line')).toBeInTheDocument()
+    expect(daily.getAllByText(t('stats.overBudget'))).toHaveLength(1)
+  })
+
+  // Plan 9 T3：拿「我」的花費比全團的每日預算是錯的警示
+  it('leaves out the daily budget line in the other scope', async () => {
+    const { user, scope } = await setup({ budget: { daily: 2000, scope: 'group' } })
+    await user.click(scope().getByRole('radio', { name: t('stats.self') }))
+    expect(within(screen.getByRole('figure', { name: t('stats.daily') })).queryByTestId('budget-line')).not.toBeInTheDocument()
+  })
+
+  it('remembers a collapsed section across a restart', async () => {
+    const { user, stores } = await setup()
+    const header = () => screen.getByRole('button', { name: new RegExp(`^${t('stats.categories')}`) })
+    expect(header()).toHaveAttribute('aria-expanded', 'true')
+    await user.click(header())
+    expect(header()).toHaveAttribute('aria-expanded', 'false')
+    cleanup()
+    await renderApp('/trip/t1/stats', stores)
+    expect(header()).toHaveAttribute('aria-expanded', 'false')
+  })
+})

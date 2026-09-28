@@ -15,3 +15,14 @@ export function useStatsScope(): [Scope, (scope: Scope) => void] {
   }
   return [scope, change]
 }
+
+/** 統計各區塊的收折（Plan 9 T4）：預設全部展開，收起的記在 session，重開 app 還是收著 */
+export function useCollapsedStats(): [(key: string) => boolean, (key: string) => void] {
+  const [collapsed, setCollapsed] = useState<string[]>(() => readSession()?.collapsedStats ?? [])
+  const toggle = (key: string) => {
+    const next = collapsed.includes(key) ? collapsed.filter((k) => k !== key) : [...collapsed, key]
+    setCollapsed(next)
+    writeSession({ ...(readSession() ?? { route: location.hash.replace(/^#/, '') || '/' }), collapsedStats: next })
+  }
+  return [(key) => !collapsed.includes(key), toggle]
+}

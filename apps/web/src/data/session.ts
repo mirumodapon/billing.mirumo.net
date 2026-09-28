@@ -33,6 +33,7 @@ export function readSession(store: Storage | undefined = storage()): SessionStat
     if (s.tripId !== undefined && typeof s.tripId !== 'string') return null
     if (s.statsScope !== undefined && s.statsScope !== 'self' && s.statsScope !== 'group') return null
     if (s.openAccordion !== undefined && typeof s.openAccordion !== 'string') return null
+    if (s.collapsedStats !== undefined && !isStringArray(s.collapsedStats)) return null
     if (s.filters !== undefined) {
       const f = s.filters as Record<string, unknown> | null
       if (

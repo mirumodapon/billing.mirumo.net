@@ -81,6 +81,8 @@ export interface SessionState {
   /** 帶著旅程 id：換到別趟旅程時不能套用上一趟的成員與類別（task#91） */
   filters?: ExpenseFilter & { tripId: string }
   openAccordion?: string
+  /** 統計頁收起的區塊（Plan 9 T4）。預設全部展開，只記收起的 */
+  collapsedStats?: string[]
   /** key 是路由 */
   scrollTop?: Record<string, number>
 }
