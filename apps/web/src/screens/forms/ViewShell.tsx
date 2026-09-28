@@ -8,7 +8,20 @@ import { useI18n } from '../../i18n/useI18n'
  * 唯讀檢視頁的外框（task#101）：✕、標題、編輯。從列表點開先到這裡，
  * 誤觸不會改到任何東西；要改再按「編輯」。
  */
-export function ViewShell({ title, editTo, fallback, children }: { title: string; editTo: string; fallback: string; children: ReactNode }) {
+export function ViewShell({
+  title,
+  editTo,
+  fallback,
+  onDelete,
+  children,
+}: {
+  title: string
+  editTo: string
+  fallback: string
+  /** 底部的刪除鍵（task#102）。刪除本身由 store 處理：軟刪除 + snackbar 復原 */
+  onDelete: () => void
+  children: ReactNode
+}) {
   const { t } = useI18n()
   const navigate = useNavigate()
   const location = useLocation()
@@ -27,7 +40,22 @@ export function ViewShell({ title, editTo, fallback, children }: { title: string
         </header>
       </SafeArea>
       <div className="app-scroll">
-        <div className="app-form">{children}</div>
+        <div className="app-form">
+          {children}
+          {/*
+            先離開再刪：刪掉後這一頁找不到紀錄會自己轉走，先離開才不會蓋掉返回紀錄。
+            不另外確認——與列表的滑動刪除一樣，誤刪可以從 snackbar 復原
+          */}
+          <Button
+            variant="danger"
+            onClick={() => {
+              close()
+              onDelete()
+            }}
+          >
+            {t('view.delete')}
+          </Button>
+        </div>
       </div>
     </div>
   )

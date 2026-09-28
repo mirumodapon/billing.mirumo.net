@@ -7,7 +7,7 @@ import { displayName } from '../../domain/names'
 import { paymentMethodsFor } from '../../domain/paymentMethods'
 import { formatWeekday } from '../../i18n/format'
 import { useI18n } from '../../i18n/useI18n'
-import { useSettings, useTrips } from '../../stores/StoresProvider'
+import { useSettings, useStores, useTrips } from '../../stores/StoresProvider'
 import { ReceiptThumbnail } from '../forms/ReceiptThumbnail'
 import { DraftNote, Fact, ViewShell } from '../forms/ViewShell'
 import { useOpenTrip } from '../useOpenTrip'
@@ -17,6 +17,7 @@ export function ExpenseViewScreen() {
   const { tripId = '', expenseId = '' } = useParams()
   const { t, tPlural, money, date } = useI18n()
   const ready = useOpenTrip(tripId)
+  const { trips } = useStores()
   const trip = useTrips((s) => s.trips.find((x) => x.id === tripId))
   const expense = useTrips((s) => s.current?.expenses.find((e) => e.id === expenseId))
   const categories = useSettings((s) => s.settings.categories)
@@ -46,6 +47,7 @@ export function ExpenseViewScreen() {
       title={expense.description.trim() || t('expense.untitled')}
       editTo={`/trip/${tripId}/expense/${expenseId}/edit`}
       fallback={`/trip/${tripId}/expenses`}
+      onDelete={() => void trips.getState().deleteExpense(expense.id)}
     >
       {expense.draft ? <DraftNote /> : null}
       {/* task#107：先看到「什麼、多少、哪天」，其餘細節收在下面的卡片裡 */}

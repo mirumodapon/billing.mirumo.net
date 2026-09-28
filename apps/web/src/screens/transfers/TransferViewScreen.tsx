@@ -5,7 +5,7 @@ import { Navigate, useParams } from 'react-router'
 import { BootSkeleton } from '../../app/BootSkeleton'
 import { formatWeekday } from '../../i18n/format'
 import { useI18n } from '../../i18n/useI18n'
-import { useTrips } from '../../stores/StoresProvider'
+import { useStores, useTrips } from '../../stores/StoresProvider'
 import { DraftNote, Fact, ViewShell } from '../forms/ViewShell'
 import { useOpenTrip } from '../useOpenTrip'
 
@@ -14,6 +14,7 @@ export function TransferViewScreen() {
   const { tripId = '', transferId = '' } = useParams()
   const { t, money, date } = useI18n()
   const ready = useOpenTrip(tripId)
+  const { trips } = useStores()
   const trip = useTrips((s) => s.trips.find((x) => x.id === tripId))
   const transfer = useTrips((s) => s.current?.transfers.find((x) => x.id === transferId))
 
@@ -35,6 +36,7 @@ export function TransferViewScreen() {
       title={`${name(transfer.from)} → ${name(transfer.to)}`}
       editTo={`/trip/${tripId}/transfer/${transferId}/edit`}
       fallback={`/trip/${tripId}/settle`}
+      onDelete={() => void trips.getState().deleteTransfer(transfer.id)}
     >
       {transfer.draft ? <DraftNote /> : null}
       {/* task#107：誰給誰一眼看出來，金額放大 */}

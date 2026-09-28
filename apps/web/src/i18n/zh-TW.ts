@@ -55,6 +55,7 @@ export const zhTW = {
   'view.shares': '各人分攤',
   'view.receipts': '收據',
   'view.summary': '摘要',
+  'view.delete': '刪除這筆',
   'photo.close': '關閉照片',
   'expense.description': '說明',
   'expense.amount': '金額',

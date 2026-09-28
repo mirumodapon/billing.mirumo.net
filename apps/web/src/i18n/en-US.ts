@@ -55,6 +55,7 @@ export const enUS: Record<TranslationKey, string> = {
   'view.shares': 'Shares',
   'view.receipts': 'Receipts',
   'view.summary': 'Summary',
+  'view.delete': 'Delete',
   'photo.close': 'Close photo',
   'expense.description': 'Description',
   'expense.amount': 'Amount',
