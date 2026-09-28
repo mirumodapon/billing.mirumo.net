@@ -35,7 +35,16 @@ export function readSession(store: Storage | undefined = storage()): SessionStat
     if (s.openAccordion !== undefined && typeof s.openAccordion !== 'string') return null
     if (s.filters !== undefined) {
       const f = s.filters as Record<string, unknown> | null
-      if (!f || !isStringArray(f.categoryIds) || !isStringArray(f.memberIds)) return null
+      if (
+        !f ||
+        typeof f.tripId !== 'string' ||
+        !isStringArray(f.categoryIds) ||
+        !isStringArray(f.payers) ||
+        !isStringArray(f.paymentMethodIds) ||
+        typeof f.draftsOnly !== 'boolean'
+      ) {
+        return null
+      }
     }
     if (s.scrollTop !== undefined) {
       const st = s.scrollTop as Record<string, unknown> | null

@@ -12,7 +12,7 @@ const throwing = new Proxy({} as Storage, {
 
 describe('session', () => {
   it('round-trips the operating state', () => {
-    const state = { route: '/trip/t1/stats', tripId: 't1', statsScope: 'group' as const, scrollTop: { '/trip/t1/expenses': 420 } }
+    const state = { route: '/trip/t1/stats', tripId: 't1', statsScope: 'group' as const, scrollTop: { '/trip/t1/expenses': 420 }, filters: { tripId: 't1', categoryIds: ['cat.food'], payers: ['a'], paymentMethodIds: [], draftsOnly: true } }
     writeSession(state)
     expect(readSession()).toEqual(state)
   })
@@ -44,7 +44,10 @@ describe('session', () => {
       '{"tripId":"t1"}',
       '{"route":"trip/t1"}',
       '{"route":"/","statsScope":"everyone"}',
-      '{"route":"/","filters":{"categoryIds":"x","memberIds":[]}}',
+      '{"route":"/","filters":{"tripId":"t1","categoryIds":"x","payers":[],"paymentMethodIds":[],"draftsOnly":false}}',
+      // 舊規格的形狀（從沒寫進去過），以及少了旅程 id 的
+      '{"route":"/","filters":{"categoryIds":[],"memberIds":[]}}',
+      '{"route":"/","filters":{"categoryIds":[],"payers":[],"paymentMethodIds":[],"draftsOnly":false}}',
       '{"route":"/","scrollTop":{"/":"far"}}',
     ]) {
       localStorage.setItem(SESSION_KEY, bad)

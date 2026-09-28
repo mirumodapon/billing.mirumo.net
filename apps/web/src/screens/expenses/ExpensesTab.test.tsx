@@ -1,11 +1,12 @@
 import { convertToBaseMinor } from '@billing/core'
-import { screen, waitFor, within } from '@testing-library/react'
+import { cleanup, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { defaultSettings } from '../../data/defaults'
 import { clearSession } from '../../data/session'
 import { makeExpense, makeTransfer, makeTrip } from '../../data/testing/fixtures'
 import { formatDate, formatMoney, formatWeekday } from '../../i18n/format'
 import { t } from '../../i18n'
+import { createUiStore } from '../../stores/uiStore'
 import { currentRoute, makeStores, renderApp } from '../../test/renderApp'
 
 beforeEach(() => clearSession())
@@ -213,5 +214,19 @@ describe('expense filter (task#106)', () => {
     expect(categories.getAllByRole('button').map((b) => b.textContent)).toEqual([t('cat.food')])
     const methods = within(sheet.getByRole('group', { name: t('expense.paymentMethod') }))
     expect(methods.getAllByRole('button').map((b) => b.textContent)).toEqual([t('pay.cash')])
+  })
+})
+
+describe('expense filter across a restart (task#91, spec 7.9)', () => {
+  it('comes back after the app is reopened', async () => {
+    const { user, stores } = await setup()
+    await user.click(screen.getByRole('button', { name: t('expenses.filter') }))
+    const sheet = within(screen.getByRole('dialog', { name: t('expenses.filter') }))
+    await user.click(within(sheet.getByRole('group', { name: t('expense.paidBy') })).getByRole('button', { name: '小美' }))
+    cleanup()
+    // 重開 app：畫面層的 store 是新的，只剩 session 記得篩選
+    await renderApp('/trip/t1/expenses', { ...stores, ui: createUiStore() })
+    expect(screen.getByRole('button', { name: /^淺草寺門票/ })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^一蘭拉麵/ })).not.toBeInTheDocument()
   })
 })
