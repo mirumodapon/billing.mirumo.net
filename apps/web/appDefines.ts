@@ -13,9 +13,12 @@ function commitHash(): string {
 /**
  * 設定頁「關於」顯示的版本與 commit（Plan 10 Task 7；task#132 起由建置日期改成 commit），
  * 建置時寫死進 bundle。vite.config 與 vitest.config 共用，測試裡看到的值與正式版同一個來源。
+ *
+ * 版本號是整個專案共用的一個，放在 repo 根目錄的 package.json；core 與 ui 是 app 內部用的套件，
+ * 不另外編版本。發版時改那裡，並打 vX.Y.Z 的 git tag
  */
 export function appDefines(): Record<string, string> {
-  const { version } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as { version: string }
+  const { version } = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8')) as { version: string }
   return {
     __APP_VERSION__: JSON.stringify(version),
     __APP_COMMIT__: JSON.stringify(commitHash()),
