@@ -102,3 +102,12 @@ describe('SettingsScreen: theme', () => {
     expect(document.documentElement.dataset.theme).toBe('catppuccin-frappe')
   })
 })
+
+describe('about (Plan 10 Task 7)', () => {
+  // 回報問題時要說得出是哪一版：版本來自 package.json，建置時寫死
+  it('shows the app version and build date', async () => {
+    await renderApp('/settings')
+    expect(screen.getByTestId('app-version')).toHaveTextContent(__APP_VERSION__)
+    expect(screen.getByTestId('app-version')).toHaveTextContent(/\d{4}-\d{2}-\d{2}/)
+  })
+})

@@ -4,6 +4,8 @@ import { StorageError } from './errors'
 /** 收據照片的存放處（規格 7.1）。與 TripRepository 分開，日後可以各自換成雲端 */
 export interface BlobStore {
   put(blob: Blob): Promise<string>
+  /** 用指定的 id 存（匯入 zip 時照原 id 寫回） */
+  restore(id: string, blob: Blob): Promise<void>
   get(id: string): Promise<Blob | undefined>
   delete(id: string): Promise<void>
   usage(): Promise<{ bytes: number; count: number }>

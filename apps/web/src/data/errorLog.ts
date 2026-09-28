@@ -74,3 +74,6 @@ export function installGlobalErrorLogging(log: ErrorLog, target: Window = window
     target.removeEventListener('unhandledrejection', onRejection)
   }
 }
+
+/** app 共用的一份記錄：開機時接上全域錯誤、ErrorBoundary 與設定頁都用它 */
+export const errorLog = new ErrorLog()

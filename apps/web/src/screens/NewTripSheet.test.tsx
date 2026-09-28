@@ -1,8 +1,9 @@
 import { screen, waitFor, within } from '@testing-library/react'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { clearSession } from '../data/session'
+import { makeTrip } from '../data/testing/fixtures'
 import { t } from '../i18n'
-import { currentRoute, renderApp } from '../test/renderApp'
+import { currentRoute, makeStores, renderApp } from '../test/renderApp'
 
 beforeEach(() => clearSession())
 
@@ -57,5 +58,37 @@ describe('NewTripSheet', () => {
     await user.click(screen.getByRole('button', { name: t('trip.new') }))
     const again = screen.getByRole('dialog', { name: t('trip.new') })
     expect(within(again).getByLabelText(t('newTrip.name'))).toHaveValue('')
+  })
+})
+
+describe('asking to keep the data (spec 7.4)', () => {
+  const persist = vi.fn(async () => true)
+  beforeEach(() => {
+    persist.mockClear()
+    Object.defineProperty(navigator, 'storage', { value: { persist, persisted: async () => false }, configurable: true })
+  })
+  afterEach(() => Reflect.deleteProperty(navigator, 'storage'))
+
+  async function createTrip(stores?: Awaited<ReturnType<typeof makeStores>>) {
+    const app = await renderApp('/', stores)
+    await app.user.click(screen.getByRole('button', { name: t('trip.new') }))
+    const sheet = within(screen.getByRole('dialog', { name: t('trip.new') }))
+    await app.user.type(sheet.getByLabelText(t('newTrip.name')), '京都')
+    await app.user.type(sheet.getByLabelText(t('newTrip.selfName')), '阿明')
+    await app.user.click(sheet.getByRole('button', { name: t('newTrip.create') }))
+    await waitFor(() => expect(currentRoute()).toMatch(/^\/trip\/.+\/setup$/))
+  }
+
+  // 建立第一趟旅程時請瀏覽器不要清掉資料（Android/Chrome 有效）
+  it('asks for persistent storage when the first trip is created', async () => {
+    await createTrip()
+    await waitFor(() => expect(persist).toHaveBeenCalledOnce())
+  })
+
+  it('does not ask again once there are trips', async () => {
+    const stores = await makeStores()
+    await stores.repo.saveTrip(makeTrip({ id: 'old', name: '東京' }))
+    await createTrip(stores)
+    expect(persist).not.toHaveBeenCalled()
   })
 })

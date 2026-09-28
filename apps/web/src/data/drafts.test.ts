@@ -1,6 +1,6 @@
 import 'fake-indexeddb/auto'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createDraftWriter, DraftStore, onPageHidden } from './drafts'
+import { createDraftWriter, DraftStore, flushAllDrafts, onPageHidden, registerDraftWriter } from './drafts'
 import { freshDbName, tickingClock } from './testing/fixtures'
 
 afterEach(() => {
@@ -118,5 +118,32 @@ describe('onPageHidden', () => {
     onPageHidden(callback)()
     setVisibility('hidden')
     expect(callback).not.toHaveBeenCalled()
+  })
+})
+
+describe('flushAllDrafts (task#90)', () => {
+  it('writes every registered form’s pending draft at once', async () => {
+    const saved: string[] = []
+    const store = { save: async (route: string) => void saved.push(route) }
+    const a = createDraftWriter(store, '/a')
+    const b = createDraftWriter(store, '/b')
+    const offA = registerDraftWriter(a)
+    const offB = registerDraftWriter(b)
+    a.update({ x: 1 })
+    b.update({ x: 2 })
+    await flushAllDrafts()
+    expect(saved.sort()).toEqual(['/a', '/b'])
+    offA()
+    offB()
+  })
+
+  it('leaves out forms that have closed', async () => {
+    const saved: string[] = []
+    const writer = createDraftWriter({ save: async (route: string) => void saved.push(route) }, '/gone')
+    registerDraftWriter(writer)()
+    writer.update({ x: 1 })
+    await flushAllDrafts()
+    expect(saved).toEqual([])
+    writer.cancel()
   })
 })

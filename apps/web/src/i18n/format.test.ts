@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { setLocale } from './index'
-import { parseDate, formatCompact, formatDate, formatDateRange, formatMoney, formatWeekday } from './format'
+import { parseDate, formatBytes, formatCompact, formatDate, formatDateRange, formatMoney, formatWeekday } from './format'
 
 describe('formatMoney', () => {
   it('formats a zero-decimal currency without decimals', () => {
@@ -103,5 +103,15 @@ describe('formatCompact', () => {
     setLocale('zh-TW')
     expect(formatCompact(500, 'TWD')).toBe('500')
     expect(formatCompact(15000, 'TWD')).toBe('1.5萬')
+  })
+})
+
+describe('formatBytes', () => {
+  it('picks a unit and keeps one decimal below 100', () => {
+    setLocale('en-US')
+    expect(formatBytes(512)).toBe('512 B')
+    expect(formatBytes(40_000)).toBe('40 KB')
+    expect(formatBytes(1_234_567)).toBe('1.2 MB')
+    expect(formatBytes(123_456_789)).toBe('123 MB')
   })
 })

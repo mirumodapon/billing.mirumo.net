@@ -50,3 +50,16 @@ export function formatDateRange(startIso: string, endIso: string): string {
 export function formatCompact(minor: number, currency: string): string {
   return new Intl.NumberFormat(getLocale(), { notation: 'compact', maximumFractionDigits: 1 }).format(fromMinor(minor, decimalsOf(currency)))
 }
+
+/** 檔案大小：「約 40 KB」「約 1.2 MB」的數字部分（規格 4.8 的預估大小） */
+export function formatBytes(bytes: number): string {
+  const units = ['B', 'KB', 'MB', 'GB']
+  let value = bytes
+  let unit = 0
+  while (value >= 1000 && unit < units.length - 1) {
+    value /= 1000
+    unit++
+  }
+  const digits = unit === 0 || value >= 100 ? 0 : 1
+  return `${new Intl.NumberFormat(getLocale(), { maximumFractionDigits: digits }).format(value)} ${units[unit]}`
+}

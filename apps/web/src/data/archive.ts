@@ -126,7 +126,7 @@ export interface ImportReport {
 export async function importArchive(
   file: Blob,
   repo: TripRepository,
-  blobs: BlobStore & { restore(id: string, blob: Blob): Promise<void> },
+  blobs: BlobStore,
   mode: 'replace' | 'merge',
 ): Promise<ImportReport> {
   const imported = await readImport(file)

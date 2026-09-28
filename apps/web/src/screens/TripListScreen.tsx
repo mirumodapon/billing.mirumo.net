@@ -6,6 +6,8 @@ import { useI18n } from '../i18n/useI18n'
 import { useScrollRestore } from '../session/useScrollRestore'
 import { useStores, useTrips } from '../stores/StoresProvider'
 import { useConfirmDelete } from './forms/useConfirmDelete'
+import { BackupReminderCard } from './BackupReminderCard'
+import { InstallCard } from './InstallCard'
 import { NewTripSheet } from './NewTripSheet'
 import { TripCard } from './TripCard'
 
@@ -39,6 +41,9 @@ export function TripListScreen() {
           <p className="app-empty">{t('tripList.empty')}</p>
         ) : (
           <div className="app-list">
+            {/* 規格 7.4：先保住資料，再看帳——安裝引導與備份提醒放在最上面 */}
+            <InstallCard hasTrips />
+            <BackupReminderCard />
             {trips.map((trip) => (
               <TripCard
                 key={trip.id}
