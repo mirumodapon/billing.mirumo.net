@@ -96,3 +96,46 @@ describe('StatsTab: overview, categories, daily (Plan 9 Task 3)', () => {
     expect(header()).toHaveAttribute('aria-expanded', 'false')
   })
 })
+
+describe('StatsTab: members and my items (Plan 9 Task 4)', () => {
+  it('compares members for the group, the largest filling the bar', async () => {
+    await setup()
+    const rows = within(screen.getByTestId('stats-members-panel')).getAllByTestId('stats-member')
+    const expected: [string, number][] = [
+      ['阿明', 1000],
+      ['小美', 1600],
+      ['大熊', 1600],
+    ]
+    expected.forEach(([name, minor], i) => {
+      expect(within(rows[i]!).getByText(name)).toBeInTheDocument()
+      expect(rows[i]).toHaveTextContent(plain(formatMoney(minor, 'TWD')))
+    })
+    const widths = rows.map((r) => r.querySelector<HTMLElement>('.app-share__bar > span')!.style.width)
+    expect(widths[1]).toBe('100%')
+    expect(Number.parseFloat(widths[0]!)).toBeCloseTo(62.5)
+    expect(screen.queryByTestId('stats-items')).not.toBeInTheDocument()
+  })
+
+  it('lists what I shared in, largest first, with the service charge on its own line', async () => {
+    const { user, stores } = await setup()
+    await stores.repo.saveExpense(
+      makeExpense({
+        id: 'e3',
+        tripId: 't1',
+        date: '2026-03-16',
+        description: '居酒屋',
+        amount: 1100,
+        currency: 'TWD',
+        exchangeRate: 1,
+        split: { mode: 'items', overflowRule: 'prorata', items: [{ id: 'i1', name: '生啤', amount: 1000, participants: ['a', 'b'] }] },
+      }),
+    )
+    cleanup()
+    await renderApp('/trip/t1/stats', stores)
+    await user.click(within(screen.getByRole('radiogroup', { name: t('stats.scope') })).getByRole('radio', { name: t('stats.self') }))
+    const items = within(screen.getByTestId('stats-items-panel'))
+    expect(items.getAllByTestId('stats-item').map((r) => r.firstChild?.firstChild?.textContent)).toEqual(['晚餐', '生啤'])
+    expect(items.getByTestId('stats-overflow')).toHaveTextContent(plain(formatMoney(50, 'TWD')))
+    expect(screen.queryByTestId('stats-members')).not.toBeInTheDocument()
+  })
+})

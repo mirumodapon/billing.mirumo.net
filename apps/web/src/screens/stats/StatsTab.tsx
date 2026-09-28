@@ -1,7 +1,7 @@
 import type { Expense, Trip } from '@billing/core'
-import { Accordion, BarChart, Donut, ProgressBar, SegmentedControl } from '@billing/ui'
+import { Accordion, Avatar, BarChart, Donut, ProgressBar, SegmentedControl } from '@billing/ui'
 import { useParams } from 'react-router'
-import { statsView } from '../../domain/statsView'
+import { statsView, type StatsView } from '../../domain/statsView'
 import { useI18n } from '../../i18n/useI18n'
 import { useSettings, useTrips } from '../../stores/StoresProvider'
 import { useCollapsedStats, useStatsScope } from './useStatsScope'
@@ -73,6 +73,62 @@ function Stats({ trip, expenses }: { trip: Trip; expenses: Expense[] }) {
           emptyLabel={t('stats.empty')}
         />
       </Accordion>
+      {view.members ? (
+        <Accordion title={t('stats.members')} open={isOpen('members')} onToggle={() => toggle('members')} data-testid="stats-members">
+          <MemberBars members={view.members} format={format} />
+        </Accordion>
+      ) : null}
+      {view.items ? (
+        <Accordion title={t('stats.myItems')} open={isOpen('items')} onToggle={() => toggle('items')} data-testid="stats-items">
+          <MyItems items={view.items} format={format} />
+        </Accordion>
+      ) : null}
     </div>
+  )
+}
+
+/** 成員比較（僅全團）：條長以最多的人為滿格，比較誰負擔得多（Plan 9 T5） */
+function MemberBars({ members, format }: { members: NonNullable<StatsView['members']>; format: (minor: number) => string }) {
+  const most = Math.max(0, ...members.map((m) => m.owedMinor))
+  return (
+    <div>
+      {members.map((m) => (
+        <div key={m.id} className="app-share" data-testid="stats-member">
+          <Avatar name={m.name} colorKey={m.colorKey} size="sm" />
+          <span>{m.name}</span>
+          <span className="app-money">{format(m.owedMinor)}</span>
+          {most > 0 ? (
+            <span className="app-share__bar" aria-hidden="true">
+              <span style={{ width: `${(Math.max(0, m.owedMinor) / most) * 100}%`, background: `var(--bi-${m.colorKey})` }} />
+            </span>
+          ) : null}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/** 我的消費明細（僅「我」）：我分攤到的每一項，攤回的服務費另一列（規格 4.5） */
+function MyItems({ items, format }: { items: NonNullable<StatsView['items']>; format: (minor: number) => string }) {
+  const { t, date } = useI18n()
+  if (items.rows.length === 0) return <p className="app-field-label m-0">{t('stats.empty')}</p>
+  return (
+    <ul className="m-0 list-none p-0">
+      {items.rows.map((row) => (
+        <li key={`${row.expenseId}-${row.itemId ?? ''}`} className="app-fact" data-testid="stats-item">
+          <span>
+            {row.name.trim() || t('expense.untitled')}
+            <span className="app-field-label m-0 block">{date(row.date)}</span>
+          </span>
+          <span className="app-money">{format(row.shareMinor)}</span>
+        </li>
+      ))}
+      {items.overflowMinor !== 0 ? (
+        <li className="app-fact" data-testid="stats-overflow">
+          <span>{t('stats.overflow')}</span>
+          <span className="app-money">{format(items.overflowMinor)}</span>
+        </li>
+      ) : null}
+    </ul>
   )
 }
