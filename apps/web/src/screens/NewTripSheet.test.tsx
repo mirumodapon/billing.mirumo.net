@@ -92,3 +92,18 @@ describe('asking to keep the data (spec 7.4)', () => {
     expect(persist).not.toHaveBeenCalled()
   })
 })
+
+describe('the new trip’s own lists (task#120)', () => {
+  it('copies the global categories and payment methods into the new trip', async () => {
+    const { user, sheet, stores } = await openSheet()
+    await user.type(within(sheet).getByLabelText(t('newTrip.name')), '京都')
+    await user.type(within(sheet).getByLabelText(t('newTrip.selfName')), '阿明')
+    await user.click(within(sheet).getByRole('button', { name: t('newTrip.create') }))
+    await waitFor(() => expect(currentRoute()).toMatch(/^\/trip\/.+\/setup$/))
+    const [trip] = await stores.repo.listTrips()
+    const settings = await stores.repo.getSettings()
+    expect(trip).toMatchObject({ ownLists: true })
+    expect(trip!.categories?.map((c) => c.id)).toEqual(settings.categories.map((c) => c.id))
+    expect(trip!.paymentMethods?.map((m) => m.id)).toEqual(settings.paymentMethods.map((m) => m.id))
+  })
+})

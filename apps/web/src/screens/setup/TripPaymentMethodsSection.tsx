@@ -4,9 +4,11 @@ import { IconTrash } from '@tabler/icons-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { CURRENCIES, currencyName } from '../../domain/currencies'
+import { tripMethodName } from '../../domain/paymentMethods'
 import { storedBalances, type StoredBalance } from '../../domain/storedValue'
+import { withOwnLists } from '../../domain/tripLists'
 import { useI18n } from '../../i18n/useI18n'
-import { useTrips } from '../../stores/StoresProvider'
+import { useSettings, useTrips } from '../../stores/StoresProvider'
 import { useConfirmDelete } from '../forms/useConfirmDelete'
 
 export interface TripPaymentMethodsSectionProps {
@@ -29,19 +31,25 @@ export function TripPaymentMethodsSection({ trip, open, onToggle, save }: TripPa
   const { t, tPlural, locale } = useI18n()
   const navigate = useNavigate()
   const expenses = useTrips((s) => (s.current?.tripId === trip.id ? s.current.expenses : NO_EXPENSES))
-  const methods = trip.paymentMethods ?? []
+  const settings = useSettings((s) => s.settings)
+  // task#120：這趟旅程完整的清單。舊旅程還沒有自己的一份時，這裡看到的是複製後會得到的樣子
+  const methods = withOwnLists(trip, settings).paymentMethods ?? []
   const confirm = useConfirmDelete()
   const [newName, setNewName] = useState('')
   const [pickingCurrencyFor, setPickingCurrencyFor] = useState<string | null>(null)
   const balances = storedBalances(trip, expenses)
 
+  // 任何修改都先確保旅程有自己的一份清單，再改那一份：全域設定不受影響
   const update = (change: (list: TripPaymentMethod[]) => TripPaymentMethod[]) =>
-    void save((x) => ({ ...x, paymentMethods: change(x.paymentMethods ?? []) }))
+    void save((x) => {
+      const own = withOwnLists(x, settings)
+      return { ...own, paymentMethods: change(own.paymentMethods ?? []) }
+    })
   const setStored = (id: string, storedValue: TripPaymentMethod['storedValue']) =>
     update((list) =>
       list.map((m) => {
         if (m.id !== id) return m
-        const next: TripPaymentMethod = { id: m.id, name: m.name }
+        const next: TripPaymentMethod = m.builtin ? { id: m.id, builtin: true } : { id: m.id, name: m.name }
         return storedValue ? { ...next, storedValue } : next
       }),
     )
@@ -56,7 +64,7 @@ export function TripPaymentMethodsSection({ trip, open, onToggle, save }: TripPa
   return (
     <Accordion
       title={t('tripMethods.title')}
-      summary={methods.length === 0 ? t('tripMethods.none') : methods.map((m) => m.name).join('・')}
+      summary={methods.length === 0 ? t('tripMethods.none') : methods.map(tripMethodName).join('・')}
       open={open}
       onToggle={onToggle}
       data-testid="section-trip-methods"
@@ -75,7 +83,7 @@ export function TripPaymentMethodsSection({ trip, open, onToggle, save }: TripPa
                 used={paid + topUps}
                 balance={balances[method.id]}
                 onRename={(name) => update((list) => list.map((m) => (m.id === method.id ? { ...m, name } : m)))}
-                onRemove={() => confirm.ask(method.name, 'permanent', () => update((list) => list.filter((m) => m.id !== method.id)))}
+                onRemove={() => confirm.ask(tripMethodName(method), 'permanent', () => update((list) => list.filter((m) => m.id !== method.id)))}
                 onStoredToggle={() => (method.storedValue ? setStored(method.id, undefined) : setPickingCurrencyFor(method.id))}
                 onTopUp={() => navigate(`/trip/${trip.id}/expense/new?topUp=${method.id}`)}
                 usedLabel={(count) => tPlural('settings.usedBy', { count })}
@@ -126,31 +134,33 @@ interface MethodRowProps {
 
 function MethodRow({ method, used, balance, onRename, onRemove, onStoredToggle, onTopUp, usedLabel }: MethodRowProps) {
   const { t, money } = useI18n()
-  const [draft, setDraft] = useState(method.name)
+  const name = tripMethodName(method)
+  const [draft, setDraft] = useState(name)
   const commit = () => {
     const trimmed = draft.trim()
-    if (!trimmed) setDraft(method.name)
-    else if (trimmed !== method.name) onRename(trimmed)
+    if (!trimmed) setDraft(name)
+    else if (trimmed !== name) onRename(trimmed)
   }
-  // 與全域付款方式同一個版面（task#104）：使用筆數或刪除鍵在框內右側
+  // 使用筆數或刪除鍵在框內右側（task#104）
+  const trailing =
+    used > 0 ? (
+      usedLabel(used)
+    ) : (
+      <Button variant="ghost" aria-label={t('settings.removeItem', { name })} onClick={onRemove}>
+        <Icon glyph={IconTrash} />
+      </Button>
+    )
   return (
     <li className="flex flex-col gap-2">
-      <TextField
-        label={t('settings.paymentMethodName', { name: method.name })}
-        hideLabel
-        value={draft}
-        onChange={setDraft}
-        onBlur={commit}
-        trailing={
-          used > 0 ? (
-            usedLabel(used)
-          ) : (
-            <Button variant="ghost" aria-label={t('settings.removeItem', { name: method.name })} onClick={onRemove}>
-              <Icon glyph={IconTrash} />
-            </Button>
-          )
-        }
-      />
+      {method.builtin ? (
+        // 從全域複製來的內建項目（task#120）：名稱來自語言檔不能改，但這趟用不到可以刪
+        <div className="app-row app-row--split" data-testid={`method-${method.id}`}>
+          <span className="app-row__main">{name}</span>
+          {used > 0 ? <span className="app-row__value px-3">{trailing}</span> : trailing}
+        </div>
+      ) : (
+        <TextField label={t('settings.paymentMethodName', { name })} hideLabel value={draft} onChange={setDraft} onBlur={commit} trailing={trailing} />
+      )}
       <div className="flex flex-wrap items-center gap-2" data-testid={`stored-${method.id}`}>
         {/* 有紀錄之後不能改：已經蓋好的「從餘額扣」會與設定對不起來 */}
         <Chip
@@ -158,7 +168,7 @@ function MethodRow({ method, used, balance, onRename, onRemove, onStoredToggle, 
           selected={method.storedValue !== undefined}
           disabled={used > 0}
           onSelect={onStoredToggle}
-          aria-label={t('stored.toggle', { name: method.name })}
+          aria-label={t('stored.toggle', { name })}
         />
         {method.storedValue && balance ? (
           <>

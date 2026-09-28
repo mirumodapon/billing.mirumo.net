@@ -262,3 +262,21 @@ describe('validateSnapshot: card payments without a rate (task#119)', () => {
     expect(problemsOf(snapshot({ expenses: [makeExpense({ exchangeRate: 0 })] }))).toContain('expense e1: exchange rate must be a positive number')
   })
 })
+
+describe('validateSnapshot: trips with their own lists (task#120)', () => {
+  it('accepts copied built-in items, which have no name of their own', () => {
+    const trip = makeTrip({
+      ownLists: true,
+      categories: [{ id: 'cat.food', builtin: true, icon: 'IconToolsKitchen2', colorKey: 'accent1' }],
+      paymentMethods: [{ id: 'pay.cash', builtin: true }],
+    })
+    expect(validateSnapshot(snapshot({ trips: [trip] }))).toMatchObject({ ok: true })
+  })
+
+  it('still needs a name on a custom item, and a true or false ownLists', () => {
+    const nameless = makeTrip({ paymentMethods: [{ id: 'mine' }] })
+    expect(problemsOf(snapshot({ trips: [nameless] }))).toContain('trip t1: malformed payment methods')
+    const odd = { ...makeTrip(), ownLists: 'yes' } as unknown as ReturnType<typeof makeTrip>
+    expect(problemsOf(snapshot({ trips: [odd] }))).toContain('trip t1: ownLists must be true or false')
+  })
+})

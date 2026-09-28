@@ -34,7 +34,7 @@ describe('stored-value cards in trip setup (task#115)', () => {
     const panel = await openMethods(user)
     await user.click(panel.getByRole('button', { name: t('stored.toggle', { name: 'Suica' }) }))
     await user.click(within(screen.getByRole('dialog', { name: t('stored.currency') })).getByRole('radio', { name: /^JPY/ }))
-    await waitFor(async () => expect((await stores.repo.getTrip('t1'))?.paymentMethods?.[0]?.storedValue).toEqual({ currency: 'JPY' }))
+    await waitFor(async () => expect((await stores.repo.getTrip('t1'))?.paymentMethods?.find((m) => m.id === 'suica')?.storedValue).toEqual({ currency: 'JPY' }))
     expect(panel.getByTestId('balance-suica')).toHaveTextContent(plain(t('stored.balance', { amount: formatMoney(0, 'JPY') })))
   })
 

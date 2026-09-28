@@ -31,6 +31,8 @@ export function PaymentMethodsSection({ usage }: { usage: RecordUsage | null }) 
       <h2 id="settings-payment-methods" className="app-card__title">
         {t('settings.paymentMethods')}
       </h2>
+      {/* task#120：這裡只是新旅程的範本 */}
+      <p className="app-field-label m-0">{t('settings.templateHint')}</p>
       <ul className="m-0 flex list-none flex-col gap-2 p-0">
         {methods.map((method) => (
           <MethodRow

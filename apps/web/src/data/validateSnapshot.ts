@@ -67,13 +67,18 @@ export function validateSnapshot(input: unknown): SnapshotCheck {
     for (const id of duplicates(members.map((m) => m.id))) problems.push(`${at}: member ${id} appears more than once`)
     const ids = new Set(members.map((m) => m.id))
     if (!ids.has(trip.selfMemberId)) problems.push(`${at}: selfMemberId ${trip.selfMemberId} is not a member`)
-    // task#92：旅程專用的付款方式是選填的；有的話每一筆都要有 id 與名稱，id 不能重複
+    // task#120：旅程自己一份清單的旗標
+    if (trip.ownLists !== undefined && typeof trip.ownLists !== 'boolean') problems.push(`${at}: ownLists must be true or false`)
+    // 自訂項目要有名稱；從全域複製來的內建項目（builtin）沒有，名稱由 app 依語系翻譯（task#120）
+    const named = (item: { name?: unknown; builtin?: unknown }) =>
+      (item.builtin === undefined || typeof item.builtin === 'boolean') && (item.builtin === true || typeof item.name === 'string')
+    // task#92：旅程專用的付款方式是選填的；有的話每一筆都要有 id，id 不能重複
     if (trip.paymentMethods !== undefined) {
       const methods = Array.isArray(trip.paymentMethods) ? trip.paymentMethods : []
       // 預存卡（task#115）要帶幣別
       const badStored = (m: { storedValue?: unknown }) =>
         m.storedValue !== undefined && (!isObject(m.storedValue) || !isText((m.storedValue as { currency?: unknown }).currency))
-      if (!Array.isArray(trip.paymentMethods) || methods.some((m) => !isText(m?.id) || typeof m?.name !== 'string' || badStored(m))) {
+      if (!Array.isArray(trip.paymentMethods) || methods.some((m) => !isText(m?.id) || !named(m) || badStored(m))) {
         problems.push(`${at}: malformed payment methods`)
       }
       for (const id of duplicates(methods.map((m) => m?.id))) problems.push(`${at}: payment method ${id} appears more than once`)
@@ -83,7 +88,7 @@ export function validateSnapshot(input: unknown): SnapshotCheck {
       const categories = Array.isArray(trip.categories) ? trip.categories : []
       if (
         !Array.isArray(trip.categories) ||
-        categories.some((c) => !isText(c?.id) || typeof c?.name !== 'string' || typeof c?.icon !== 'string' || typeof c?.colorKey !== 'string')
+        categories.some((c) => !isText(c?.id) || !named(c) || typeof c?.icon !== 'string' || typeof c?.colorKey !== 'string')
       ) {
         problems.push(`${at}: malformed categories`)
       }

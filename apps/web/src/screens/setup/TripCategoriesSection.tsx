@@ -4,6 +4,8 @@ import { IconTrash } from '@tabler/icons-react'
 import { useState } from 'react'
 import type { Category } from '../../data/types'
 import { categoriesFor } from '../../domain/categories'
+import { displayName } from '../../domain/names'
+import { withOwnLists } from '../../domain/tripLists'
 import { useI18n } from '../../i18n/useI18n'
 import { useSettings, useTrips } from '../../stores/StoresProvider'
 import { useConfirmDelete } from '../forms/useConfirmDelete'
@@ -20,28 +22,36 @@ export interface TripCategoriesSectionProps {
 const NO_EXPENSES: Expense[] = []
 
 /**
- * 只用於這趟旅程的類別（task#114），與旅程專用付款方式（task#92）同一個做法。
- * 新增與編輯沿用設定頁的類別編輯 sheet：名稱、圖示、顏色。這趟旅程還有支出在用的不能刪。
+ * 這趟旅程的類別（task#114；task#120 起是完整的一份，建立旅程時從設定複製）。
+ * 新增與編輯沿用設定頁的類別編輯 sheet：名稱、圖示、顏色；內建的只能改圖示與顏色。
+ * 這趟旅程還有支出在用的不能刪。改的永遠是旅程自己那一份，全域設定不受影響。
  */
 export function TripCategoriesSection({ trip, open, onToggle, save }: TripCategoriesSectionProps) {
   const { t, tPlural } = useI18n()
   const expenses = useTrips((s) => (s.current?.tripId === trip.id ? s.current.expenses : NO_EXPENSES))
-  const global = useSettings((s) => s.settings.categories)
-  const own = categoriesFor([], trip)
+  const settings = useSettings((s) => s.settings)
+  // 舊旅程還沒有自己的一份時，這裡看到的是複製後會得到的樣子
+  const categories = categoriesFor([], withOwnLists(trip, settings))
   const [editing, setEditing] = useState<{ category?: Category } | null>(null)
   const confirm = useConfirmDelete()
 
-  const update = (change: (list: TripCategory[]) => TripCategory[]) => void save((x) => ({ ...x, categories: change(x.categories ?? []) }))
+  const update = (change: (list: TripCategory[]) => TripCategory[]) =>
+    void save((x) => {
+      const own = withOwnLists(x, settings)
+      return { ...own, categories: change(own.categories ?? []) }
+    })
   const store = (category: Category) => {
     setEditing(null)
-    const entry: TripCategory = { id: category.id, name: category.name ?? '', icon: category.icon, colorKey: category.colorKey }
+    const entry: TripCategory = category.builtin
+      ? { id: category.id, builtin: true, icon: category.icon, colorKey: category.colorKey }
+      : { id: category.id, name: category.name ?? '', icon: category.icon, colorKey: category.colorKey }
     update((list) => (list.some((c) => c.id === entry.id) ? list.map((c) => (c.id === entry.id ? entry : c)) : [...list, entry]))
   }
 
   return (
     <Accordion
       title={t('tripCategories.title')}
-      summary={own.length === 0 ? t('tripMethods.none') : own.map((c) => c.name).join('・')}
+      summary={categories.length === 0 ? t('tripMethods.none') : categories.map(displayName).join('・')}
       open={open}
       onToggle={onToggle}
       data-testid="section-trip-categories"
@@ -49,9 +59,9 @@ export function TripCategoriesSection({ trip, open, onToggle, save }: TripCatego
       <div className="app-form">
         <p className="app-field-label m-0">{t('tripCategories.hint')}</p>
         <ul className="m-0 flex list-none flex-col gap-2 p-0">
-          {own.map((category) => {
+          {categories.map((category) => {
             const used = expenses.filter((e) => !e.deletedAt && e.categoryId === category.id).length
-            const name = category.name ?? ''
+            const name = displayName(category)
             return (
               <li key={category.id} className="app-row app-row--split">
                 <button type="button" className="app-row__main" onClick={() => setEditing({ category })}>
@@ -85,8 +95,8 @@ export function TripCategoriesSection({ trip, open, onToggle, save }: TripCatego
         <CategoryEditSheet
           open={editing !== null}
           category={editing?.category}
-          // 顏色避開全域與這趟旅程已經用掉的
-          usedColors={[...global, ...own].map((c) => c.colorKey)}
+          // 顏色避開這趟旅程已經用掉的
+          usedColors={categories.map((c) => c.colorKey)}
           onSave={store}
           onClose={() => setEditing(null)}
         />

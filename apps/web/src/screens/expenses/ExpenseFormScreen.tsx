@@ -24,6 +24,7 @@ import { ReceiptSection } from './ReceiptSection'
 import { SplitSection } from './SplitSection'
 import { FormShell } from '../forms/FormShell'
 import { useFormDraft } from '../forms/useFormDraft'
+import { tripMethodName } from '../../domain/paymentMethods'
 
 /** 新增（/expense/new）或編輯（/expense/:id）支出的全螢幕表單（規格 4.4） */
 export function ExpenseFormScreen() {
@@ -60,7 +61,7 @@ function ExpenseForm({ trip, existing }: { trip: Trip; existing?: Expense }) {
     const stored = storedMethodIds(trip)
     const payWith = stored.has(base.paymentMethodId) ? (settings.getState().settings.paymentMethods[0]?.id ?? base.paymentMethodId) : base.paymentMethodId
     return withAutoRate(
-      { ...base, topUpFor: card.id, currency: card.storedValue.currency, paymentMethodId: payWith, description: t('topUp.title', { name: card.name }) },
+      { ...base, topUpFor: card.id, currency: card.storedValue.currency, paymentMethodId: payWith, description: t('topUp.title', { name: tripMethodName(card) }) },
       trip,
     )
   })
@@ -91,7 +92,7 @@ function ExpenseForm({ trip, existing }: { trip: Trip; existing?: Expense }) {
 
   return (
     <FormShell
-      title={card ? t('topUp.title', { name: card.name }) : existing ? t('expense.edit') : t('expense.new')}
+      title={card ? t('topUp.title', { name: tripMethodName(card) }) : existing ? t('expense.edit') : t('expense.new')}
       incomplete={problemsOf(draft, storedMethodIds(trip)).length > 0}
       isDraft={draft.isDraft === true}
       onDraftChange={(isDraft) => change((d) => ({ ...d, isDraft }))}
@@ -104,7 +105,7 @@ function ExpenseForm({ trip, existing }: { trip: Trip; existing?: Expense }) {
           {/* 儲值是真的花費；之後用卡付的只扣餘額——在這裡講清楚，免得以為會重複算 */}
           {card ? (
             <p className="app-field-label m-0" data-testid="topup-hint">
-              {t('topUp.hint', { name: card.name })}
+              {t('topUp.hint', { name: tripMethodName(card) })}
             </p>
           ) : null}
           <MoneyInput

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router'
 import { CURRENCIES, currencyName } from '../domain/currencies'
 import { todayIso } from '../domain/dates'
 import { requestPersistence } from '../data/storageHealth'
+import { withOwnLists } from '../domain/tripLists'
 import { createTrip, validateTripDraft, type TripDraft, type TripDraftError } from '../domain/newTrip'
 import { useI18n } from '../i18n/useI18n'
 import { useSettings, useStores } from '../stores/StoresProvider'
@@ -20,7 +21,7 @@ function blankDraft(currency: string): TripDraft {
 export function NewTripSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t, locale } = useI18n()
   const navigate = useNavigate()
-  const { trips } = useStores()
+  const { trips, settings } = useStores()
   const defaultCurrency = useSettings((s) => s.settings.lastUsed.currency ?? 'TWD')
   const [draft, setDraft] = useState(() => blankDraft(defaultCurrency))
   const [errors, setErrors] = useState<TripDraftError[]>([])
@@ -43,7 +44,8 @@ export function NewTripSheet({ open, onClose }: { open: boolean; onClose: () => 
     const found = validateTripDraft(draft)
     setErrors(found)
     if (found.length > 0) return
-    const trip = createTrip(draft)
+    // task#120：新旅程複製一份全域的類別與付款方式，之後在旅程設定裡改只影響這一趟
+    const trip = withOwnLists(createTrip(draft), settings.getState().settings)
     const first = trips.getState().trips.length === 0
     if (await trips.getState().saveTrip(trip)) {
       // 規格 7.4：建立第一趟旅程時請瀏覽器保留資料（Android/Chrome 有效，iOS 要靠加到主畫面）
