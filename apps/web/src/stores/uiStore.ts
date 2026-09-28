@@ -17,6 +17,11 @@ export interface UiState {
   /** 支出列表的篩選，依旅程分開（task#106）。最近一次的會寫進 session，重開 app 還在 */
   expenseFilters: Record<string, ExpenseFilter>
   setExpenseFilter(tripId: string, filter: ExpenseFilter): void
+  /**
+   * 有新版本時換上新版的動作（task#141）。偵測到新版本的 UpdatePrompt 放進來，
+   * 設定頁的「關於」看到它就提供「立即更新」；沒有新版本時是 null
+   */
+  applyUpdate: (() => void) | null
 }
 
 /** 冷啟動時從 session 帶回上次的篩選 */
@@ -46,6 +51,7 @@ export function createUiStore(): StoreApi<UiState> {
     dismiss(id) {
       set((s) => ({ queue: s.queue.filter((q) => q.id !== id) }))
     },
+    applyUpdate: null,
     expenseFilters: seededFilters(),
     setExpenseFilter(tripId, filter) {
       set((s) => ({ expenseFilters: { ...s.expenseFilters, [tripId]: filter } }))
