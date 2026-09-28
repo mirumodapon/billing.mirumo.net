@@ -15,7 +15,12 @@
     height: 100dvh;
   }
 
+  /*
+   * 捲動區要是裡面絕對定位元素的定位基準（task#122）：否則只給輔助技術的隱藏標籤
+   * 會以整頁為基準，停在內容的原始位置，把整頁撐高，變成外層與捲動區兩層捲軸
+   */
   .app-scroll {
+    position: relative;
     flex: 1;
     min-height: 0;
     overflow-y: auto;
