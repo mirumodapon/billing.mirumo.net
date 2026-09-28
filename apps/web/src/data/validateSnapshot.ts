@@ -70,7 +70,10 @@ export function validateSnapshot(input: unknown): SnapshotCheck {
     // task#92：旅程專用的付款方式是選填的；有的話每一筆都要有 id 與名稱，id 不能重複
     if (trip.paymentMethods !== undefined) {
       const methods = Array.isArray(trip.paymentMethods) ? trip.paymentMethods : []
-      if (!Array.isArray(trip.paymentMethods) || methods.some((m) => !isText(m?.id) || typeof m?.name !== 'string')) {
+      // 預存卡（task#115）要帶幣別
+      const badStored = (m: { storedValue?: unknown }) =>
+        m.storedValue !== undefined && (!isObject(m.storedValue) || !isText((m.storedValue as { currency?: unknown }).currency))
+      if (!Array.isArray(trip.paymentMethods) || methods.some((m) => !isText(m?.id) || typeof m?.name !== 'string' || badStored(m))) {
         problems.push(`${at}: malformed payment methods`)
       }
       for (const id of duplicates(methods.map((m) => m?.id))) problems.push(`${at}: payment method ${id} appears more than once`)
@@ -120,6 +123,14 @@ export function validateSnapshot(input: unknown): SnapshotCheck {
     const tripCategories = trips.find((trip) => trip.id === expense.tripId)?.categories ?? []
     if (!categoryIds.has(expense.categoryId) && !tripCategories.some((c) => c?.id === expense.categoryId)) {
       problems.push(`${at}: category ${expense.categoryId} does not exist`)
+    }
+    // task#115：用預存卡付的旗標；儲值的對象必須是這趟旅程的預存卡
+    if (expense.fromBalance !== undefined && typeof expense.fromBalance !== 'boolean') problems.push(`${at}: fromBalance must be true or false`)
+    if (expense.topUpFor !== undefined) {
+      const stored = (trips.find((trip) => trip.id === expense.tripId)?.paymentMethods ?? []).filter((m) => m?.storedValue)
+      if (!stored.some((m) => m.id === expense.topUpFor)) {
+        problems.push(`${at}: tops up ${String(expense.topUpFor)}, which is not a stored-value card of trip ${expense.tripId}`)
+      }
     }
     // 旅程專用的付款方式也算（task#92）
     const tripMethods = trips.find((trip) => trip.id === expense.tripId)?.paymentMethods ?? []

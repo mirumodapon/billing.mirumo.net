@@ -215,3 +215,33 @@ describe('validateSnapshot: trip categories (task#114)', () => {
     expect(problemsOf(snapshot({ trips: [makeTrip(), other], expenses: [makeExpense({ categoryId: 'ski' })] }))).toContain('expense e1: category ski does not exist')
   })
 })
+
+describe('validateSnapshot: stored-value cards (task#115)', () => {
+  const suica = { id: 'suica', name: 'Suica', storedValue: { currency: 'JPY' } }
+
+  it('accepts a stored-value card, its top-ups and its payments', () => {
+    const trip = makeTrip({ paymentMethods: [suica] })
+    const expenses = [
+      makeExpense({ id: 'top', paymentMethodId: 'pay.credit', topUpFor: 'suica' }),
+      makeExpense({ id: 'ride', paymentMethodId: 'suica', fromBalance: true }),
+    ]
+    expect(validateSnapshot(snapshot({ trips: [trip], expenses }))).toMatchObject({ ok: true })
+  })
+
+  it('rejects a malformed stored-value setting', () => {
+    const trip = makeTrip({ paymentMethods: [{ ...suica, storedValue: { currency: 3 as unknown as string } }] })
+    expect(problemsOf(snapshot({ trips: [trip] }))).toContain('trip t1: malformed payment methods')
+  })
+
+  // 儲值的對象一定是這趟旅程的預存卡
+  it('rejects a top-up for a card that is not one of the trip’s stored-value cards', () => {
+    const trip = makeTrip({ paymentMethods: [{ id: 'plain', name: '普通卡' }] })
+    const problems = problemsOf(snapshot({ trips: [trip], expenses: [makeExpense({ paymentMethodId: 'pay.credit', topUpFor: 'plain' })] }))
+    expect(problems).toContain('expense e1: tops up plain, which is not a stored-value card of trip t1')
+  })
+
+  it('rejects a fromBalance flag that is not true or false', () => {
+    const odd = { ...makeExpense(), fromBalance: 'yes' } as unknown as ReturnType<typeof makeExpense>
+    expect(problemsOf(snapshot({ expenses: [odd] }))).toContain('expense e1: fromBalance must be true or false')
+  })
+})
