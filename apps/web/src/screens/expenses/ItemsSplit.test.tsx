@@ -6,6 +6,7 @@ import { makeTrip } from '../../data/testing/fixtures'
 import { formatMoney } from '../../i18n/format'
 import { t, tPlural } from '../../i18n'
 import { currentRoute, makeStores, renderApp } from '../../test/renderApp'
+import { confirmDelete } from '../../test/confirmDelete'
 
 beforeEach(() => clearSession())
 
@@ -71,6 +72,10 @@ describe('ItemsSplit', () => {
     await addItem(['6', '0', '0'])
     await addItem(['4', '0', '0'])
     await user.click(panel().getByRole('button', { name: t('split.removeItem', { name: t('split.itemPlaceholder', { n: 1 }) }) }))
+    // 只是從表單拿掉，按儲存才生效：不講「可復原」或「無法復原」
+    expect(screen.getByRole('dialog')).not.toHaveTextContent(t('confirm.permanent'))
+    expect(screen.getByRole('dialog')).not.toHaveTextContent(t('confirm.undoable'))
+    await confirmDelete(user, t('split.itemPlaceholder', { n: 1 }))
     expect(header()).toHaveTextContent(tPlural('split.summaryItems', { count: 1 }))
   })
 

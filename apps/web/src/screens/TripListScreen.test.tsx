@@ -5,6 +5,7 @@ import { makeExpense, makeTrip } from '../data/testing/fixtures'
 import { formatDateRange, formatMoney } from '../i18n/format'
 import { t } from '../i18n'
 import { currentRoute, makeStores, renderApp } from '../test/renderApp'
+import { confirmDelete } from '../test/confirmDelete'
 
 beforeEach(() => clearSession())
 
@@ -49,15 +50,26 @@ describe('TripListScreen', () => {
     expect(currentRoute()).toBe('/trip/a/expenses')
   })
 
-  // 規格 4.2：刪除不跳確認，snackbar 可復原
-  it('deletes a trip without asking and brings it back with undo', async () => {
+  // 刪除一律先確認（取代規格 4.2 的「不跳確認」），刪了仍可從 snackbar 復原
+  it('asks before deleting a trip, then brings it back with undo', async () => {
     const { user } = await withTrips()
     const deleteButtons = screen.getAllByRole('button', { name: t('common.delete') })
     await user.click(deleteButtons[0]!)
+    expect(screen.getByRole('heading', { name: '東京' })).toBeInTheDocument()
+    expect(screen.getByRole('dialog', { name: t('confirm.deleteTitle', { name: '東京' }) })).toHaveTextContent(t('confirm.undoable'))
+    await confirmDelete(user, '東京')
     expect(screen.queryByRole('heading', { name: '東京' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     await user.click(await screen.findByRole('button', { name: t('common.undo') }))
     expect(await screen.findByRole('heading', { name: '東京' })).toBeInTheDocument()
+  })
+
+  it('keeps the trip when the delete is cancelled', async () => {
+    const { user, stores } = await withTrips()
+    await user.click(screen.getAllByRole('button', { name: t('common.delete') })[0]!)
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: t('common.cancel') }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '東京' })).toBeInTheDocument()
+    expect((await stores.repo.listTrips()).map((trip) => trip.name)).toContain('東京')
   })
 
   it('opens global settings from the app bar', async () => {

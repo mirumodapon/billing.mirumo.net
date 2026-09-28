@@ -4,6 +4,7 @@ import { AvatarToggleGroup, Button, SegmentedControl, SwipeAction, TextField } f
 import { IconTrash } from '@tabler/icons-react'
 import { addItem, itemsTotals, type ItemDraft } from '../../domain/expenseDraft'
 import { useI18n } from '../../i18n/useI18n'
+import { useConfirmDelete } from '../forms/useConfirmDelete'
 import { AmountField } from '../setup/AmountField'
 import type { FormSectionProps } from './ExpenseFormScreen'
 
@@ -13,6 +14,7 @@ import type { FormSectionProps } from './ExpenseFormScreen'
  */
 export function ItemsSplit({ trip, draft, change, format }: FormSectionProps & { format: (v: number) => string }) {
   const { t } = useI18n()
+  const confirm = useConfirmDelete()
   if (draft.split.mode !== 'items') return null
   const { items, overflowRule } = draft.split
   const { itemsTotal, overflow } = itemsTotals(draft)
@@ -29,7 +31,7 @@ export function ItemsSplit({ trip, draft, change, format }: FormSectionProps & {
         // 品項名可留空，顯示為「品項 N」（規格 2.3）
         const name = item.name.trim() || t('split.itemPlaceholder', { n: index + 1 })
         return (
-          <SwipeAction key={item.id} glyph={IconTrash} actionLabel={t('split.removeItem', { name })} onAction={() => removeItem(item.id)}>
+          <SwipeAction key={item.id} glyph={IconTrash} actionLabel={t('split.removeItem', { name })} onAction={() => confirm.ask(name, 'form', () => removeItem(item.id))}>
             <div className="app-card">
               <TextField
                 label={t('split.itemPlaceholder', { n: index + 1 })}
@@ -75,6 +77,7 @@ export function ItemsSplit({ trip, draft, change, format }: FormSectionProps & {
           onChange={setRule}
         />
       ) : null}
+      {confirm.dialog}
     </>
   )
 }

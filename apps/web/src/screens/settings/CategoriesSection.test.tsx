@@ -7,6 +7,7 @@ import { makeExpense, makeTrip } from '../../data/testing/fixtures'
 import type { AppSettings } from '../../data/types'
 import { t, tPlural } from '../../i18n'
 import { makeStores, renderApp } from '../../test/renderApp'
+import { confirmDelete } from '../../test/confirmDelete'
 
 beforeEach(() => clearSession())
 
@@ -79,6 +80,7 @@ describe('CategoriesSection', () => {
   it('removes an unused custom category', async () => {
     const { user, section, stores } = await setup()
     await user.click(await section.findByRole('button', { name: t('settings.removeItem', { name: '雜支' }) }))
+    await confirmDelete(user, '雜支')
     await waitFor(async () => expect((await savedCategories(stores)).map((c) => c.id)).not.toContain('spare'))
   })
 

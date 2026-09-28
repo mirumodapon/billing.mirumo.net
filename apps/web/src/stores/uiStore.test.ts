@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { clearSession, readSession, writeSession } from '../data/session'
 import { EMPTY_FILTER } from '../domain/expenseFilter'
 import { createUiStore } from './uiStore'
 
@@ -42,5 +43,23 @@ describe('uiStore: expense filters (task#106)', () => {
     ui.getState().setExpenseFilter('t1', { ...EMPTY_FILTER, payers: ['a'] })
     expect(ui.getState().expenseFilters.t1?.payers).toEqual(['a'])
     expect(ui.getState().expenseFilters.t2).toBeUndefined()
+  })
+})
+
+describe('uiStore: expense filters in the session (task#91, spec 7.9)', () => {
+  beforeEach(() => clearSession())
+
+  it('writes the filter to the session and brings it back in a new store', () => {
+    writeSession({ route: '/trip/t1/expenses', tripId: 't1' })
+    createUiStore().getState().setExpenseFilter('t1', { ...EMPTY_FILTER, payers: ['b'] })
+    expect(readSession()).toMatchObject({ route: '/trip/t1/expenses', filters: { tripId: 't1', payers: ['b'] } })
+    expect(createUiStore().getState().expenseFilters).toEqual({ t1: { ...EMPTY_FILTER, payers: ['b'] } })
+  })
+
+  it('drops the filter from the session once it is cleared', () => {
+    const ui = createUiStore()
+    ui.getState().setExpenseFilter('t1', { ...EMPTY_FILTER, draftsOnly: true })
+    ui.getState().setExpenseFilter('t1', EMPTY_FILTER)
+    expect(readSession()).not.toHaveProperty('filters')
   })
 })

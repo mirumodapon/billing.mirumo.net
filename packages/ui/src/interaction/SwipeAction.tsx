@@ -15,10 +15,14 @@ export interface SwipeActionProps {
 const SWIPE_THRESHOLD = 88
 
 export function SwipeAction({ glyph, actionLabel, onAction, children }: SwipeActionProps) {
-  const { offset, dragging, handlers } = useDragDismiss({
+  const { offset, dragging, reset, handlers } = useDragDismiss({
     axis: 'x',
     threshold: SWIPE_THRESHOLD,
-    onDismiss: onAction,
+    // 觸發後滑回原位：動作可能先跳確認，取消時這一列還在（刪除成功時整列會消失，回不回位都看不到）
+    onDismiss: () => {
+      reset()
+      onAction()
+    },
   })
 
   return (

@@ -63,12 +63,28 @@ export interface Snapshot {
   transfers: Transfer[]
 }
 
+/**
+ * 支出列表的篩選（task#106）。同一個維度內是「任一」，不同維度之間是「而且」；
+ * 空陣列代表這個維度不設限。
+ */
+export interface ExpenseFilter {
+  categoryIds: string[]
+  payers: string[]
+  paymentMethodIds: string[]
+  draftsOnly: boolean
+}
+
 export interface SessionState {
   route: string
   tripId?: string
   statsScope?: 'self' | 'group'
-  filters?: { categoryIds: string[]; memberIds: string[] }
+  /** 統計從哪位成員的視角看（statsScope 為 self 時）。沒有或已不在旅程裡就是我 */
+  statsMember?: string
+  /** 帶著旅程 id：換到別趟旅程時不能套用上一趟的成員與類別（task#91） */
+  filters?: ExpenseFilter & { tripId: string }
   openAccordion?: string
+  /** 統計頁收起的區塊（Plan 9 T4）。預設全部展開，只記收起的 */
+  collapsedStats?: string[]
   /** key 是路由 */
   scrollTop?: Record<string, number>
 }

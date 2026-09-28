@@ -33,9 +33,20 @@ export function readSession(store: Storage | undefined = storage()): SessionStat
     if (s.tripId !== undefined && typeof s.tripId !== 'string') return null
     if (s.statsScope !== undefined && s.statsScope !== 'self' && s.statsScope !== 'group') return null
     if (s.openAccordion !== undefined && typeof s.openAccordion !== 'string') return null
+    if (s.statsMember !== undefined && typeof s.statsMember !== 'string') return null
+    if (s.collapsedStats !== undefined && !isStringArray(s.collapsedStats)) return null
     if (s.filters !== undefined) {
       const f = s.filters as Record<string, unknown> | null
-      if (!f || !isStringArray(f.categoryIds) || !isStringArray(f.memberIds)) return null
+      if (
+        !f ||
+        typeof f.tripId !== 'string' ||
+        !isStringArray(f.categoryIds) ||
+        !isStringArray(f.payers) ||
+        !isStringArray(f.paymentMethodIds) ||
+        typeof f.draftsOnly !== 'boolean'
+      ) {
+        return null
+      }
     }
     if (s.scrollTop !== undefined) {
       const st = s.scrollTop as Record<string, unknown> | null

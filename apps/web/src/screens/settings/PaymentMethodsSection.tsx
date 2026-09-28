@@ -6,6 +6,7 @@ import { displayName } from '../../domain/names'
 import type { RecordUsage } from '../../domain/usage'
 import { useI18n } from '../../i18n/useI18n'
 import { useSettings, useStores } from '../../stores/StoresProvider'
+import { useConfirmDelete } from '../forms/useConfirmDelete'
 
 /** 付款方式管理（規格 4.8）。沒有圖示與顏色（規格 2.1），規則同類別 */
 export function PaymentMethodsSection({ usage }: { usage: RecordUsage | null }) {
@@ -13,6 +14,7 @@ export function PaymentMethodsSection({ usage }: { usage: RecordUsage | null }) 
   const { settings } = useStores()
   const methods = useSettings((s) => s.settings.paymentMethods)
   const [newName, setNewName] = useState('')
+  const confirm = useConfirmDelete()
 
   const update = (change: (list: PaymentMethod[]) => PaymentMethod[]) =>
     void settings.getState().update((s) => ({ ...s, paymentMethods: change(s.paymentMethods) }))
@@ -37,24 +39,23 @@ export function PaymentMethodsSection({ usage }: { usage: RecordUsage | null }) 
             used={usage?.paymentMethods[method.id] ?? 0}
             usageKnown={usage !== null}
             onRename={(name) => update((list) => list.map((m) => (m.id === method.id ? { ...m, name } : m)))}
-            onRemove={() => update((list) => list.filter((m) => m.id !== method.id))}
+            onRemove={() => confirm.ask(displayName(method), 'permanent', () => update((list) => list.filter((m) => m.id !== method.id)))}
           />
         ))}
       </ul>
-      <div className="flex items-center gap-2">
-        <div className="min-w-0 flex-1">
-          <TextField
-            label={t('settings.newPaymentMethod')}
-            hideLabel
-            placeholder={t('settings.newPaymentMethod')}
-            value={newName}
-            onChange={setNewName}
-          />
-        </div>
-        <Button variant="secondary" onClick={add}>
-          {t('settings.addPaymentMethod')}
-        </Button>
-      </div>
+      <TextField
+        label={t('settings.newPaymentMethod')}
+        hideLabel
+        placeholder={t('settings.newPaymentMethod')}
+        value={newName}
+        onChange={setNewName}
+        trailing={
+          <Button variant="ghost" onClick={add}>
+            {t('settings.addPaymentMethod')}
+          </Button>
+        }
+      />
+      {confirm.dialog}
     </section>
   )
 }
@@ -78,32 +79,35 @@ function MethodRow({ method, used, usageKnown, onRename, onRemove }: MethodRowPr
   }
 
   /*
-   * 每一列都是「框 + 固定寬的尾端欄」（task#93）：內建列的尾端留空、自訂列放刪除鍵，
-   * 所有框的左右緣因此對齊。自訂列的名稱欄不放可見標籤——一列列都是名稱，標籤只是重複
+   * 每一列都是整列寬的框，說明或刪除鍵放在框內右側（task#104）：內建列寫「內建」、
+   * 有支出在用的寫使用筆數、沒人用的自訂列放刪除鍵。名稱欄不放可見標籤——一列列都是名稱
    */
   return (
-    <li className="flex flex-col gap-1">
-      <div className="flex items-center gap-2">
-        {method.builtin ? (
-          // 內建的名稱來自語言檔，不能改
-          <div className="app-row flex-1">
-            <span>{name}</span>
-            <span className="app-row__value">{t('settings.builtin')}</span>
-          </div>
-        ) : (
-          <div className="min-w-0 flex-1">
-            <TextField label={t('settings.paymentMethodName', { name })} hideLabel value={draft} onChange={setDraft} onBlur={commit} />
-          </div>
-        )}
-        <span className="app-slot">
-          {!method.builtin && usageKnown && used === 0 ? (
-            <Button variant="ghost" aria-label={t('settings.removeItem', { name })} onClick={onRemove}>
-              <Icon glyph={IconTrash} />
-            </Button>
-          ) : null}
-        </span>
-      </div>
-      {!method.builtin && used > 0 ? <p className="app-field-label m-0">{tPlural('settings.usedBy', { count: used })}</p> : null}
+    <li>
+      {method.builtin ? (
+        // 內建的名稱來自語言檔，不能改
+        <div className="app-row">
+          <span>{name}</span>
+          <span className="app-row__value">{t('settings.builtin')}</span>
+        </div>
+      ) : (
+        <TextField
+          label={t('settings.paymentMethodName', { name })}
+          hideLabel
+          value={draft}
+          onChange={setDraft}
+          onBlur={commit}
+          trailing={
+            used > 0 ? (
+              tPlural('settings.usedBy', { count: used })
+            ) : usageKnown ? (
+              <Button variant="ghost" aria-label={t('settings.removeItem', { name })} onClick={onRemove}>
+                <Icon glyph={IconTrash} />
+              </Button>
+            ) : null
+          }
+        />
+      )}
     </li>
   )
 }

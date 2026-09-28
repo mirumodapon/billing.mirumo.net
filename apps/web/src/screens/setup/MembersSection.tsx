@@ -1,9 +1,10 @@
 import type { Member, Trip } from '@billing/core'
 import { Accordion, Avatar, Button, ChipGroup, Icon, pickAccent, TextField } from '@billing/ui'
-import { IconTrash } from '@tabler/icons-react'
+import { IconTrash, IconUserPlus } from '@tabler/icons-react'
 import { useState } from 'react'
 import { MemberInUseError } from '../../data/errors'
 import { useI18n } from '../../i18n/useI18n'
+import { useConfirmDelete } from '../forms/useConfirmDelete'
 
 export interface MembersSectionProps {
   trip: Trip
@@ -22,6 +23,7 @@ export function MembersSection({ trip, open, onToggle, save }: MembersSectionPro
   const { t, tPlural, locale } = useI18n()
   const [newName, setNewName] = useState('')
   const [inUse, setInUse] = useState<string[]>([])
+  const confirm = useConfirmDelete()
 
   const add = () => {
     const name = newName.trim()
@@ -60,7 +62,7 @@ export function MembersSection({ trip, open, onToggle, save }: MembersSectionPro
               member={member}
               isSelf={member.id === trip.selfMemberId}
               onRename={(name) => void save((x) => ({ ...x, members: x.members.map((m) => (m.id === member.id ? { ...m, name } : m)) }))}
-              onRemove={() => void remove(member)}
+              onRemove={() => confirm.ask(member.name, 'permanent', () => void remove(member))}
             />
           ))}
         </ul>
@@ -69,13 +71,25 @@ export function MembersSection({ trip, open, onToggle, save }: MembersSectionPro
             {t('members.inUse', { names: inUseNames })}
           </p>
         ) : null}
-        <div className="flex items-end gap-2">
+        {/* 與成員列同一個版面（task#103）：頭像的位置放新增圖示，新增鍵在框內右側 */}
+        <div className="flex items-center gap-3">
+          <span className="app-avatar-slot" aria-hidden="true">
+            <Icon glyph={IconUserPlus} />
+          </span>
           <div className="min-w-0 flex-1">
-            <TextField label={t('members.newName')} value={newName} onChange={setNewName} />
+            <TextField
+              label={t('members.newName')}
+              hideLabel
+              placeholder={t('members.newName')}
+              value={newName}
+              onChange={setNewName}
+              trailing={
+                <Button variant="ghost" onClick={add}>
+                  {t('members.add')}
+                </Button>
+              }
+            />
           </div>
-          <Button variant="secondary" onClick={add}>
-            {t('members.add')}
-          </Button>
         </div>
         <div>
           <p className="app-field-label">{t('members.self')}</p>
@@ -86,6 +100,7 @@ export function MembersSection({ trip, open, onToggle, save }: MembersSectionPro
             onChange={(id) => void save((x) => ({ ...x, selfMemberId: id }))}
           />
         </div>
+        {confirm.dialog}
       </div>
     </Accordion>
   )
@@ -108,19 +123,28 @@ function MemberRow({ member, isSelf, onRename, onRemove }: MemberRowProps) {
     else if (trimmed !== member.name) onRename(trimmed)
   }
   return (
-    <li className="flex items-end gap-3">
+    // 頭像 + 整列寬的名稱框，「我」或刪除鍵在框內右側（task#103、#104）
+    <li className="flex items-center gap-3">
       <Avatar name={member.name} colorKey={member.colorKey} />
       <div className="min-w-0 flex-1">
-        <TextField label={t('members.name', { name: member.name })} value={name} onChange={setName} onBlur={commit} />
+        <TextField
+          label={t('members.name', { name: member.name })}
+          hideLabel
+          value={name}
+          onChange={setName}
+          onBlur={commit}
+          trailing={
+            // 「我」永遠在：不能移除自己，所以也不會移除到剩零人
+            isSelf ? (
+              <span className="px-2">{t('members.selfBadge')}</span>
+            ) : (
+              <Button variant="ghost" aria-label={t('members.remove', { name: member.name })} onClick={onRemove}>
+                <Icon glyph={IconTrash} />
+              </Button>
+            )
+          }
+        />
       </div>
-      {/* 「我」永遠在：不能移除自己，所以也不會移除到剩零人 */}
-      {isSelf ? (
-        <span className="app-field-label px-2 pb-3">{t('members.selfBadge')}</span>
-      ) : (
-        <Button variant="ghost" aria-label={t('members.remove', { name: member.name })} onClick={onRemove}>
-          <Icon glyph={IconTrash} />
-        </Button>
-      )}
     </li>
   )
 }

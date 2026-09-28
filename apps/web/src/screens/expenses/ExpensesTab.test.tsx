@@ -1,12 +1,14 @@
 import { convertToBaseMinor } from '@billing/core'
-import { screen, waitFor, within } from '@testing-library/react'
+import { cleanup, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { defaultSettings } from '../../data/defaults'
 import { clearSession } from '../../data/session'
 import { makeExpense, makeTransfer, makeTrip } from '../../data/testing/fixtures'
 import { formatDate, formatMoney, formatWeekday } from '../../i18n/format'
 import { t } from '../../i18n'
+import { createUiStore } from '../../stores/uiStore'
 import { currentRoute, makeStores, renderApp } from '../../test/renderApp'
+import { confirmDelete } from '../../test/confirmDelete'
 
 beforeEach(() => clearSession())
 
@@ -92,6 +94,7 @@ describe('ExpensesTab', () => {
     const { user } = await setup()
     const ramen = row('一蘭拉麵').closest('.bi-swipe') as HTMLElement
     await user.click(within(ramen).getByRole('button', { name: t('common.delete') }))
+    await confirmDelete(user, '一蘭拉麵')
     expect(screen.queryByRole('button', { name: /^一蘭拉麵/ })).not.toBeInTheDocument()
     await user.click(await screen.findByRole('button', { name: t('common.undo') }))
     expect(await screen.findByRole('button', { name: /^一蘭拉麵/ })).toBeInTheDocument()
@@ -213,5 +216,32 @@ describe('expense filter (task#106)', () => {
     expect(categories.getAllByRole('button').map((b) => b.textContent)).toEqual([t('cat.food')])
     const methods = within(sheet.getByRole('group', { name: t('expense.paymentMethod') }))
     expect(methods.getAllByRole('button').map((b) => b.textContent)).toEqual([t('pay.cash')])
+  })
+})
+
+describe('expense filter across a restart (task#91, spec 7.9)', () => {
+  it('comes back after the app is reopened', async () => {
+    const { user, stores } = await setup()
+    await user.click(screen.getByRole('button', { name: t('expenses.filter') }))
+    const sheet = within(screen.getByRole('dialog', { name: t('expenses.filter') }))
+    await user.click(within(sheet.getByRole('group', { name: t('expense.paidBy') })).getByRole('button', { name: '小美' }))
+    cleanup()
+    // 重開 app：畫面層的 store 是新的，只剩 session 記得篩選
+    await renderApp('/trip/t1/expenses', { ...stores, ui: createUiStore() })
+    expect(screen.getByRole('button', { name: /^淺草寺門票/ })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^一蘭拉麵/ })).not.toBeInTheDocument()
+  })
+})
+
+describe('cancelling a swipe delete', () => {
+  // 取消後這一列要回到原位，而且什麼都沒刪
+  it('leaves the expense in place and slides the row back', async () => {
+    const { user, stores } = await setup()
+    const ramen = row('一蘭拉麵').closest('.bi-swipe') as HTMLElement
+    await user.click(within(ramen).getByRole('button', { name: t('common.delete') }))
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: t('common.cancel') }))
+    expect(row('一蘭拉麵')).toBeInTheDocument()
+    expect(within(ramen).getByTestId('swipe-surface').style.getPropertyValue('--bi-swipe-offset')).toBe('0px')
+    expect((await stores.repo.listExpenses('t1')).map((e) => e.id)).toContain('ramen')
   })
 })

@@ -4,6 +4,7 @@ import { clearSession } from '../../data/session'
 import { makeExpense, makeTrip } from '../../data/testing/fixtures'
 import { t } from '../../i18n'
 import { makeStores, renderApp } from '../../test/renderApp'
+import { confirmDelete } from '../../test/confirmDelete'
 
 beforeEach(() => clearSession())
 
@@ -74,6 +75,7 @@ describe('MembersSection', () => {
   it('removes a member who has no records', async () => {
     const { user, panel, stores } = await setup()
     await user.click(panel.getByRole('button', { name: t('members.remove', { name: '小美' }) }))
+    await confirmDelete(user, '小美')
     await waitFor(async () => expect((await saved(stores)).members.map((m) => m.id)).toEqual(['a']))
   })
 
@@ -81,6 +83,7 @@ describe('MembersSection', () => {
   it('explains why a member who still has records cannot be removed', async () => {
     const { user, panel, stores } = await setup({ expensePaidBy: 'b' })
     await user.click(panel.getByRole('button', { name: t('members.remove', { name: '小美' }) }))
+    await confirmDelete(user, '小美')
     const alert = await panel.findByRole('alert')
     expect(alert).toHaveTextContent(t('members.inUse', { names: '小美' }))
     expect(panel.getByRole('img', { name: '小美' })).toBeInTheDocument()
@@ -92,5 +95,16 @@ describe('MembersSection', () => {
     const { panel } = await setup()
     expect(panel.queryByRole('button', { name: t('members.remove', { name: '阿明' }) })).not.toBeInTheDocument()
     expect(panel.getByText(t('members.selfBadge'))).toBeInTheDocument()
+  })
+})
+
+describe('MembersSection layout (task#103, #104)', () => {
+  // 與付款方式同一個版面：名稱框整列寬，「我」或刪除鍵在框內右側
+  it('keeps "me" and the delete buttons inside the name boxes', async () => {
+    const { panel } = await setup()
+    const inBox = (el: HTMLElement) => el.closest('.bi-field__control')
+    expect(inBox(panel.getByText(t('members.selfBadge')))).not.toBeNull()
+    expect(inBox(panel.getByRole('button', { name: t('members.add') }))).not.toBeNull()
+    expect(panel.getByText(t('members.name', { name: '阿明' }))).toHaveClass('bi-visually-hidden')
   })
 })

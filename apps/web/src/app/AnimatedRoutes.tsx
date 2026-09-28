@@ -4,10 +4,10 @@ import { Navigate, Route, Routes, useLocation } from 'react-router'
 import { ExpenseFormScreen } from '../screens/expenses/ExpenseFormScreen'
 import { ExpenseViewScreen } from '../screens/expenses/ExpenseViewScreen'
 import { ExpensesTab } from '../screens/expenses/ExpensesTab'
-import { PlaceholderTab } from '../screens/PlaceholderTab'
 import { SettingsScreen } from '../screens/settings/SettingsScreen'
 import { SettleTab } from '../screens/settle/SettleTab'
 import { SetupTab } from '../screens/setup/SetupTab'
+import { StatsTab } from '../screens/stats/StatsTab'
 import { TripListScreen } from '../screens/TripListScreen'
 import { TripShell } from '../screens/TripShell'
 import { TransferFormScreen } from '../screens/transfers/TransferFormScreen'
@@ -59,7 +59,7 @@ export function AnimatedRoutes() {
         <Route path="/trip/:tripId/transfer/:transferId/edit" element={<TransferFormScreen />} />
         <Route path="/trip/:tripId" element={<TripShell />}>
           <Route path="expenses" element={<ExpensesTab />} />
-          <Route path="stats" element={<PlaceholderTab />} />
+          <Route path="stats" element={<StatsTab />} />
           <Route path="settle" element={<SettleTab />} />
           <Route path="setup" element={<SetupTab />} />
           <Route index element={<Navigate to="expenses" replace />} />

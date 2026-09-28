@@ -130,4 +130,13 @@ describe('BarChart', () => {
     expect(css).toMatch(/\.bi-bar__budget\s*{[^}]*stroke-width:\s*2/)
     expect(css).toMatch(/\.bi-bar__grid\s*{[^}]*stroke-width:\s*1/)
   })
+
+  // 一兩天的短旅程：圖只有柱子那麼寬的話，預算線的標籤會壓到左邊的刻度
+  it('keeps enough width for the budget label on a short trip', () => {
+    const { container } = render(<BarChart {...base} bars={bars.slice(0, 1)} budget={2000} />)
+    const svg = container.querySelector('svg')!
+    expect(Number(svg.getAttribute('width'))).toBeGreaterThanOrEqual(44 + 160)
+    // 柱子仍靠左排，不會被拉寬
+    expect(xs(container.querySelector('.bi-bar__mark')!.getAttribute('d')!)[0]).toBeLessThan(44 + 32)
+  })
 })

@@ -5,6 +5,7 @@ import { clearSession } from '../../data/session'
 import { makeExpense, makeTrip } from '../../data/testing/fixtures'
 import { t, tPlural } from '../../i18n'
 import { makeStores, renderApp } from '../../test/renderApp'
+import { confirmDelete } from '../../test/confirmDelete'
 
 beforeEach(() => clearSession())
 
@@ -60,6 +61,9 @@ describe('PaymentMethodsSection', () => {
   it('removes an unused custom method', async () => {
     const { user, section, stores } = await setup()
     await user.click(await section.findByRole('button', { name: t('settings.removeItem', { name: '禮券' }) }))
+    // 設定直接改掉，沒有 snackbar 可以復原：確認框要講明
+    expect(screen.getByRole('dialog')).toHaveTextContent(t('confirm.permanent'))
+    await confirmDelete(user, '禮券')
     await waitFor(async () => expect((await saved(stores)).map((m) => m.id)).not.toContain('spare'))
   })
 
@@ -78,11 +82,14 @@ describe('PaymentMethodsSection layout (task#93)', () => {
     expect(section.getByText(t('settings.newPaymentMethod'), { selector: 'label' })).toHaveClass('bi-visually-hidden')
   })
 
-  // 框的寬度對齊靠每一列都有同樣的尾端欄；實際寬度在瀏覽器量過
-  it('gives every row the same trailing slot', async () => {
-    const { section } = await setup()
-    const rows = section.getAllByRole('listitem')
-    expect(rows).toHaveLength(5)
-    for (const row of rows) expect(row.querySelector('.app-slot')).not.toBeNull()
+  // task#104：框都是整列寬，刪除鍵或使用筆數在框內右側，所以框的左右緣自然對齊
+  it('keeps the delete button or the usage inside the box', async () => {
+    const { section } = await setup({ usedMethod: 'easy' })
+    const inBox = (el: HTMLElement) => el.closest('.bi-field__control')
+    // 刪除鍵要等使用次數讀回來才出現（usageKnown）
+    expect(inBox(await section.findByRole('button', { name: t('settings.removeItem', { name: '禮券' }) }))).not.toBeNull()
+    expect(inBox(await section.findByText(tPlural('settings.usedBy', { count: 1 })))).not.toBeNull()
+    expect(inBox(section.getByRole('button', { name: t('settings.addPaymentMethod') }))).not.toBeNull()
+    expect(section.getAllByRole('listitem').every((row) => row.querySelector('.app-slot') === null)).toBe(true)
   })
 })

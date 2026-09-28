@@ -1,15 +1,7 @@
 import type { Expense } from '@billing/core'
+import type { ExpenseFilter } from '../data/types'
 
-/**
- * 支出列表的篩選（task#106）。同一個維度內是「任一」，不同維度之間是「而且」；
- * 空陣列代表這個維度不設限。
- */
-export interface ExpenseFilter {
-  categoryIds: string[]
-  payers: string[]
-  paymentMethodIds: string[]
-  draftsOnly: boolean
-}
+export type { ExpenseFilter }
 
 export const EMPTY_FILTER: ExpenseFilter = { categoryIds: [], payers: [], paymentMethodIds: [], draftsOnly: false }
 

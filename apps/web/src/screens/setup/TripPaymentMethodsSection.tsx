@@ -4,6 +4,7 @@ import { IconTrash } from '@tabler/icons-react'
 import { useState } from 'react'
 import { useI18n } from '../../i18n/useI18n'
 import { useTrips } from '../../stores/StoresProvider'
+import { useConfirmDelete } from '../forms/useConfirmDelete'
 
 export interface TripPaymentMethodsSectionProps {
   trip: Trip
@@ -23,6 +24,7 @@ export function TripPaymentMethodsSection({ trip, open, onToggle, save }: TripPa
   const { t, tPlural } = useI18n()
   const expenses = useTrips((s) => (s.current?.tripId === trip.id ? s.current.expenses : NO_EXPENSES))
   const methods = trip.paymentMethods ?? []
+  const confirm = useConfirmDelete()
   const [newName, setNewName] = useState('')
 
   const update = (change: (list: TripPaymentMethod[]) => TripPaymentMethod[]) =>
@@ -52,19 +54,24 @@ export function TripPaymentMethodsSection({ trip, open, onToggle, save }: TripPa
               method={method}
               used={expenses.filter((e) => !e.deletedAt && e.paymentMethodId === method.id).length}
               onRename={(name) => update((list) => list.map((m) => (m.id === method.id ? { ...m, name } : m)))}
-              onRemove={() => update((list) => list.filter((m) => m.id !== method.id))}
+              onRemove={() => confirm.ask(method.name, 'permanent', () => update((list) => list.filter((m) => m.id !== method.id)))}
               usedLabel={(count) => tPlural('settings.usedBy', { count })}
             />
           ))}
         </ul>
-        <div className="flex items-center gap-2">
-          <div className="min-w-0 flex-1">
-            <TextField label={t('tripMethods.newName')} hideLabel placeholder={t('tripMethods.newName')} value={newName} onChange={setNewName} />
-          </div>
-          <Button variant="secondary" onClick={add}>
-            {t('tripMethods.add')}
-          </Button>
-        </div>
+        <TextField
+          label={t('tripMethods.newName')}
+          hideLabel
+          placeholder={t('tripMethods.newName')}
+          value={newName}
+          onChange={setNewName}
+          trailing={
+            <Button variant="ghost" onClick={add}>
+              {t('tripMethods.add')}
+            </Button>
+          }
+        />
+        {confirm.dialog}
       </div>
     </Accordion>
   )
@@ -86,21 +93,25 @@ function MethodRow({ method, used, onRename, onRemove, usedLabel }: MethodRowPro
     if (!trimmed) setDraft(method.name)
     else if (trimmed !== method.name) onRename(trimmed)
   }
+  // 與全域付款方式同一個版面（task#104）：使用筆數或刪除鍵在框內右側
   return (
-    <li className="flex flex-col gap-1">
-      <div className="flex items-center gap-2">
-        <div className="min-w-0 flex-1">
-          <TextField label={t('settings.paymentMethodName', { name: method.name })} hideLabel value={draft} onChange={setDraft} onBlur={commit} />
-        </div>
-        <span className="app-slot">
-          {used === 0 ? (
+    <li>
+      <TextField
+        label={t('settings.paymentMethodName', { name: method.name })}
+        hideLabel
+        value={draft}
+        onChange={setDraft}
+        onBlur={commit}
+        trailing={
+          used > 0 ? (
+            usedLabel(used)
+          ) : (
             <Button variant="ghost" aria-label={t('settings.removeItem', { name: method.name })} onClick={onRemove}>
               <Icon glyph={IconTrash} />
             </Button>
-          ) : null}
-        </span>
-      </div>
-      {used > 0 ? <p className="app-field-label m-0">{usedLabel(used)}</p> : null}
+          )
+        }
+      />
     </li>
   )
 }

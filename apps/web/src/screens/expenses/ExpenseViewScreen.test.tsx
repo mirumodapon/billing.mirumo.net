@@ -6,6 +6,7 @@ import { makeExpense, makeTransfer, makeTrip } from '../../data/testing/fixtures
 import { formatMoney } from '../../i18n/format'
 import { t } from '../../i18n'
 import { currentRoute, makeStores, renderApp } from '../../test/renderApp'
+import { confirmDelete } from '../../test/confirmDelete'
 
 beforeEach(() => {
   clearSession()
@@ -137,5 +138,28 @@ describe('view layout (task#107)', () => {
     const hero = within(screen.getByRole('region', { name: t('view.summary') }))
     expect(hero.getAllByText(/^(大熊|阿明)$/).map((n) => n.textContent)).toEqual(['大熊', '阿明'])
     expect(hero.getByText(plain(formatMoney(500, 'TWD')))).toBeInTheDocument()
+  })
+})
+
+describe('deleting from the view (task#102)', () => {
+  // 滑動刪除不好發現：檢視頁底部也能刪，同樣可以復原
+  it('deletes an expense, goes back to the list and offers undo', async () => {
+    const { user, stores } = await setup()
+    await user.click(screen.getByRole('button', { name: /^晚餐/ }))
+    await user.click(await screen.findByRole('button', { name: t('view.delete') }))
+    await confirmDelete(user, '晚餐')
+    await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
+    expect((await stores.repo.listExpenses('t1')).map((e) => e.id)).toEqual([])
+    await user.click(await screen.findByRole('button', { name: t('common.undo') }))
+    await waitFor(async () => expect((await stores.repo.listExpenses('t1')).map((e) => e.id)).toEqual(['e1']))
+  })
+
+  it('deletes a transfer and goes back to the settle tab', async () => {
+    const { user, stores } = await setup('/trip/t1/settle')
+    await user.click(screen.getByRole('button', { name: /大熊 → 阿明/ }))
+    await user.click(await screen.findByRole('button', { name: t('view.delete') }))
+    await confirmDelete(user, '大熊 → 阿明')
+    await waitFor(() => expect(currentRoute()).toBe('/trip/t1/settle'))
+    await waitFor(async () => expect(await stores.repo.listTransfers('t1')).toEqual([]))
   })
 })

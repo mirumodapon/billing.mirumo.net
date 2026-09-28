@@ -12,6 +12,8 @@ export interface DragDismissState {
   /** 目前位移，永遠 >= 0。回彈後歸零 */
   offset: number
   dragging: boolean
+  /** 回到原位。關閉後東西還留在畫面上時用（例如刪除被取消的那一列） */
+  reset: () => void
   handlers: {
     onPointerDown: (event: ReactPointerEvent) => void
     onPointerMove: (event: ReactPointerEvent) => void
@@ -58,6 +60,7 @@ export function useDragDismiss({ axis, threshold, onDismiss }: DragDismissOption
   return {
     offset,
     dragging,
+    reset: () => setOffset(0),
     handlers: {
       onPointerDown(event) {
         start.current = coordOf(event)

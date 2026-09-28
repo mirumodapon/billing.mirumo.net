@@ -92,4 +92,20 @@ describe('SwipeAction', () => {
     const css = readFileSync(join(import.meta.dirname, 'SwipeAction.css'), 'utf8')
     expect(css).toMatch(/\.bi-swipe__surface\s*{[^}]*touch-action:\s*pan-y/)
   })
+
+  // 刪除要先確認：按了取消、這一列還在的話，要滑回原位，不能卡在半開
+  it('slides back once the action fires, so a cancelled delete leaves the row in place', () => {
+    const onAction = vi.fn()
+    render(
+      <SwipeAction glyph={IconTrash} actionLabel="刪除" onAction={onAction}>
+        <span>晚餐</span>
+      </SwipeAction>,
+    )
+    const surface = screen.getByTestId('swipe-surface')
+    pointer(surface, 'pointerdown', 0)
+    pointer(surface, 'pointermove', 200)
+    pointer(surface, 'pointerup', 200)
+    expect(onAction).toHaveBeenCalledOnce()
+    expect(surface.style.getPropertyValue('--bi-swipe-offset')).toBe('0px')
+  })
 })
