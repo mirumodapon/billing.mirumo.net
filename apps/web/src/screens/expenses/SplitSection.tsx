@@ -1,5 +1,5 @@
 import { decimalsOf, toMinor } from '@billing/core'
-import { Accordion, AvatarToggleGroup, Button, SegmentedControl } from '@billing/ui'
+import { Accordion, AvatarToggleGroup, SegmentedControl } from '@billing/ui'
 import { useState } from 'react'
 import { exactAllocation, previewShares, type SplitDraft } from '../../domain/expenseDraft'
 import { useI18n } from '../../i18n/useI18n'
@@ -78,15 +78,15 @@ function EvenSplit({ trip, draft, change }: FormSectionProps) {
   return (
     <>
       <div role="group" aria-label={t('split.quick')} className="flex flex-wrap gap-2">
-        <Button variant="secondary" onClick={() => set([draft.paidBy])}>
+        <button type="button" className="app-quick-pick" onClick={() => set([draft.paidBy])}>
           {t('split.onlyPayer')}
-        </Button>
-        <Button variant="secondary" onClick={() => set(trip.members.map((m) => m.id))}>
+        </button>
+        <button type="button" className="app-quick-pick" onClick={() => set(trip.members.map((m) => m.id))}>
           {t('split.everyone')}
-        </Button>
-        <Button variant="secondary" onClick={() => set([])}>
+        </button>
+        <button type="button" className="app-quick-pick" onClick={() => set([])}>
           {t('split.none')}
-        </Button>
+        </button>
       </div>
       <AvatarToggleGroup
         ariaLabel={t('split.participants')}
