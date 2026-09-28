@@ -17,7 +17,7 @@ describe('TripShell', () => {
   it('shows the trip name, the tab content and four tabs', async () => {
     await withTrip('/trip/t1/stats')
     expect(screen.getByRole('heading', { name: '東京' })).toBeInTheDocument()
-    expect(screen.getByText(t('placeholder.comingSoon'))).toBeInTheDocument()
+    expect(screen.getByRole('radiogroup', { name: t('stats.scope') })).toBeInTheDocument()
     expect(screen.getAllByRole('tab')).toHaveLength(4)
     expect(screen.getByRole('tab', { name: t('tab.stats') })).toHaveAttribute('aria-selected', 'true')
   })
