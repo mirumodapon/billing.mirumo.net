@@ -3,7 +3,7 @@ import { Accordion, SheetPicker, TextField } from '@billing/ui'
 import { useState } from 'react'
 import { CURRENCIES, currencyName } from '../../domain/currencies'
 import { useI18n } from '../../i18n/useI18n'
-import { DateField } from '../forms/DateField'
+import { DateRangeField } from '../forms/DateRangeField'
 
 export interface BasicInfoSectionProps {
   trip: Trip
@@ -22,7 +22,6 @@ export function BasicInfoSection({ trip, hasRecords, open, onToggle, save }: Bas
   const [name, setName] = useState(trip.name)
   const [destination, setDestination] = useState(trip.destination)
   const [nameError, setNameError] = useState(false)
-  const [dateError, setDateError] = useState(false)
   const [pickingCurrency, setPickingCurrency] = useState(false)
 
   const saveName = () => {
@@ -33,11 +32,6 @@ export function BasicInfoSection({ trip, hasRecords, open, onToggle, save }: Bas
   const saveDestination = () => {
     const trimmed = destination.trim()
     if (trimmed !== trip.destination) void save((x) => ({ ...x, destination: trimmed }))
-  }
-  const saveDates = (startDate: string, endDate: string) => {
-    const bad = endDate < startDate
-    setDateError(bad)
-    if (!bad) void save((x) => ({ ...x, startDate, endDate }))
   }
 
   const summary = [trip.destination, dateRange(trip.startDate, trip.endDate), trip.baseCurrency].filter(Boolean).join(' · ')
@@ -53,11 +47,13 @@ export function BasicInfoSection({ trip, hasRecords, open, onToggle, save }: Bas
           error={nameError ? t('newTrip.nameRequired') : undefined}
         />
         <TextField label={t('newTrip.destination')} value={destination} onChange={setDestination} onBlur={saveDestination} />
-        <DateField label={t('newTrip.startDate')} value={trip.startDate} onChange={(d) => saveDates(d, trip.endDate)} />
-        <div>
-          <DateField label={t('newTrip.endDate')} value={trip.endDate} onChange={(d) => saveDates(trip.startDate, d)} />
-          {dateError ? <p className="app-error">{t('newTrip.dateOrder')}</p> : null}
-        </div>
+        {/* 一個月曆點兩下設好出發與回程（task#126）：點的先後不拘，存進來的一定是先早後晚 */}
+        <DateRangeField
+          label={t('newTrip.dates')}
+          start={trip.startDate}
+          end={trip.endDate}
+          onChange={(startDate, endDate) => void save((x) => ({ ...x, startDate, endDate }))}
+        />
         {hasRecords ? (
           <div>
             <p className="app-field-label">{t('newTrip.baseCurrency')}</p>

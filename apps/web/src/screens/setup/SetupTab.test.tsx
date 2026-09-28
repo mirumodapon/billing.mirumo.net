@@ -2,7 +2,7 @@ import { cleanup, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { clearSession, readSession } from '../../data/session'
 import { makeExpense, makeTrip } from '../../data/testing/fixtures'
-import { pickDate } from '../../test/pickDate'
+import { pickDateRange } from '../../test/pickDate'
 import { t } from '../../i18n'
 import { makeStores, renderApp } from '../../test/renderApp'
 
@@ -76,20 +76,19 @@ describe('SetupTab: details', () => {
     expect(spy).not.toHaveBeenCalled()
   })
 
-  it('keeps the dates in order', async () => {
+  // task#126：一個月曆點兩下；先點晚的那天也會存成先早後晚
+  it('keeps the dates in order whichever day is tapped first', async () => {
     const { user, stores } = await setup({ trip: { startDate: '2026-03-14', endDate: '2026-03-14' } })
     const panel = await openBasic(user)
-    const spy = vi.spyOn(stores.repo, 'saveTrip')
-    await pickDate(user, t('newTrip.endDate'), '2026-03-12', panel)
-    expect(panel.getByText(t('newTrip.dateOrder'))).toBeInTheDocument()
-    expect(spy).not.toHaveBeenCalled()
+    await pickDateRange(user, t('newTrip.dates'), '2026-03-16', '2026-03-12', panel)
+    await waitFor(async () => expect((await stores.repo.getTrip('t1'))).toMatchObject({ startDate: '2026-03-12', endDate: '2026-03-16' }))
   })
 
-  it('saves a new end date', async () => {
+  it('saves new dates', async () => {
     const { user, stores } = await setup({ trip: { startDate: '2026-03-14', endDate: '2026-03-14' } })
     const panel = await openBasic(user)
-    await pickDate(user, t('newTrip.endDate'), '2026-03-16', panel)
-    await waitFor(async () => expect((await stores.repo.getTrip('t1'))?.endDate).toBe('2026-03-16'))
+    await pickDateRange(user, t('newTrip.dates'), '2026-03-14', '2026-03-16', panel)
+    await waitFor(async () => expect((await stores.repo.getTrip('t1'))).toMatchObject({ startDate: '2026-03-14', endDate: '2026-03-16' }))
   })
 
   // Plan 6 D3：每筆的匯率都是對本位幣固化的，有帳目後改本位幣等於全部換錯單位

@@ -25,6 +25,8 @@
   --bi-accent: var(--bi-p-accent8);
   /* 每個填色的字色都讀自己那一格的前景（task#71），不再共用主題最深色 */
   --bi-accent-fg: var(--bi-p-accent8-fg);
+  /* 主色的淡底：月曆裡一段日期中間的天數（task#126）。字色仍用 --bi-text */
+  --bi-accent-soft: color-mix(in srgb, var(--bi-accent) 18%, transparent);
   --bi-success: var(--bi-p-accent4);
   --bi-warning: var(--bi-p-accent3);
   --bi-danger: var(--bi-p-accent1);
