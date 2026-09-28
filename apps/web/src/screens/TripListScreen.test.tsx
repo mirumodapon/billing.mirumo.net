@@ -2,12 +2,17 @@ import { screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { clearSession } from '../data/session'
 import { makeExpense, makeTrip } from '../data/testing/fixtures'
+import { LAST_EXPORT_KEY } from '../domain/backup'
 import { formatDateRange, formatMoney } from '../i18n/format'
 import { t } from '../i18n'
 import { currentRoute, makeStores, renderApp } from '../test/renderApp'
 import { confirmDelete } from '../test/confirmDelete'
 
-beforeEach(() => clearSession())
+beforeEach(() => {
+  clearSession()
+  // 旅程都在 3 月結束：先當作剛匯出過，備份提醒卡才不會混進這裡的旅程卡片
+  localStorage.setItem(LAST_EXPORT_KEY, '2999-01-01T00:00:00.000Z')
+})
 
 async function withTrips() {
   const stores = await makeStores()

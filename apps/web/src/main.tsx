@@ -4,6 +4,7 @@ import { App } from './app/App'
 import { createAppStores } from './app/createAppStores'
 import { errorLog, installGlobalErrorLogging } from './data/errorLog'
 import { readSession } from './data/session'
+import { captureInstallPrompt } from './domain/install'
 import { detectLocale, setLocale } from './i18n'
 import { initialHash } from './session/coldStart'
 import './index.css'
@@ -17,6 +18,8 @@ setLocale(detectLocale())
 
 // 規格 7.7：未捕捉的錯誤與未處理的 rejection 寫進本機環狀緩衝區，設定頁可以查看與複製
 installGlobalErrorLogging(errorLog)
+// 規格 7.4：beforeinstallprompt 很早就發、而且只發一次，開機就接住，等旅程列表的安裝卡用
+captureInstallPrompt()
 
 // 冷啟動第 1 步（規格 7.9）：同步讀 session 決定初始路由，第一次繪製就是正確的頁面。
 // 用 replaceState 而不是設 location.hash：後者會多一筆瀏覽紀錄，返回鍵會退到空白首頁
