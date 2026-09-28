@@ -87,7 +87,7 @@ export const zhTW = {
   'crash.reload': '重新載入',
   'crash.home': '回到旅程列表',
   'about.title': '關於',
-  'about.version': 'Travel Split {version}（{date} 建置）',
+  'about.version': '{version} ({hash})',
   'errors.title': '錯誤記錄',
   'errors.none': '沒有錯誤記錄。',
   'errors.copy': '複製全部',

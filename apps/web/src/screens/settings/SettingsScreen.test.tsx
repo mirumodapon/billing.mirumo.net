@@ -104,10 +104,10 @@ describe('SettingsScreen: theme', () => {
 })
 
 describe('about (Plan 10 Task 7)', () => {
-  // 回報問題時要說得出是哪一版：版本來自 package.json，建置時寫死
-  it('shows the app version and build date', async () => {
+  // 回報問題時要說得出是哪一版：版本來自 package.json，commit 是建置時的 git hash（task#132）
+  it('shows the app version and the commit it was built from, as version (hash)', async () => {
     await renderApp('/settings')
-    expect(screen.getByTestId('app-version')).toHaveTextContent(__APP_VERSION__)
-    expect(screen.getByTestId('app-version')).toHaveTextContent(/\d{4}-\d{2}-\d{2}/)
+    expect(screen.getByTestId('app-version')).toHaveTextContent(`${__APP_VERSION__} (${__APP_COMMIT__})`)
+    expect(__APP_COMMIT__).toMatch(/^([0-9a-f]{7,}|dev)$/)
   })
 })

@@ -9,7 +9,7 @@ export function AboutSection() {
         {t('about.title')}
       </h2>
       <p className="app-field-label m-0" data-testid="app-version">
-        {t('about.version', { version: __APP_VERSION__, date: __BUILD_DATE__ })}
+        {t('about.version', { version: __APP_VERSION__, hash: __APP_COMMIT__ })}
       </p>
     </section>
   )
