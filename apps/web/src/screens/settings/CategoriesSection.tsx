@@ -6,6 +6,7 @@ import { displayName } from '../../domain/names'
 import type { RecordUsage } from '../../domain/usage'
 import { useI18n } from '../../i18n/useI18n'
 import { useSettings, useStores } from '../../stores/StoresProvider'
+import { useConfirmDelete } from '../forms/useConfirmDelete'
 import { CategoryEditSheet } from './CategoryEditSheet'
 
 /**
@@ -17,6 +18,7 @@ export function CategoriesSection({ usage }: { usage: RecordUsage | null }) {
   const { settings } = useStores()
   const categories = useSettings((s) => s.settings.categories)
   const [editing, setEditing] = useState<{ category?: Category } | null>(null)
+  const confirm = useConfirmDelete()
 
   const save = (category: Category) => {
     setEditing(null)
@@ -59,7 +61,7 @@ export function CategoriesSection({ usage }: { usage: RecordUsage | null }) {
               {/* 固定寬的尾端欄，與付款方式同樣讓每一列的框對齊（task#93）。使用次數讀到之前不給刪 */}
               <span className="app-slot">
                 {!category.builtin && usage && used === 0 ? (
-                  <Button variant="ghost" aria-label={t('settings.removeItem', { name })} onClick={() => remove(category.id)}>
+                  <Button variant="ghost" aria-label={t('settings.removeItem', { name })} onClick={() => confirm.ask(name, 'permanent', () => remove(category.id))}>
                     <Icon glyph={IconTrash} />
                   </Button>
                 ) : null}
@@ -78,6 +80,7 @@ export function CategoriesSection({ usage }: { usage: RecordUsage | null }) {
         onSave={save}
         onClose={() => setEditing(null)}
       />
+      {confirm.dialog}
     </section>
   )
 }

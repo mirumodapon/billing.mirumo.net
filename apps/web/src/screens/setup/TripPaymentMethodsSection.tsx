@@ -4,6 +4,7 @@ import { IconTrash } from '@tabler/icons-react'
 import { useState } from 'react'
 import { useI18n } from '../../i18n/useI18n'
 import { useTrips } from '../../stores/StoresProvider'
+import { useConfirmDelete } from '../forms/useConfirmDelete'
 
 export interface TripPaymentMethodsSectionProps {
   trip: Trip
@@ -23,6 +24,7 @@ export function TripPaymentMethodsSection({ trip, open, onToggle, save }: TripPa
   const { t, tPlural } = useI18n()
   const expenses = useTrips((s) => (s.current?.tripId === trip.id ? s.current.expenses : NO_EXPENSES))
   const methods = trip.paymentMethods ?? []
+  const confirm = useConfirmDelete()
   const [newName, setNewName] = useState('')
 
   const update = (change: (list: TripPaymentMethod[]) => TripPaymentMethod[]) =>
@@ -52,7 +54,7 @@ export function TripPaymentMethodsSection({ trip, open, onToggle, save }: TripPa
               method={method}
               used={expenses.filter((e) => !e.deletedAt && e.paymentMethodId === method.id).length}
               onRename={(name) => update((list) => list.map((m) => (m.id === method.id ? { ...m, name } : m)))}
-              onRemove={() => update((list) => list.filter((m) => m.id !== method.id))}
+              onRemove={() => confirm.ask(method.name, 'permanent', () => update((list) => list.filter((m) => m.id !== method.id)))}
               usedLabel={(count) => tPlural('settings.usedBy', { count })}
             />
           ))}
@@ -69,6 +71,7 @@ export function TripPaymentMethodsSection({ trip, open, onToggle, save }: TripPa
             </Button>
           }
         />
+        {confirm.dialog}
       </div>
     </Accordion>
   )

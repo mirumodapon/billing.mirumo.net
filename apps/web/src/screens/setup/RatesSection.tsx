@@ -8,6 +8,7 @@ import { displayName } from '../../domain/names'
 import { paymentMethodsFor } from '../../domain/paymentMethods'
 import { useI18n } from '../../i18n/useI18n'
 import { useSettings, useStores } from '../../stores/StoresProvider'
+import { useConfirmDelete } from '../forms/useConfirmDelete'
 import { AmountField } from './AmountField'
 
 export interface RatesSectionProps {
@@ -51,6 +52,7 @@ export function RatesSection({ trip, open, onToggle, save }: RatesSectionProps) 
   const [addedMethods, setAddedMethods] = useState<string[]>([])
   const [picker, setPicker] = useState<{ kind: 'currency' } | { kind: 'method'; currency: string } | null>(null)
   const [fetched, setFetched] = useState<{ currency: string; autoOpen: { expression: string } } | null>(null)
+  const confirm = useConfirmDelete()
 
   const saved = currenciesIn(trip.rates)
   const currencies = [...saved, ...addedCurrencies.filter((c) => !saved.includes(c))]
@@ -117,7 +119,7 @@ export function RatesSection({ trip, open, onToggle, save }: RatesSectionProps) 
                 <Button variant="ghost" aria-label={t('rates.fetch', { currency })} onClick={() => void fetchMarket(currency)}>
                   <Icon glyph={IconRefresh} />
                 </Button>
-                <Button variant="ghost" aria-label={t('rates.removeCurrency', { currency })} onClick={() => removeCurrency(currency)}>
+                <Button variant="ghost" aria-label={t('rates.removeCurrency', { currency })} onClick={() => confirm.ask(currency, 'permanent', () => removeCurrency(currency))}>
                   <Icon glyph={IconTrash} />
                 </Button>
               </div>
@@ -166,6 +168,7 @@ export function RatesSection({ trip, open, onToggle, save }: RatesSectionProps) 
         }}
         onClose={() => setPicker(null)}
       />
+      {confirm.dialog}
     </Accordion>
   )
 }

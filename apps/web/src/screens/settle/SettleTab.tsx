@@ -6,6 +6,7 @@ import { useNavigate, useParams } from 'react-router'
 import { settlementView, shareText, signedMoney, type PendingTransfer } from '../../domain/settlement'
 import { useI18n } from '../../i18n/useI18n'
 import { useStores, useTrips } from '../../stores/StoresProvider'
+import { useConfirmDelete } from '../forms/useConfirmDelete'
 import { shareSettlement } from './shareSettlement'
 
 /**
@@ -26,6 +27,8 @@ function Settlement({ trip, expenses, transfers }: { trip: Trip; expenses: Param
   const { trips, ui } = useStores()
   const view = useMemo(() => settlementView(trip, expenses, transfers), [trip, expenses, transfers])
   const status = { receive: t('settle.receive'), pay: t('settle.pay'), settled: t('settle.settled') }
+  const confirm = useConfirmDelete()
+  const memberName = (id: string) => trip.members.find((m) => m.id === id)?.name ?? id
 
   // 規格 4.6：「已結清」不是打勾，而是開出預填好的轉帳表單，存成一筆真的紀錄
   const settle = (p: PendingTransfer) => {
@@ -77,7 +80,7 @@ function Settlement({ trip, expenses, transfers }: { trip: Trip; expenses: Param
             trip={trip}
             transfer={x}
             onOpen={() => navigate(`/trip/${trip.id}/transfer/${x.id}`)}
-            onDelete={() => void trips.getState().deleteTransfer(x.id)}
+            onDelete={() => confirm.ask(`${memberName(x.from)} → ${memberName(x.to)}`, 'undoable', () => void trips.getState().deleteTransfer(x.id))}
           />
         ))}
       </section>
@@ -105,6 +108,7 @@ function Settlement({ trip, expenses, transfers }: { trip: Trip; expenses: Param
           {t('settle.share')}
         </span>
       </Button>
+      {confirm.dialog}
     </div>
   )
 }

@@ -6,6 +6,7 @@ import { makeTrip } from '../../data/testing/fixtures'
 import { fetchRate } from '../../domain/fetchRate'
 import { t } from '../../i18n'
 import { makeStores, renderApp } from '../../test/renderApp'
+import { confirmDelete } from '../../test/confirmDelete'
 
 vi.mock('../../domain/fetchRate', () => ({ fetchRate: vi.fn() }))
 const mockedFetch = vi.mocked(fetchRate)
@@ -99,6 +100,7 @@ describe('RatesSection', () => {
       byMethod: { 'JPY|pay.cash': 0.215, 'JPY|pay.credit': 0.213, 'KRW|pay.cash': 0.021 },
     })
     await user.click(card('JPY').getByRole('button', { name: t('rates.removeCurrency', { currency: 'JPY' }) }))
+    await confirmDelete(user, 'JPY')
     await waitFor(async () =>
       expect(await rates(stores)).toEqual({ default: { KRW: 0.02 }, byMethod: { 'KRW|pay.cash': 0.021 } }),
     )

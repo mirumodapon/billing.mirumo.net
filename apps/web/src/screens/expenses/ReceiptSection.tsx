@@ -7,6 +7,7 @@ import { useI18n } from '../../i18n/useI18n'
 import { useStores } from '../../stores/StoresProvider'
 import type { FormSectionProps } from './ExpenseFormScreen'
 import { ReceiptThumbnail } from '../forms/ReceiptThumbnail'
+import { useConfirmDelete } from '../forms/useConfirmDelete'
 
 /**
  * 收據照片（規格 7.3）。拍照後立刻壓縮再存，原圖不落地。
@@ -17,6 +18,7 @@ import { ReceiptThumbnail } from '../forms/ReceiptThumbnail'
 export function ReceiptSection({ draft, change, open, onToggle }: FormSectionProps & { open: boolean; onToggle: () => void }) {
   const { t, tPlural } = useI18n()
   const { blobs, ui } = useStores()
+  const confirm = useConfirmDelete()
   const input = useRef<HTMLInputElement>(null)
   const count = draft.attachments.length
 
@@ -46,7 +48,7 @@ export function ReceiptSection({ draft, change, open, onToggle }: FormSectionPro
               key={meta.id}
               meta={meta}
               label={t('receipt.photo', { n: index + 1 })}
-              onRemove={() => change((d) => ({ ...d, attachments: d.attachments.filter((a) => a.id !== meta.id) }))}
+              onRemove={() => confirm.ask(t('receipt.photo', { n: index + 1 }), 'form', () => change((d) => ({ ...d, attachments: d.attachments.filter((a) => a.id !== meta.id) })))}
             />
           ))}
         </div>
@@ -70,6 +72,7 @@ export function ReceiptSection({ draft, change, open, onToggle }: FormSectionPro
             {t('receipt.add')}
           </span>
         </Button>
+        {confirm.dialog}
       </div>
     </Accordion>
   )

@@ -4,6 +4,7 @@ import { IconTrash, IconUserPlus } from '@tabler/icons-react'
 import { useState } from 'react'
 import { MemberInUseError } from '../../data/errors'
 import { useI18n } from '../../i18n/useI18n'
+import { useConfirmDelete } from '../forms/useConfirmDelete'
 
 export interface MembersSectionProps {
   trip: Trip
@@ -22,6 +23,7 @@ export function MembersSection({ trip, open, onToggle, save }: MembersSectionPro
   const { t, tPlural, locale } = useI18n()
   const [newName, setNewName] = useState('')
   const [inUse, setInUse] = useState<string[]>([])
+  const confirm = useConfirmDelete()
 
   const add = () => {
     const name = newName.trim()
@@ -60,7 +62,7 @@ export function MembersSection({ trip, open, onToggle, save }: MembersSectionPro
               member={member}
               isSelf={member.id === trip.selfMemberId}
               onRename={(name) => void save((x) => ({ ...x, members: x.members.map((m) => (m.id === member.id ? { ...m, name } : m)) }))}
-              onRemove={() => void remove(member)}
+              onRemove={() => confirm.ask(member.name, 'permanent', () => void remove(member))}
             />
           ))}
         </ul>
@@ -98,6 +100,7 @@ export function MembersSection({ trip, open, onToggle, save }: MembersSectionPro
             onChange={(id) => void save((x) => ({ ...x, selfMemberId: id }))}
           />
         </div>
+        {confirm.dialog}
       </div>
     </Accordion>
   )

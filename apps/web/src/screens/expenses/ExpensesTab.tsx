@@ -8,6 +8,7 @@ import { formatWeekday } from '../../i18n/format'
 import { useI18n } from '../../i18n/useI18n'
 import { useSettings, useStores, useTrips, useUi } from '../../stores/StoresProvider'
 import { ExpenseFilterSheet } from './ExpenseFilterSheet'
+import { useConfirmDelete } from '../forms/useConfirmDelete'
 import { ExpenseRow } from './ExpenseRow'
 
 /** 依日期分組，保留 store 裡新到舊的順序（規格 4.3） */
@@ -31,6 +32,7 @@ export function ExpensesTab() {
   const showBase = useSettings((s) => s.settings.showBaseAmounts ?? true)
   const filter = useUi((s) => s.expenseFilters[tripId]) ?? EMPTY_FILTER
   const [filtering, setFiltering] = useState(false)
+  const confirm = useConfirmDelete()
   if (!trip || !expenses) return null
 
   const setFilter = (next: ExpenseFilter) => ui.getState().setExpenseFilter(tripId, next)
@@ -104,13 +106,14 @@ export function ExpensesTab() {
                 trip={trip}
                 category={categories.find((c) => c.id === expense.categoryId)}
                 onOpen={() => navigate(`/trip/${tripId}/expense/${expense.id}`)}
-                onDelete={() => void trips.getState().deleteExpense(expense.id)}
+                onDelete={() => confirm.ask(expense.description.trim() || t('expense.untitled'), 'undoable', () => void trips.getState().deleteExpense(expense.id))}
                 showBase={showBase}
               />
             ))}
           </section>
         ))}
       </div>
+      {confirm.dialog}
       <Fab glyph={IconPlus} ariaLabel={t('expenses.add')} onPress={() => navigate(`/trip/${tripId}/expense/new`)} />
     </>
   )

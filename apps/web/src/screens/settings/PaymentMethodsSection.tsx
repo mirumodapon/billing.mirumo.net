@@ -6,6 +6,7 @@ import { displayName } from '../../domain/names'
 import type { RecordUsage } from '../../domain/usage'
 import { useI18n } from '../../i18n/useI18n'
 import { useSettings, useStores } from '../../stores/StoresProvider'
+import { useConfirmDelete } from '../forms/useConfirmDelete'
 
 /** 付款方式管理（規格 4.8）。沒有圖示與顏色（規格 2.1），規則同類別 */
 export function PaymentMethodsSection({ usage }: { usage: RecordUsage | null }) {
@@ -13,6 +14,7 @@ export function PaymentMethodsSection({ usage }: { usage: RecordUsage | null }) 
   const { settings } = useStores()
   const methods = useSettings((s) => s.settings.paymentMethods)
   const [newName, setNewName] = useState('')
+  const confirm = useConfirmDelete()
 
   const update = (change: (list: PaymentMethod[]) => PaymentMethod[]) =>
     void settings.getState().update((s) => ({ ...s, paymentMethods: change(s.paymentMethods) }))
@@ -37,7 +39,7 @@ export function PaymentMethodsSection({ usage }: { usage: RecordUsage | null }) 
             used={usage?.paymentMethods[method.id] ?? 0}
             usageKnown={usage !== null}
             onRename={(name) => update((list) => list.map((m) => (m.id === method.id ? { ...m, name } : m)))}
-            onRemove={() => update((list) => list.filter((m) => m.id !== method.id))}
+            onRemove={() => confirm.ask(displayName(method), 'permanent', () => update((list) => list.filter((m) => m.id !== method.id)))}
           />
         ))}
       </ul>
@@ -53,6 +55,7 @@ export function PaymentMethodsSection({ usage }: { usage: RecordUsage | null }) 
           </Button>
         }
       />
+      {confirm.dialog}
     </section>
   )
 }

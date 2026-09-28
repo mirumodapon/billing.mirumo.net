@@ -6,6 +6,7 @@ import { makeExpense, makeTransfer, makeTrip } from '../../data/testing/fixtures
 import { formatMoney } from '../../i18n/format'
 import { t } from '../../i18n'
 import { currentRoute, makeStores, renderApp } from '../../test/renderApp'
+import { confirmDelete } from '../../test/confirmDelete'
 
 beforeEach(() => clearSession())
 afterEach(() => vi.unstubAllGlobals())
@@ -74,6 +75,7 @@ describe('SettleTab', () => {
     const { user } = await setup()
     const swipe = screen.getByRole('button', { name: /大熊 → 阿明/ }).closest('.bi-swipe') as HTMLElement
     await user.click(within(swipe).getByRole('button', { name: t('common.delete') }))
+    await confirmDelete(user, '大熊 → 阿明')
     await waitFor(() => expect(balance('c')).toHaveTextContent(plain(formatMoney(-1600, 'TWD'))))
     await user.click(await screen.findByRole('button', { name: t('common.undo') }))
     await waitFor(() => expect(balance('c')).toHaveTextContent(plain(formatMoney(-1100, 'TWD'))))

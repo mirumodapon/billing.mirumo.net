@@ -4,6 +4,7 @@ import { clearSession } from '../../data/session'
 import { makeExpense, makeTrip } from '../../data/testing/fixtures'
 import { t, tPlural } from '../../i18n'
 import { makeStores, renderApp } from '../../test/renderApp'
+import { confirmDelete } from '../../test/confirmDelete'
 
 beforeEach(() => clearSession())
 
@@ -39,6 +40,7 @@ describe('TripPaymentMethodsSection (task#92)', () => {
   it('removes one nobody uses, but keeps one this trip’s expenses use', async () => {
     const unused = await setup()
     await unused.user.click(unused.panel.getByRole('button', { name: t('settings.removeItem', { name: 'Suica' }) }))
+    await confirmDelete(unused.user, 'Suica')
     await waitFor(async () => expect(await methods(unused.stores)).toEqual([]))
   })
 

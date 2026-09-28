@@ -6,6 +6,7 @@ import { makeExpense, makeTransfer, makeTrip } from '../../data/testing/fixtures
 import { formatMoney } from '../../i18n/format'
 import { t } from '../../i18n'
 import { currentRoute, makeStores, renderApp } from '../../test/renderApp'
+import { confirmDelete } from '../../test/confirmDelete'
 
 beforeEach(() => {
   clearSession()
@@ -146,6 +147,7 @@ describe('deleting from the view (task#102)', () => {
     const { user, stores } = await setup()
     await user.click(screen.getByRole('button', { name: /^晚餐/ }))
     await user.click(await screen.findByRole('button', { name: t('view.delete') }))
+    await confirmDelete(user, '晚餐')
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
     expect((await stores.repo.listExpenses('t1')).map((e) => e.id)).toEqual([])
     await user.click(await screen.findByRole('button', { name: t('common.undo') }))
@@ -156,6 +158,7 @@ describe('deleting from the view (task#102)', () => {
     const { user, stores } = await setup('/trip/t1/settle')
     await user.click(screen.getByRole('button', { name: /大熊 → 阿明/ }))
     await user.click(await screen.findByRole('button', { name: t('view.delete') }))
+    await confirmDelete(user, '大熊 → 阿明')
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/settle'))
     await waitFor(async () => expect(await stores.repo.listTransfers('t1')).toEqual([]))
   })

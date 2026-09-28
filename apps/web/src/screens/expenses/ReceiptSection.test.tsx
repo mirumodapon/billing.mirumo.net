@@ -6,6 +6,7 @@ import { clearSession } from '../../data/session'
 import { makeExpense, makeTrip } from '../../data/testing/fixtures'
 import { t, tPlural } from '../../i18n'
 import { makeStores, renderApp } from '../../test/renderApp'
+import { confirmDelete } from '../../test/confirmDelete'
 
 vi.mock('../../data/compressImage', () => ({ compressImage: vi.fn() }))
 const mockedCompress = vi.mocked(compressImage)
@@ -80,6 +81,7 @@ describe('ReceiptSection', () => {
     await user.click(header())
     const spy = vi.spyOn(stores.blobs, 'delete')
     await user.click(within(screen.getByTestId('section-receipt-panel')).getByRole('button', { name: t('receipt.remove') }))
+    await confirmDelete(user, t('receipt.photo', { n: 1 }))
     expect(header()).toHaveTextContent(t('receipt.none'))
     expect(spy).not.toHaveBeenCalled()
     expect(await stores.blobs.get(id)).toBeDefined()

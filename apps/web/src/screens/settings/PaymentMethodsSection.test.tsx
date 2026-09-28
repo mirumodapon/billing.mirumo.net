@@ -5,6 +5,7 @@ import { clearSession } from '../../data/session'
 import { makeExpense, makeTrip } from '../../data/testing/fixtures'
 import { t, tPlural } from '../../i18n'
 import { makeStores, renderApp } from '../../test/renderApp'
+import { confirmDelete } from '../../test/confirmDelete'
 
 beforeEach(() => clearSession())
 
@@ -60,6 +61,9 @@ describe('PaymentMethodsSection', () => {
   it('removes an unused custom method', async () => {
     const { user, section, stores } = await setup()
     await user.click(await section.findByRole('button', { name: t('settings.removeItem', { name: '禮券' }) }))
+    // 設定直接改掉，沒有 snackbar 可以復原：確認框要講明
+    expect(screen.getByRole('dialog')).toHaveTextContent(t('confirm.permanent'))
+    await confirmDelete(user, '禮券')
     await waitFor(async () => expect((await saved(stores)).map((m) => m.id)).not.toContain('spare'))
   })
 

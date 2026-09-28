@@ -3,6 +3,7 @@ import { IconX } from '@tabler/icons-react'
 import type { ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { useI18n } from '../../i18n/useI18n'
+import { useConfirmDelete } from './useConfirmDelete'
 
 /**
  * 唯讀檢視頁的外框（task#101）：✕、標題、編輯。從列表點開先到這裡，
@@ -18,7 +19,7 @@ export function ViewShell({
   title: string
   editTo: string
   fallback: string
-  /** 底部的刪除鍵（task#102）。刪除本身由 store 處理：軟刪除 + snackbar 復原 */
+  /** 底部的刪除鍵（task#102），先確認。刪除本身由 store 處理：軟刪除 + snackbar 復原 */
   onDelete: () => void
   children: ReactNode
 }) {
@@ -26,6 +27,7 @@ export function ViewShell({
   const navigate = useNavigate()
   const location = useLocation()
   const close = () => (location.key !== 'default' ? navigate(-1) : navigate(fallback, { replace: true }))
+  const confirm = useConfirmDelete()
   return (
     <div className="app-screen">
       <SafeArea edges={['top', 'left', 'right']}>
@@ -43,18 +45,21 @@ export function ViewShell({
         <div className="app-form">
           {children}
           {/*
-            先離開再刪：刪掉後這一頁找不到紀錄會自己轉走，先離開才不會蓋掉返回紀錄。
-            不另外確認——與列表的滑動刪除一樣，誤刪可以從 snackbar 復原
+            先確認；確認後先離開再刪：刪掉後這一頁找不到紀錄會自己轉走，先離開才不會蓋掉返回紀錄。
+            標題就是這一筆的名字（說明，或「誰 → 誰」）
           */}
           <Button
             variant="danger"
-            onClick={() => {
-              close()
-              onDelete()
-            }}
+            onClick={() =>
+              confirm.ask(title, 'undoable', () => {
+                close()
+                onDelete()
+              })
+            }
           >
             {t('view.delete')}
           </Button>
+          {confirm.dialog}
         </div>
       </div>
     </div>

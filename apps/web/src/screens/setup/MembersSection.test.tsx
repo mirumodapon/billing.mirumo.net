@@ -4,6 +4,7 @@ import { clearSession } from '../../data/session'
 import { makeExpense, makeTrip } from '../../data/testing/fixtures'
 import { t } from '../../i18n'
 import { makeStores, renderApp } from '../../test/renderApp'
+import { confirmDelete } from '../../test/confirmDelete'
 
 beforeEach(() => clearSession())
 
@@ -74,6 +75,7 @@ describe('MembersSection', () => {
   it('removes a member who has no records', async () => {
     const { user, panel, stores } = await setup()
     await user.click(panel.getByRole('button', { name: t('members.remove', { name: '小美' }) }))
+    await confirmDelete(user, '小美')
     await waitFor(async () => expect((await saved(stores)).members.map((m) => m.id)).toEqual(['a']))
   })
 
@@ -81,6 +83,7 @@ describe('MembersSection', () => {
   it('explains why a member who still has records cannot be removed', async () => {
     const { user, panel, stores } = await setup({ expensePaidBy: 'b' })
     await user.click(panel.getByRole('button', { name: t('members.remove', { name: '小美' }) }))
+    await confirmDelete(user, '小美')
     const alert = await panel.findByRole('alert')
     expect(alert).toHaveTextContent(t('members.inUse', { names: '小美' }))
     expect(panel.getByRole('img', { name: '小美' })).toBeInTheDocument()

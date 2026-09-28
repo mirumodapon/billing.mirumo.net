@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router'
 import { useI18n } from '../i18n/useI18n'
 import { useScrollRestore } from '../session/useScrollRestore'
 import { useStores, useTrips } from '../stores/StoresProvider'
+import { useConfirmDelete } from './forms/useConfirmDelete'
 import { NewTripSheet } from './NewTripSheet'
 import { TripCard } from './TripCard'
 
@@ -16,6 +17,7 @@ export function TripListScreen() {
   const summaries = useTrips((s) => s.summaries)
   const loaded = useTrips((s) => s.loaded)
   const [creating, setCreating] = useState(false)
+  const confirm = useConfirmDelete()
   // 回到列表就放掉上一趟旅程的支出與轉帳（規格 7.5：首頁不載支出）
   useEffect(() => store.getState().closeTrip(), [store])
   const scroller = useRef<HTMLDivElement>(null)
@@ -43,7 +45,7 @@ export function TripListScreen() {
                 trip={trip}
                 summary={summaries[trip.id]}
                 onOpen={() => navigate(`/trip/${trip.id}/expenses`)}
-                onDelete={() => void store.getState().deleteTrip(trip.id)}
+                onDelete={() => confirm.ask(trip.name, 'undoable', () => void store.getState().deleteTrip(trip.id))}
               />
             ))}
           </div>
@@ -51,6 +53,7 @@ export function TripListScreen() {
       </div>
       <Fab glyph={IconPlus} ariaLabel={t('trip.new')} onPress={() => setCreating(true)} />
       <NewTripSheet open={creating} onClose={() => setCreating(false)} />
+      {confirm.dialog}
     </div>
   )
 }

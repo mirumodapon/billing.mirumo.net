@@ -4,6 +4,7 @@ import { clearSession, readSession, writeSession } from '../../data/session'
 import { makeTrip } from '../../data/testing/fixtures'
 import { t } from '../../i18n'
 import { currentRoute, makeStores, renderApp } from '../../test/renderApp'
+import { confirmDelete } from '../../test/confirmDelete'
 
 beforeEach(() => clearSession())
 
@@ -19,9 +20,10 @@ async function setup() {
 }
 
 describe('DeleteTripSection', () => {
-  it('deletes the trip without asking and returns to the list', async () => {
+  it('deletes the trip once confirmed and returns to the list', async () => {
     const { user, stores, deleteButton } = await setup()
     await user.click(deleteButton())
+    await confirmDelete(user, '東京')
     await waitFor(() => expect(currentRoute()).toBe('/'))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     await waitFor(async () => expect(await stores.repo.getTrip('t1')).toBeUndefined())
@@ -32,6 +34,7 @@ describe('DeleteTripSection', () => {
     const { user, deleteButton } = await setup()
     const before = history.length
     await user.click(deleteButton())
+    await confirmDelete(user, '東京')
     await waitFor(() => expect(currentRoute()).toBe('/'))
     expect(history.length).toBe(before)
   })
@@ -39,6 +42,7 @@ describe('DeleteTripSection', () => {
   it('brings the trip back to the list on undo', async () => {
     const { user, deleteButton } = await setup()
     await user.click(deleteButton())
+    await confirmDelete(user, '東京')
     await user.click(await screen.findByRole('button', { name: t('common.undo') }))
     expect(await screen.findByRole('heading', { name: '東京' })).toBeInTheDocument()
     expect(currentRoute()).toBe('/')
@@ -48,6 +52,7 @@ describe('DeleteTripSection', () => {
   it('opens quietly on the list after a restart, even if the session still points at the trip', async () => {
     const { user, stores, deleteButton } = await setup()
     await user.click(deleteButton())
+    await confirmDelete(user, '東京')
     await waitFor(async () => expect(await stores.repo.getTrip('t1')).toBeUndefined())
     cleanup()
     writeSession({ route: '/trip/t1/setup', tripId: 't1' })
