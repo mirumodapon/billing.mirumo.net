@@ -1,8 +1,14 @@
+import { Button } from '@billing/ui'
 import { useI18n } from '../../i18n/useI18n'
+import { useUi } from '../../stores/StoresProvider'
 
-/** 版本資訊（規格 4.8）：回報問題時要說得出是哪一版 */
+/**
+ * 版本資訊（規格 4.8）：回報問題時要說得出是哪一版。
+ * 有新版本時在這裡也能「立即更新」（task#141）：提示的 snackbar 關掉之後還找得到
+ */
 export function AboutSection() {
   const { t } = useI18n()
+  const applyUpdate = useUi((s) => s.applyUpdate)
   return (
     <section className="app-form" aria-labelledby="settings-about">
       <h2 id="settings-about" className="app-card__title">
@@ -11,6 +17,14 @@ export function AboutSection() {
       <p className="app-field-label m-0" data-testid="app-version">
         {t('about.version', { version: __APP_VERSION__, hash: __APP_COMMIT__ })}
       </p>
+      {applyUpdate ? (
+        <>
+          <p className="m-0" role="status">
+            {t('update.available')}
+          </p>
+          <Button onClick={applyUpdate}>{t('update.now')}</Button>
+        </>
+      ) : null}
     </section>
   )
 }

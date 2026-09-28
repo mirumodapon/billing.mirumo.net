@@ -36,7 +36,7 @@ export function ExpenseRow({ expense, trip, category, onOpen, onDelete, showBase
   // 草稿可能還沒有匯率（存成 0）：那時換算不出本位幣，只顯示原幣
   const base = expense.exchangeRate > 0 ? money(convertToBaseMinor(expense.amount, expense.exchangeRate, trip.baseCurrency), trip.baseCurrency) : undefined
   // 沒選類別的是問號（task#127）
-  const glyph = categoryGlyph(category, expense.categoryId)
+  const glyph = categoryGlyph(category, expense.categoryId, expense.topUpFor !== undefined)
   const color = category?.colorKey
 
   return (

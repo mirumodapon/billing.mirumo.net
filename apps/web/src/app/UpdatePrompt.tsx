@@ -19,15 +19,18 @@ export function UpdatePrompt() {
 
   useEffect(() => {
     if (!needRefresh) return
+    const apply = () =>
+      void (async () => {
+        await flushAllDrafts()
+        await updateServiceWorker(true)
+      })()
+    // snackbar 關掉之後也還能更新：設定頁的「關於」會提供同一個動作（task#141）
+    ui.setState({ applyUpdate: apply })
     ui.getState().show({
       id: 'update',
       message: t('update.available'),
       actionLabel: t('update.now'),
-      onAction: () =>
-        void (async () => {
-          await flushAllDrafts()
-          await updateServiceWorker(true)
-        })(),
+      onAction: apply,
     })
   }, [needRefresh, ui, t, updateServiceWorker])
 

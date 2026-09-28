@@ -12,6 +12,7 @@ export const zhTW = {
   'cat.ticket': '票券',
   'cat.other': '其他',
   'cat.none': '未分類',
+  'cat.topUp': '儲值',
   'pay.cash': '現金',
   'pay.credit': '信用卡',
   'pay.mobile': '行動支付',
@@ -38,7 +39,7 @@ export const zhTW = {
   'stats.empty': '還沒有支出',
   'stats.totalLabel': '總計',
   'stats.members': '成員比較',
-  'stats.balances': '預存卡餘額',
+  'stats.balances': '預存模式餘額',
   'stats.myItems': '我的消費明細',
   'stats.memberItems': '{name}的消費明細',
   'stats.memberSelf': '{name}（我）',
@@ -257,6 +258,7 @@ export const zhTW = {
   'tripMethods.none': '無',
   'tripMethods.newName': '新付款方式的名稱',
   'tripMethods.add': '新增',
+  'tripMethods.usedByBoth': '{expenses} 筆支出、{topUps} 筆儲值使用中',
   'stored.label': '預存模式・{currency}',
   'stored.toggle': '{name} 的預存模式',
   'stored.currency': '預存模式的幣別',
@@ -356,6 +358,7 @@ export const zhTWPlurals = {
   'storage.photos': '收據照片 {count} 張',
   'receipt.count': '{count} 張',
   'settings.usedBy': '{count} 筆支出使用中',
+  'tripMethods.usedByTopUps': '{count} 筆儲值使用中',
 } as const
 
 export type TranslationKey = keyof typeof zhTW

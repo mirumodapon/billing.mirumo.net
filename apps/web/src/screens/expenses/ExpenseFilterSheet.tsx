@@ -31,7 +31,8 @@ export function ExpenseFilterSheet({ open, onClose, trip, expenses, filter, onCh
   // 全域類別加上這趟旅程專用的（task#114）
   const categories = categoriesFor(useSettings((s) => s.settings.categories), trip)
   const globalMethods = useSettings((s) => s.settings.paymentMethods)
-  const usedCategories = usedIds(expenses, (e) => e.categoryId, filter.categoryIds)
+  // 儲值沒有類別（task#142），不列進類別篩選
+  const usedCategories = usedIds(expenses.filter((e) => !e.topUpFor), (e) => e.categoryId, filter.categoryIds)
   const usedMethods = usedIds(expenses, (e) => e.paymentMethodId, filter.paymentMethodIds)
 
   // 有沒選類別的支出時，另外列一個「未分類」（task#127）

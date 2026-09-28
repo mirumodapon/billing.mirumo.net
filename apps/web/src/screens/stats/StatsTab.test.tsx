@@ -1,14 +1,14 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { Trip } from '@billing/core'
-import { cleanup, screen, within } from '@testing-library/react'
+import { cleanup, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { defaultSettings } from '../../data/defaults'
 import { clearSession, readSession, writeSession } from '../../data/session'
 import { makeExpense, makeTrip } from '../../data/testing/fixtures'
 import { formatMoney } from '../../i18n/format'
 import { t } from '../../i18n'
-import { makeStores, renderApp } from '../../test/renderApp'
+import { currentRoute, makeStores, renderApp } from '../../test/renderApp'
 
 beforeEach(() => clearSession())
 
@@ -149,6 +149,14 @@ describe('StatsTab: members and my items (Plan 9 Task 4)', () => {
   })
 
   // task#129：每列有兩行字，列與列之間再畫線看起來很亂：用自己的列樣式，只留間距
+  // task#140：點消費明細的一列就打開那一筆
+  it('opens the expense behind a row of my items', async () => {
+    const { user } = await setup()
+    await user.click(within(screen.getByRole('radiogroup', { name: t('stats.scope') })).getByRole('radio', { name: t('stats.memberSelf', { name: '阿明' }) }))
+    await user.click(within(screen.getByTestId('stats-items-panel')).getByRole('button', { name: /^晚餐/ }))
+    await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expense/e1'))
+  })
+
   it('lays out my items without a divider between rows', async () => {
     const { user } = await setup()
     await user.click(within(screen.getByRole('radiogroup', { name: t('stats.scope') })).getByRole('radio', { name: t('stats.memberSelf', { name: '阿明' }) }))

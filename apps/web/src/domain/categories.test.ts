@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { defaultSettings } from '../data/defaults'
 import { makeTrip } from '../data/testing/fixtures'
-import { IconDots, IconQuestionMark } from '@tabler/icons-react'
+import { IconDots, IconQuestionMark, IconWallet } from '@tabler/icons-react'
 import { t } from '../i18n'
 import { categoriesFor, categoryGlyph, categoryLabel, NO_CATEGORY } from './categories'
 
@@ -42,5 +42,13 @@ describe('an expense without a category', () => {
   it('uses the category’s own icon and name when there is one', () => {
     expect(categoryGlyph(food, food.id)).not.toBe(IconQuestionMark)
     expect(categoryLabel(food, food.id)).toBe(t('cat.food'))
+  })
+})
+
+// task#142：儲值不選類別，固定顯示錢包與「儲值」
+describe('a top-up', () => {
+  it('shows a wallet and is called a top-up, whatever its category id', () => {
+    expect(categoryGlyph(undefined, NO_CATEGORY, true)).toBe(IconWallet)
+    expect(categoryLabel(undefined, NO_CATEGORY, true)).toBe(t('cat.topUp'))
   })
 })

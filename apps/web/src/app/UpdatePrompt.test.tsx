@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react'
+import { act, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { clearSession } from '../data/session'
 import { makeTrip } from '../data/testing/fixtures'
@@ -36,5 +36,17 @@ describe('UpdatePrompt (spec 7.6)', () => {
     await waitFor(() => expect(updateServiceWorker).toHaveBeenCalled())
     const saved = await stores.drafts.load('/trip/t1/expense/new')
     expect((saved?.value as { description: string }).description).toBe('拉麵')
+  })
+
+  // task#141：snackbar 關掉之後，設定頁的「關於」仍然可以立即更新
+  it('offers the update in About too, even after the notice is gone', async () => {
+    const stores = await makeStores()
+    const { user } = await renderApp('/settings', stores)
+    const about = () => within(screen.getByRole('region', { name: t('about.title') }))
+    expect(about().queryByRole('button', { name: t('update.now') })).not.toBeInTheDocument()
+    announceUpdate()
+    act(() => stores.ui.getState().dismiss('update'))
+    await user.click(await about().findByRole('button', { name: t('update.now') }))
+    await waitFor(() => expect(updateServiceWorker).toHaveBeenCalledWith(true))
   })
 })
