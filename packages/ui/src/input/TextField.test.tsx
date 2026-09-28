@@ -73,4 +73,20 @@ describe('TextField', () => {
     const px = Number(tokens.match(/--bi-text-base:\s*(\d+)px/)?.[1])
     expect(px).toBeGreaterThanOrEqual(16)
   })
+
+  // task#104：提示文字或刪除鍵放在框內右側，欄位本身維持整列寬
+  it('puts trailing content inside the box, after the input', () => {
+    render(<TextField label="名稱" value="現金" onChange={vi.fn()} trailing={<button type="button">刪除</button>} />)
+    const control = screen.getByRole('textbox').parentElement!
+    expect(control).toHaveClass('bi-field__control')
+    expect(control.lastElementChild).toContainElement(screen.getByRole('button', { name: '刪除' }))
+  })
+
+  // 框線與焦點框畫在外框上：尾端的內容才會看起來在框裡
+  it('draws the border and focus ring on the box, not the bare input', () => {
+    const css = readFileSync(join(import.meta.dirname, 'TextField.css'), 'utf8')
+    expect(css).toMatch(/\.bi-field__control\s*{[^}]*border:\s*1px solid/)
+    expect(css).toMatch(/\.bi-field__control:focus-within\s*{[^}]*outline/)
+    expect(css).toMatch(/\.bi-field__input\s*{[^}]*border:\s*0/)
+  })
 })

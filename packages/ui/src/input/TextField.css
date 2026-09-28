@@ -9,13 +9,41 @@
   color: var(--bi-text-muted);
 }
 
-.bi-field__input {
+/* 框線、底色與焦點框畫在外框：右側可以放「我」、使用次數或刪除鍵，看起來在框裡（task#104） */
+.bi-field__control {
   box-sizing: border-box;
+  display: flex;
+  align-items: center;
   min-height: var(--bi-tap-min);
-  padding: var(--bi-space-2) var(--bi-space-3);
   border: 1px solid var(--bi-border);
   border-radius: var(--bi-radius-md);
   background: var(--bi-surface);
+}
+
+.bi-field__control:focus-within {
+  outline: 2px solid var(--bi-accent);
+  outline-offset: 1px;
+}
+
+.bi-field__trailing {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  padding-inline-end: var(--bi-space-1);
+  color: var(--bi-text-muted);
+  font-size: var(--bi-text-sm);
+  white-space: nowrap;
+}
+
+.bi-field__input {
+  box-sizing: border-box;
+  flex: 1;
+  min-width: 0;
+  min-height: calc(var(--bi-tap-min) - 2px);
+  padding: var(--bi-space-2) var(--bi-space-3);
+  border: 0;
+  border-radius: var(--bi-radius-md);
+  background: transparent;
   color: var(--bi-text);
   font: inherit;
   /* 至少 16px：更小的話 iOS Safari 聚焦時會放大整個頁面而且不縮回 */
@@ -27,12 +55,12 @@
   color: var(--bi-text-subtle);
 }
 
+/* 焦點框已經畫在外框上（:focus-within） */
 .bi-field__input:focus-visible {
-  outline: 2px solid var(--bi-accent);
-  outline-offset: 1px;
+  outline: none;
 }
 
-.bi-field[data-invalid] .bi-field__input {
+.bi-field[data-invalid] .bi-field__control {
   border-color: var(--bi-danger);
 }
 
