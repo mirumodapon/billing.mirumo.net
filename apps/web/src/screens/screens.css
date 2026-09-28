@@ -46,6 +46,12 @@
     font: inherit;
   }
 
+  /* 沒有預算條時的空位，高度同 ProgressBar（task#116） */
+  .app-card__bar-slot {
+    display: block;
+    height: var(--bi-space-2);
+  }
+
   .app-card__title {
     margin: 0;
     font-size: var(--bi-text-lg);

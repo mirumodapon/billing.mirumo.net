@@ -34,7 +34,10 @@ export function TripCard({ trip, summary, onOpen, onDelete }: TripCardProps) {
             // 預算為 0 卻有花費時 ratio 是 Infinity；說明文字封頂，條子本身由 ProgressBar 處理
             ariaLabel={t('tripList.budget', { percent: Math.min(999, Math.round(budget.ratio * 100)) })}
           />
-        ) : null}
+        ) : (
+          // task#116：沒有預算也留出進度條的高度，列表裡每張卡片一樣高
+          <span className="app-card__bar-slot" aria-hidden="true" />
+        )}
       </button>
     </SwipeAction>
   )
