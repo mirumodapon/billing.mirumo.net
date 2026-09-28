@@ -94,3 +94,14 @@ describe('MembersSection', () => {
     expect(panel.getByText(t('members.selfBadge'))).toBeInTheDocument()
   })
 })
+
+describe('MembersSection layout (task#103, #104)', () => {
+  // 與付款方式同一個版面：名稱框整列寬，「我」或刪除鍵在框內右側
+  it('keeps "me" and the delete buttons inside the name boxes', async () => {
+    const { panel } = await setup()
+    const inBox = (el: HTMLElement) => el.closest('.bi-field__control')
+    expect(inBox(panel.getByText(t('members.selfBadge')))).not.toBeNull()
+    expect(inBox(panel.getByRole('button', { name: t('members.add') }))).not.toBeNull()
+    expect(panel.getByText(t('members.name', { name: '阿明' }))).toHaveClass('bi-visually-hidden')
+  })
+})

@@ -128,6 +128,19 @@
     width: var(--bi-tap-min);
   }
 
+  /* 新增成員那一列在頭像的位置放圖示，與上面的成員列對齊（task#103）。尺寸同 md 頭像 */
+  .app-avatar-slot {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: var(--bi-space-8);
+    height: var(--bi-space-8);
+    border: 1px dashed var(--bi-border);
+    border-radius: var(--bi-radius-full);
+    color: var(--bi-text-muted);
+  }
+
   /* 全螢幕表單的頂列：✕、標題、儲存（規格 4.4：儲存鍵固定在 header） */
   .app-form-header {
     display: flex;
