@@ -144,6 +144,17 @@ describe('CalcKeypad', () => {
     }
   })
 
+  /*
+   * 只擋 pointerdown 在 Chromium 夠用，但 WebKit（iOS Safari）對觸控仍會補發 mousedown，
+   * 它的預設動作一樣會讓金額欄位失焦、鍵盤收起——快速連點時尤其容易遇到。mousedown 也要擋
+   */
+  it('keeps focus on the compatibility mousedown WebKit sends after a touch', () => {
+    render(<Harness />)
+    for (const target of [screen.getByRole('button', { name: '5' }), screen.getByTestId('calc-expression'), document.querySelector('.bi-keypad__grid')!]) {
+      expect(fireEvent.mouseDown(target)).toBe(false)
+    }
+  })
+
   // 連點不能被當成「點兩下放大」：放大會讓畫面移動，下一下就點到鍵盤外面
   it('turns off double-tap zoom on the keypad', () => {
     const css = readFileSync(join(import.meta.dirname, 'CalcKeypad.css'), 'utf8')
