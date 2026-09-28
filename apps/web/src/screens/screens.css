@@ -46,6 +46,25 @@
     font: inherit;
   }
 
+  /* 草稿用警示色標出來（task#110）：標籤本身，與列表列左側的色條 */
+  .app-draft-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 var(--bi-space-2);
+    border-radius: var(--bi-radius-full);
+    background: var(--bi-warning);
+    color: var(--bi-warning-fg);
+    font-size: var(--bi-text-xs);
+    font-weight: 600;
+    line-height: var(--bi-leading-tight);
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  .app-expense[data-draft] {
+    box-shadow: inset 3px 0 0 var(--bi-warning);
+  }
+
   /* 沒有預算條時的空位，高度同 ProgressBar（task#116） */
   .app-card__bar-slot {
     display: block;

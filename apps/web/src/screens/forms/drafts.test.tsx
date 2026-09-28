@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { defaultSettings } from '../../data/defaults'
@@ -102,5 +104,14 @@ describe('drafts in the read-only view (task#96)', () => {
     await renderApp('/trip/t1/expense/d', stores)
     expect(screen.getByRole('note')).toHaveTextContent(t('form.draftHint'))
     expect(screen.queryByText(/^≈/)).not.toBeInTheDocument()
+  })
+})
+
+describe('draft colour (task#110)', () => {
+  // jsdom 算不出顏色：讀樣式表，確認標籤與色條用的是警示色，而不是一般的灰
+  it('uses the warning colour for the tag and the row stripe', () => {
+    const css = readFileSync(join(import.meta.dirname, '../screens.css'), 'utf8')
+    expect(css).toMatch(/\.app-draft-tag\s*{[^}]*background:\s*var\(--bi-warning\)/)
+    expect(css).toMatch(/\.app-expense\[data-draft\]\s*{[^}]*var\(--bi-warning\)/)
   })
 })

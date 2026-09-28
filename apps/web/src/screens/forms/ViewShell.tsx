@@ -1,8 +1,9 @@
-import { Button, Chip, Icon, SafeArea } from '@billing/ui'
+import { Button, Icon, SafeArea } from '@billing/ui'
 import { IconX } from '@tabler/icons-react'
 import type { ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { useI18n } from '../../i18n/useI18n'
+import { DraftTag } from './DraftTag'
 import { useConfirmDelete } from './useConfirmDelete'
 
 /**
@@ -81,7 +82,7 @@ export function DraftNote() {
   const { t } = useI18n()
   return (
     <p role="note" className="m-0 flex items-center gap-2 text-sm" style={{ color: 'var(--bi-text-muted)' }}>
-      <Chip label={t('record.draft')} />
+      <DraftTag />
       {t('form.draftHint')}
     </p>
   )

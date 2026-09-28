@@ -1,11 +1,12 @@
 import { convertToBaseMinor, decimalsOf, fromMinor, toMinor, type Transfer, type Trip } from '@billing/core'
-import { Avatar, Button, Chip, Icon, SwipeAction } from '@billing/ui'
+import { Avatar, Button, Icon, SwipeAction } from '@billing/ui'
 import { IconPlus, IconShare, IconTrash } from '@tabler/icons-react'
 import { useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { settlementView, shareText, signedMoney, type PendingTransfer } from '../../domain/settlement'
 import { useI18n } from '../../i18n/useI18n'
 import { useStores, useTrips } from '../../stores/StoresProvider'
+import { DraftTag } from '../forms/DraftTag'
 import { useConfirmDelete } from '../forms/useConfirmDelete'
 import { shareSettlement } from './shareSettlement'
 
@@ -122,14 +123,14 @@ function TransferRow({ trip, transfer, onOpen, onDelete }: { trip: Trip; transfe
   const base = transfer.exchangeRate > 0 ? money(convertToBaseMinor(transfer.amount, transfer.exchangeRate, trip.baseCurrency), trip.baseCurrency) : undefined
   return (
     <SwipeAction glyph={IconTrash} actionLabel={t('common.delete')} onAction={onDelete}>
-      <button type="button" className="app-expense" onClick={onOpen}>
+      <button type="button" className="app-expense" data-draft={transfer.draft || undefined} onClick={onOpen}>
         <span className="app-expense__body">
           <span>
             {date(transfer.date)} · {name(transfer.from)} → {name(transfer.to)}
             {transfer.draft ? (
               <>
                 {' '}
-                <Chip label={t('record.draft')} />
+                <DraftTag />
               </>
             ) : null}
           </span>
