@@ -23,7 +23,7 @@ export interface FormShellProps<T> {
 
 /**
  * 全螢幕表單的外框（支出、轉帳共用）：頂列 ✕／標題／儲存、草稿還原提示、
- * 離開時的「保留草稿／捨棄」（規格 4.4、7.9）。
+ * 離開時的「保留內容／捨棄」（規格 4.4、7.9）。
  */
 export function FormShell<T>({ title, incomplete, isDraft, onDraftChange, onSave, drafted, fallback, children }: FormShellProps<T>) {
   const { t } = useI18n()
@@ -83,7 +83,7 @@ export function FormShell<T>({ title, incomplete, isDraft, onDraftChange, onSave
       ) : null}
       <div className="app-scroll">{children(version)}</div>
       {/*
-        Escape 與點背景都會觸發 onCancel，所以「保留草稿」放在取消、「捨棄」放在確認：
+        Escape 與點背景都會觸發 onCancel，所以「保留內容」放在取消、「捨棄」放在確認：
         誤觸時留下草稿，不會丟資料
       */}
       <Dialog
