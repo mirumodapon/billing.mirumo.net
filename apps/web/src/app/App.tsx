@@ -5,6 +5,7 @@ import { AnimatedRoutes } from './AnimatedRoutes'
 import { Boot } from './Boot'
 import { BootSkeleton } from './BootSkeleton'
 import { SnackbarHost } from './SnackbarHost'
+import { UpdatePrompt } from './UpdatePrompt'
 
 /**
  * 收 Promise 而不是 store 本身：開啟 IndexedDB 是非同步的，但第一次繪製不能等它。
@@ -27,6 +28,7 @@ function Root({ stores }: { stores: Promise<Stores> }) {
           <AnimatedRoutes />
         </Boot>
       </HashRouter>
+      <UpdatePrompt />
       <SnackbarHost store={resolved.ui} />
     </StoresProvider>
   )

@@ -106,3 +106,22 @@ export function onPageHidden(callback: () => void, doc: Document = document): ()
   doc.addEventListener('visibilitychange', listener)
   return () => doc.removeEventListener('visibilitychange', listener)
 }
+
+/** 目前開著的表單的草稿寫入器。更新 app 前要把它們全部寫完（task#90） */
+const activeWriters = new Set<DraftWriter>()
+
+/** 表單掛上時登記，回傳取消登記的函式 */
+export function registerDraftWriter(writer: DraftWriter): () => void {
+  activeWriters.add(writer)
+  return () => {
+    activeWriters.delete(writer)
+  }
+}
+
+/**
+ * 把所有還沒寫的草稿立刻寫進 IndexedDB。「立即更新」重載頁面前呼叫（規格 7.9、task#90）：
+ * 重載不會觸發 visibilitychange，最後 300ms 內打的字要在這裡救回來。
+ */
+export async function flushAllDrafts(): Promise<void> {
+  await Promise.all([...activeWriters].map((writer) => writer.flush()))
+}

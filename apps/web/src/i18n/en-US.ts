@@ -67,6 +67,8 @@ export const enUS: Record<TranslationKey, string> = {
   'backup.importInvalid': 'This file can’t be imported:',
   'backup.imported': 'Backup imported',
   'backup.importFailed': 'Import failed; nothing was changed',
+  'update.available': 'A new version is ready',
+  'update.now': 'Update now',
   'crash.title': 'Something went wrong on this page',
   'crash.hint': 'Your data is still on this device. Export a backup first, then reload or go back to your trips; the error is saved under Error log in Settings.',
   'crash.export': 'Export data',

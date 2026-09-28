@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { createDraftWriter, onPageHidden } from '../../data/drafts'
+import { createDraftWriter, onPageHidden, registerDraftWriter } from '../../data/drafts'
 import { useStores } from '../../stores/StoresProvider'
 
 type State<T> = { status: 'loading' } | { status: 'ready'; draft: T; restored: boolean }
@@ -46,6 +46,8 @@ export function useFormDraft<T>(route: string, initial: T, isValid: (value: unkn
   // iOS 上唯一可靠的「即將離開」訊號；卸載時也寫，換頁不等 300ms
   useEffect(() => onPageHidden(() => void writer.flush()), [writer])
   useEffect(() => () => void writer.flush(), [writer])
+  // 更新 app 前要能一次寫完所有開著的表單（task#90）
+  useEffect(() => registerDraftWriter(writer), [writer])
 
   const draft = state.status === 'ready' ? state.draft : initial
 

@@ -67,6 +67,8 @@ export const zhTW = {
   'backup.importInvalid': '這個檔案無法匯入：',
   'backup.imported': '已匯入備份',
   'backup.importFailed': '匯入失敗，現有的帳沒有變動',
+  'update.available': '有新版本',
+  'update.now': '立即更新',
   'crash.title': '這一頁出了問題',
   'crash.hint': '你的資料還在這台裝置上。先匯出一份備份，再重新載入或回到旅程列表；錯誤已記在設定頁的「錯誤記錄」。',
   'crash.export': '匯出資料',

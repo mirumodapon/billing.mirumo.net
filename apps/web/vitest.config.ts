@@ -1,6 +1,11 @@
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
+  resolve: {
+    // vite-plugin-pwa 的虛擬模組只在建置時存在；測試改用可以控制的替身
+    alias: { 'virtual:pwa-register/react': fileURLToPath(new URL('./src/test/pwaRegisterStub.ts', import.meta.url)) },
+  },
   test: {
     environment: 'jsdom',
     /*
