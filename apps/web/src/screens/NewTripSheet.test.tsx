@@ -1,5 +1,5 @@
 import { screen, waitFor, within } from '@testing-library/react'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { clearSession } from '../data/session'
 import { t } from '../i18n'
 import { currentRoute, renderApp } from '../test/renderApp'
@@ -57,5 +57,32 @@ describe('NewTripSheet', () => {
     await user.click(screen.getByRole('button', { name: t('trip.new') }))
     const again = screen.getByRole('dialog', { name: t('trip.new') })
     expect(within(again).getByLabelText(t('newTrip.name'))).toHaveValue('')
+  })
+})
+
+describe('asking to keep the data (spec 7.4)', () => {
+  // 建立第一趟旅程時請瀏覽器不要清掉資料（Android/Chrome 有效）；之後的旅程不必再問
+  it('asks for persistent storage on the first trip only', async () => {
+    const persist = vi.fn(async () => true)
+    Object.defineProperty(navigator, 'storage', { value: { persist, persisted: async () => false }, configurable: true })
+    try {
+      const { user, sheet } = await openSheet()
+      await user.type(within(sheet).getByLabelText(t('newTrip.name')), '京都')
+      await user.type(within(sheet).getByLabelText(t('newTrip.selfName')), '阿明')
+      await user.click(within(sheet).getByRole('button', { name: t('newTrip.create') }))
+      await waitFor(() => expect(persist).toHaveBeenCalledOnce())
+      location.hash = '#/'
+      await waitFor(() => expect(currentRoute()).toBe('/'))
+      await screen.findByRole('heading', { name: '京都' })
+      await user.click(await screen.findByRole('button', { name: t('trip.new') }))
+      const second = await screen.findByRole('dialog', { name: t('trip.new') })
+      await user.type(within(second).getByLabelText(t('newTrip.name')), '大阪')
+      await user.type(within(second).getByLabelText(t('newTrip.selfName')), '阿明')
+      await user.click(within(second).getByRole('button', { name: t('newTrip.create') }))
+      await waitFor(() => expect(currentRoute()).toMatch(/^\/trip\/.+\/setup$/))
+      expect(persist).toHaveBeenCalledOnce()
+    } finally {
+      Reflect.deleteProperty(navigator, 'storage')
+    }
   })
 })

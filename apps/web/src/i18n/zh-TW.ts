@@ -67,6 +67,10 @@ export const zhTW = {
   'backup.importInvalid': '這個檔案無法匯入：',
   'backup.imported': '已匯入備份',
   'backup.importFailed': '匯入失敗，現有的帳沒有變動',
+  'storage.title': '儲存空間',
+  'storage.used': '已用 {used}，可用上限 {quota}',
+  'storage.usedPercent': '儲存空間已用 {percent}%',
+  'storage.nearlyFull': '儲存空間快滿了。匯出一份含照片的備份，再刪掉不需要的舊旅程。',
   'common.loading': '載入中',
   'common.delete': '刪除',
   'common.cancel': '取消',
@@ -265,6 +269,7 @@ export const zhTWPlurals = {
   'rates.count': '{count} 種幣別',
   'split.summaryItems': '明細 {count} 項',
   'backup.importedMissing': '已匯入備份，有 {count} 張照片不在這份備份裡',
+  'storage.photos': '收據照片 {count} 張',
   'receipt.count': '{count} 張',
   'settings.usedBy': '{count} 筆支出使用中',
 } as const

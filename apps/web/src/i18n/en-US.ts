@@ -67,6 +67,10 @@ export const enUS: Record<TranslationKey, string> = {
   'backup.importInvalid': 'This file can’t be imported:',
   'backup.imported': 'Backup imported',
   'backup.importFailed': 'Import failed; nothing was changed',
+  'storage.title': 'Storage',
+  'storage.used': '{used} used of {quota}',
+  'storage.usedPercent': 'Storage {percent}% used',
+  'storage.nearlyFull': 'Storage is nearly full. Export a backup with photos, then delete old trips you no longer need.',
   'common.loading': 'Loading',
   'common.delete': 'Delete',
   'common.cancel': 'Cancel',
@@ -265,6 +269,7 @@ export const enUSPlurals: Record<PluralKey, { one: string; other: string }> = {
   'rates.count': { one: '{count} currency', other: '{count} currencies' },
   'split.summaryItems': { one: '{count} item', other: '{count} items' },
   'backup.importedMissing': { one: 'Backup imported; {count} photo was not in it', other: 'Backup imported; {count} photos were not in it' },
+  'storage.photos': { one: '{count} receipt photo', other: '{count} receipt photos' },
   'receipt.count': { one: '{count} photo', other: '{count} photos' },
   'settings.usedBy': { one: 'Used by {count} expense', other: 'Used by {count} expenses' },
 }

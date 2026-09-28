@@ -5,6 +5,7 @@ import { BackupSection } from './BackupSection'
 import { CategoriesSection } from './CategoriesSection'
 import { LanguageSection } from './LanguageSection'
 import { PaymentMethodsSection } from './PaymentMethodsSection'
+import { StorageSection } from './StorageSection'
 import { ThemeSection } from './ThemeSection'
 import { useRecordUsage } from './useRecordUsage'
 
@@ -22,6 +23,7 @@ export function SettingsScreen() {
         <CategoriesSection usage={usage} />
         <PaymentMethodsSection usage={usage} />
         <BackupSection />
+        <StorageSection />
       </div>
     </div>
   )

@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { CURRENCIES, currencyName } from '../domain/currencies'
 import { todayIso } from '../domain/dates'
+import { requestPersistence } from '../data/storageHealth'
 import { createTrip, validateTripDraft, type TripDraft, type TripDraftError } from '../domain/newTrip'
 import { useI18n } from '../i18n/useI18n'
 import { useSettings, useStores } from '../stores/StoresProvider'
@@ -43,7 +44,10 @@ export function NewTripSheet({ open, onClose }: { open: boolean; onClose: () => 
     setErrors(found)
     if (found.length > 0) return
     const trip = createTrip(draft)
+    const first = trips.getState().trips.length === 0
     if (await trips.getState().saveTrip(trip)) {
+      // 規格 7.4：建立第一趟旅程時請瀏覽器保留資料（Android/Chrome 有效，iOS 要靠加到主畫面）
+      if (first) void requestPersistence()
       onClose()
       navigate(`/trip/${trip.id}/setup`)
     }
