@@ -2,6 +2,7 @@ import { Button } from '@billing/ui'
 import { useState } from 'react'
 import { useI18n } from '../../i18n/useI18n'
 import { ExportSheet } from './ExportSheet'
+import { ImportFlow } from './ImportFlow'
 
 /**
  * 備份（規格 4.8、7.4）。資料只存在這台裝置上：iOS 未安裝的網頁 7 天沒開會被清掉，
@@ -19,6 +20,7 @@ export function BackupSection() {
       <Button variant="secondary" onClick={() => setExporting(true)}>
         {t('backup.export')}
       </Button>
+      <ImportFlow />
       <ExportSheet open={exporting} onClose={() => setExporting(false)} />
     </section>
   )

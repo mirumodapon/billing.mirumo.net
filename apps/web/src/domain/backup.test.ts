@@ -2,10 +2,10 @@ import 'fake-indexeddb/auto'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { defaultSettings } from '../data/defaults'
 import { makeExpense, makeTrip } from '../data/testing/fixtures'
-import type { Snapshot } from '../data/types'
+import { APP_ID, SNAPSHOT_VERSION, type Snapshot } from '../data/types'
 import { t } from '../i18n'
 import { makeStores } from '../test/renderApp'
-import { csvNamesFor, estimateExportBytes, LAST_EXPORT_KEY, lastExportAt, runExport } from './backup'
+import { csvNamesFor, estimateExportBytes, LAST_EXPORT_KEY, lastExportAt, previewImport, runExport } from './backup'
 
 beforeEach(() => localStorage.clear())
 
@@ -17,9 +17,9 @@ const trip = makeTrip({
 
 function snapshot(overrides: Partial<Snapshot> = {}): Snapshot {
   return {
-    schemaVersion: 1,
+    schemaVersion: SNAPSHOT_VERSION,
     exportedAt: '2026-03-20T00:00:00.000Z',
-    app: 'travel-split',
+    app: APP_ID,
     settings: defaultSettings(),
     trips: [trip],
     expenses: [],
@@ -92,5 +92,25 @@ describe('runExport', () => {
     const stores = await makeStores()
     await runExport(stores, defaultSettings(), { json: true, csv: true, includePhotos: false }, async () => 'cancelled' as const)
     expect(lastExportAt()).toBeUndefined()
+  })
+})
+
+describe('previewImport (Plan 10 P3)', () => {
+  const photo = { id: 'p', mimeType: 'image/webp', byteSize: 1, width: 1, height: 1 }
+  const file = (content: unknown) => new File([JSON.stringify(content)], 'backup.json', { type: 'application/json' })
+
+  it('sums up a valid backup without writing anything', async () => {
+    const snap = snapshot({ expenses: [makeExpense({ attachments: [photo] }), makeExpense({ id: 'e2' })] })
+    expect(await previewImport(file(snap))).toEqual({ ok: true, trips: 1, expenses: 2, photos: 1 })
+  })
+
+  it('lists the problems of a broken backup', async () => {
+    const result = await previewImport(file({ ...snapshot(), trips: 'nope' }))
+    expect(result.ok).toBe(false)
+    expect(result.ok ? [] : result.problems.length).toBeGreaterThan(0)
+  })
+
+  it('refuses a file that is not a backup at all', async () => {
+    expect((await previewImport(new File(['hello'], 'notes.txt'))).ok).toBe(false)
   })
 })
