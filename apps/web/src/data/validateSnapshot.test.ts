@@ -255,8 +255,16 @@ describe('validateSnapshot: expenses without a category', () => {
   })
 })
 
-describe('validateSnapshot: card payments without a rate (task#119)', () => {
-  it('accepts a card payment with no rate, but not an ordinary expense', () => {
+describe('validateSnapshot: stored-value records without a rate', () => {
+  // task#137：儲值不算進合計，沒有匯率也可以
+  it('accepts a top-up with no rate', () => {
+    const trip = makeTrip({ paymentMethods: [{ id: 'suica', name: 'Suica', storedValue: { currency: 'JPY' } }] })
+    const top = makeExpense({ id: 'top', paymentMethodId: 'pay.credit', topUpFor: 'suica', exchangeRate: 0 })
+    expect(validateSnapshot(snapshot({ trips: [trip], expenses: [top] }))).toMatchObject({ ok: true })
+  })
+
+  // task#119 的舊版允許用卡付的沒有匯率：那時匯出的備份仍要匯得回來
+  it('still accepts a card payment with no rate from an older backup, but not an ordinary expense', () => {
     const trip = makeTrip({ paymentMethods: [{ id: 'suica', name: 'Suica', storedValue: { currency: 'JPY' } }] })
     const ride = makeExpense({ id: 'ride', paymentMethodId: 'suica', fromBalance: true, exchangeRate: 0 })
     expect(validateSnapshot(snapshot({ trips: [trip], expenses: [ride] }))).toMatchObject({ ok: true })

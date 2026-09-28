@@ -1,8 +1,8 @@
 import { decimalsOf, isLive, toMinor, type Expense, type Trip } from '@billing/core'
 
 /**
- * 預存卡（task#115），例如 Suica。儲值那一筆是照常計算的支出；之後用卡付的
- * 只扣餘額、不算進任何合計（core 的 countsInTotals 已經排除 fromBalance）。
+ * 預存卡（task#115），例如 Suica。儲值只是把錢放進卡裡、不算進任何合計（core 的
+ * countsInTotals 排除 topUpFor）；之後用卡付的每一筆才是花費，同時扣餘額（task#137）。
  * 只有旅程專用的付款方式可以是預存卡。
  */
 

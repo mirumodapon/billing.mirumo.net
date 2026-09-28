@@ -1,5 +1,5 @@
-import type { Trip } from '@billing/core'
-import { screen, waitFor, within } from '@testing-library/react'
+import { netBalances, type Trip } from '@billing/core'
+import { cleanup, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { defaultSettings } from '../data/defaults'
 import { clearSession } from '../data/session'
@@ -112,39 +112,85 @@ describe('paying with the card (task#115)', () => {
     await waitFor(async () => expect((await stores.repo.listExpenses('t1')).find((e) => e.description === '地鐵')).toMatchObject({ fromBalance: true, currency: 'JPY' }))
   })
 
-  // 儲值 5,000 円 = NT$1,000 算進花費；用卡付的 200 円不再算一次
-  it('counts the top-up in spending but not the card payment, and tags both in the list', async () => {
+  // task#137：儲值 5,000 円只是把錢放進卡裡，不算花費；用卡付的 200 円 = NT$40 才算
+  it('counts the card payment in spending but not the top-up, and tags both in the list', async () => {
     await setup('/trip/t1/expenses', { paymentMethods: [suica] }, [
       { id: 'top', date: '2026-03-15', description: '儲值', amount: 5000, currency: 'JPY', exchangeRate: 0.2, paymentMethodId: 'pay.credit', topUpFor: 'suica' },
       { id: 'ride', date: '2026-03-15', description: '地鐵', amount: 200, currency: 'JPY', exchangeRate: 0.2, paymentMethodId: 'suica', fromBalance: true },
     ])
-    expect(screen.getByText(plain(t('expenses.spent', { amount: formatMoney(1000, 'TWD') })))).toBeInTheDocument()
-    expect(screen.getByRole('region')).toHaveTextContent(plain(t('expenses.dayTotal', { amount: formatMoney(1000, 'TWD') })))
+    expect(screen.getByText(plain(t('expenses.spent', { amount: formatMoney(40, 'TWD') })))).toBeInTheDocument()
+    expect(screen.getByRole('region')).toHaveTextContent(plain(t('expenses.dayTotal', { amount: formatMoney(40, 'TWD') })))
     expect(screen.getByRole('button', { name: /^地鐵/ })).toHaveTextContent(t('stored.paidWith', { name: 'Suica' }))
     expect(screen.getByRole('button', { name: /^儲值/ })).toHaveTextContent(t('stored.topUpTag', { name: 'Suica' }))
   })
 
-  it('explains on the read-only view that a card payment is not counted again', async () => {
-    await setup('/trip/t1/expense/ride', { paymentMethods: [suica] }, [
+  it('explains on the read-only view of a top-up that it is not counted, and says nothing on a card payment', async () => {
+    const { stores } = await setup('/trip/t1/expense/top', { paymentMethods: [suica] }, [
+      { id: 'top', description: '儲值', amount: 5000, currency: 'JPY', exchangeRate: 0.2, paymentMethodId: 'pay.credit', topUpFor: 'suica' },
       { id: 'ride', description: '地鐵', amount: 200, currency: 'JPY', exchangeRate: 0.2, paymentMethodId: 'suica', fromBalance: true },
     ])
-    expect(screen.getByTestId('from-balance-note')).toHaveTextContent(t('stored.notCounted', { name: 'Suica' }))
+    expect(await screen.findByTestId('top-up-note')).toHaveTextContent(t('stored.notCounted', { name: 'Suica' }))
+    cleanup()
+    await renderApp('/trip/t1/expense/ride', stores)
+    expect(await screen.findByRole('heading', { name: '地鐵' })).toBeInTheDocument()
+    expect(screen.queryByTestId('top-up-note')).not.toBeInTheDocument()
+  })
+
+  // task#137：結算也一樣——用卡付的由分攤的人負擔，儲值不進結算
+  it('settles the card payment between the people who shared it, and leaves the top-up out', () => {
+    const trip = makeTrip({ baseCurrency: 'TWD', paymentMethods: [suica] })
+    const records = [
+      makeExpense({ id: 'top', amount: 5000, currency: 'JPY', exchangeRate: 0.2, paidBy: 'a', paymentMethodId: 'pay.credit', topUpFor: 'suica', split: { mode: 'even', participants: ['a'] } }),
+      makeExpense({ id: 'ride', amount: 200, currency: 'JPY', exchangeRate: 0.2, paidBy: 'a', paymentMethodId: 'suica', fromBalance: true, split: { mode: 'even', participants: ['a', 'b'] } }),
+    ]
+    const net = netBalances(trip, records, [])
+    expect(net.find((b) => b.memberId === 'b')?.netMinor).toBe(-20)
+    expect(net.find((b) => b.memberId === 'a')?.netMinor).toBe(20)
   })
 })
 
-describe('paying with the card without a rate (task#119)', () => {
-  it('needs no exchange rate, so the payment saves as a finished record', async () => {
+describe('exchange rates for stored-value records (task#137)', () => {
+  // 儲值不算進合計，換成本位幣沒有意義
+  it('needs no rate for a top-up, which saves as a finished record', async () => {
+    const { user, stores } = await setup('/trip/t1/expense/new?topUp=suica', { paymentMethods: [suica], rates: { default: {}, byMethod: {} } })
+    await screen.findByRole('heading', { name: t('topUp.title', { name: 'Suica' }) })
+    await user.click(screen.getByLabelText(t('expense.amount')))
+    for (const k of ['5', '0', '0', '0']) await user.click(screen.getByRole('button', { name: k }))
+    await user.click(screen.getByLabelText(t('expense.description')))
+    expect(screen.getByText(t('expense.rateNotNeeded'))).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: t('form.save') }))
+    await waitFor(async () => expect((await stores.repo.listExpenses('t1'))[0]).toMatchObject({ topUpFor: 'suica', exchangeRate: 0 }))
+    expect((await stores.repo.listExpenses('t1'))[0]).not.toHaveProperty('draft')
+  })
+
+  // 用卡付的是真的花費：沒有匯率就跟其他支出一樣存成草稿
+  it('asks for a rate when paying with the card, and saves a draft without one', async () => {
     const { user, stores } = await setup('/trip/t1/expense/new', { paymentMethods: [suica], rates: { default: {}, byMethod: {} } })
     await user.click(screen.getByRole('button', { name: new RegExp(`^${t('expense.details')}`) }))
     await user.click(within(screen.getByRole('radiogroup', { name: t('expense.paymentMethod') })).getByRole('radio', { name: 'Suica' }))
-    await pickCategory(user)
     await user.click(screen.getByLabelText(t('expense.amount')))
     for (const k of ['2', '0', '0']) await user.click(screen.getByRole('button', { name: k }))
     await user.click(screen.getByLabelText(t('expense.description')))
-    expect(screen.getByText(t('expense.rateNotNeeded'))).toBeInTheDocument()
+    expect(screen.getByText(t('expense.noRate', { currency: 'JPY' }))).toBeInTheDocument()
     await user.type(screen.getByLabelText(t('expense.description')), '地鐵')
-    await user.click(screen.getByRole('button', { name: t('form.save') }))
-    await waitFor(async () => expect((await stores.repo.listExpenses('t1'))[0]).toMatchObject({ fromBalance: true, exchangeRate: 0 }))
-    expect((await stores.repo.listExpenses('t1'))[0]).not.toHaveProperty('draft')
+    await user.click(screen.getByRole('button', { name: t('form.saveDraft') }))
+    await waitFor(async () => expect((await stores.repo.listExpenses('t1'))[0]).toMatchObject({ fromBalance: true, draft: true }))
+  })
+})
+
+describe('stored-value balances in the stats (task#137)', () => {
+  it('shows what is left on each card', async () => {
+    await setup('/trip/t1/stats', { paymentMethods: [suica] }, [
+      { id: 'top', amount: 5000, currency: 'JPY', exchangeRate: 0.2, paymentMethodId: 'pay.credit', topUpFor: 'suica' },
+      { id: 'ride', amount: 200, currency: 'JPY', exchangeRate: 0.2, paymentMethodId: 'suica', fromBalance: true },
+    ])
+    expect(await screen.findByTestId('stats-balance-suica')).toHaveTextContent('Suica')
+    expect(screen.getByTestId('stats-balance-suica')).toHaveTextContent(plain(formatMoney(4800, 'JPY')))
+  })
+
+  it('has no balances section on a trip without stored-value cards', async () => {
+    await setup('/trip/t1/stats')
+    expect(await screen.findByRole('button', { name: new RegExp(`^${t('stats.overview')}`) })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: new RegExp(`^${t('stats.balances')}`) })).not.toBeInTheDocument()
   })
 })

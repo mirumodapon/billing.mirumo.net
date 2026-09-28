@@ -100,9 +100,11 @@ export function validateSnapshot(input: unknown): SnapshotCheck {
   const checkRecord = (at: string, record: Expense | Transfer, referenced: Set<string>) => {
     if (!isValidIso(record.date)) problems.push(`${at}: invalid date`)
     if (!isAmount(record.amount)) problems.push(`${at}: amount is not a number`)
-    // 草稿可以還沒有匯率（存成 0，task#96），用預存卡付的也不需要（不算進合計，task#119）；其餘一定要有
+    // 草稿可以還沒有匯率（存成 0，task#96），儲值也不需要（不算進合計，task#137）。
+    // 舊版（task#119）用卡付的可以沒有匯率，那樣的備份仍要匯得回來；其餘一定要有
     if (record.draft !== undefined && typeof record.draft !== 'boolean') problems.push(`${at}: draft must be true or false`)
-    const rateOptional = record.draft === true || (record as Partial<Expense>).fromBalance === true
+    const stored = record as Partial<Expense>
+    const rateOptional = record.draft === true || stored.topUpFor !== undefined || stored.fromBalance === true
     if (!isRate(record.exchangeRate) && !(rateOptional && record.exchangeRate === 0)) {
       problems.push(`${at}: exchange rate must be a positive number`)
     }
