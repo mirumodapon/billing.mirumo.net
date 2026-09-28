@@ -7,6 +7,7 @@ describe('pageKeyOf', () => {
     expect(pageKeyOf('/trip/t1/setup')).toBe('/trip/t1')
     expect(pageKeyOf('/trip/t1/expense/new')).toBe('/trip/t1/expense/new')
     expect(pageKeyOf('/trip/t1/expense/e9')).toBe('/trip/t1/expense/e9')
+    expect(pageKeyOf('/trip/t1/transfer/new')).toBe('/trip/t1/transfer/new')
     expect(pageKeyOf('/settings')).toBe('/settings')
     expect(pageKeyOf('/')).toBe('/')
   })
@@ -17,9 +18,19 @@ describe('directionBetween', () => {
   it('pushes a form up and drops it back down', () => {
     expect(directionBetween('/trip/t1', '/trip/t1/expense/new')).toBe('up')
     expect(directionBetween('/trip/t1/expense/new', '/trip/t1')).toBe('down')
+    expect(directionBetween('/trip/t1', '/trip/t1/transfer/new')).toBe('up')
   })
 
   // 規格 5.5：往深處由右滑入，回來由左滑回
+  // task#101：檢視頁由下推入，檢視 → 編輯往前，編輯存完回檢視往回
+  it('pushes a view up, slides into its edit form and back', () => {
+    expect(directionBetween('/trip/t1', '/trip/t1/expense/e1')).toBe('up')
+    expect(directionBetween('/trip/t1/expense/e1', '/trip/t1/expense/e1/edit')).toBe('forward')
+    expect(directionBetween('/trip/t1/expense/e1/edit', '/trip/t1/expense/e1')).toBe('back')
+    expect(directionBetween('/trip/t1/expense/e1', '/trip/t1')).toBe('down')
+    expect(pageKeyOf('/trip/t1/expense/e1/edit')).toBe('/trip/t1/expense/e1/edit')
+  })
+
   it('slides sideways between the list, settings and a trip', () => {
     expect(directionBetween('/', '/trip/t1')).toBe('forward')
     expect(directionBetween('/trip/t1', '/')).toBe('back')

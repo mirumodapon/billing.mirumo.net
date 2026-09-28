@@ -3,44 +3,54 @@ import { Button, CalcKeypad, evaluate, Icon, SheetPicker } from '@billing/ui'
 import { IconChevronDown, IconPencil } from '@tabler/icons-react'
 import { useId, useState } from 'react'
 import { CURRENCIES, currencyName } from '../../domain/currencies'
-import { withAutoRate, withManualRate } from '../../domain/expenseDraft'
 import { useI18n } from '../../i18n/useI18n'
-import type { FormSectionProps } from './ExpenseFormScreen'
 
 /** 匯率給足夠的位數：0.0235 韓圜 */
 const RATE_DECIMALS = 6
 
 /**
- * 幣別、金額、換算（規格 4.4 常駐的第一塊）。版面照規格的示意：幣別貼在金額左邊，
+ * 幣別、金額、換算（規格 4.4 常駐的第一塊）。支出與轉帳表單共用。版面照規格的示意：幣別貼在金額左邊，
  * 換算與匯率只佔一行——多出來的每一列都會把說明欄往下推到鍵盤底下。
  *
  * 金額欄位是 readOnly + inputMode="none"：保留焦點與無障礙語意，但不喚起系統鍵盤
  * （規格 5.3）。金額隨算式即時更新，不等「完成」：輸入 3800 後直接點說明欄的人，
  * 金額不能不見。
  */
-export function AmountSection({ trip, draft, change, autoFocus }: FormSectionProps & { autoFocus: boolean }) {
+export interface MoneyInputProps {
+  baseCurrency: string
+  currency: string
+  amount: number | undefined
+  exchangeRate: number | undefined
+  autoFocus: boolean
+  onAmount: (amount: number | undefined) => void
+  /** 換幣別。匯率要不要跟著重新帶入由呼叫端決定（手動改過的不覆寫） */
+  onCurrency: (currency: string) => void
+  onManualRate: (rate: number | undefined) => void
+}
+
+export function MoneyInput({ baseCurrency, currency, amount, exchangeRate, autoFocus, onAmount, onCurrency, onManualRate }: MoneyInputProps) {
   const { t, locale, money } = useI18n()
   const id = useId()
   const [keypad, setKeypad] = useState<'amount' | 'rate' | null>(null)
-  const [expression, setExpression] = useState(() => (draft.amount === undefined ? '' : String(draft.amount)))
+  const [expression, setExpression] = useState(() => (amount === undefined ? '' : String(amount)))
   const [rateExpression, setRateExpression] = useState('')
   const [pickingCurrency, setPickingCurrency] = useState(false)
-  const decimals = decimalsOf(draft.currency)
-  const foreign = draft.currency !== trip.baseCurrency
+  const decimals = decimalsOf(currency)
+  const foreign = currency !== baseCurrency
 
   const onExpression = (next: string) => {
     setExpression(next)
     const result = evaluate(next, decimals)
-    if (result.ok) change((d) => ({ ...d, amount: result.value }))
-    else if (result.reason === 'empty') change((d) => ({ ...d, amount: undefined }))
+    if (result.ok) onAmount(result.value)
+    else if (result.reason === 'empty') onAmount(undefined)
   }
 
   const converted =
-    draft.amount !== undefined && draft.exchangeRate !== undefined
-      ? money(convertToBaseMinor(draft.amount, draft.exchangeRate, trip.baseCurrency), trip.baseCurrency)
+    amount !== undefined && exchangeRate !== undefined
+      ? money(convertToBaseMinor(amount, exchangeRate, baseCurrency), baseCurrency)
       : undefined
-  const rateText = draft.exchangeRate?.toLocaleString(locale, { maximumFractionDigits: RATE_DECIMALS })
-  const currencies = [trip.baseCurrency, ...CURRENCIES.filter((c) => c !== trip.baseCurrency)]
+  const rateText = exchangeRate?.toLocaleString(locale, { maximumFractionDigits: RATE_DECIMALS })
+  const currencies = [baseCurrency, ...CURRENCIES.filter((c) => c !== baseCurrency)]
   const labels = { done: t('keypad.done'), clear: t('keypad.clear'), backspace: t('keypad.backspace') }
 
   return (
@@ -53,10 +63,10 @@ export function AmountSection({ trip, draft, change, autoFocus }: FormSectionPro
           type="button"
           className="app-currency"
           aria-haspopup="dialog"
-          aria-label={t('expense.pickCurrency', { currency: draft.currency })}
+          aria-label={t('expense.pickCurrency', { currency: currency })}
           onClick={() => setPickingCurrency(true)}
         >
-          {draft.currency}
+          {currency}
           <Icon glyph={IconChevronDown} size="sm" />
         </button>
         <input
@@ -76,14 +86,14 @@ export function AmountSection({ trip, draft, change, autoFocus }: FormSectionPro
           <span aria-live="polite">
             {/* 「沒有匯率」只看匯率本身：還沒輸入金額時也算不出換算，但那不是沒有匯率 */}
             {rateText === undefined
-              ? t('expense.noRate', { currency: draft.currency })
+              ? t('expense.noRate', { currency: currency })
               : [converted && t('expense.converted', { amount: converted }), t('expense.rateInline', { rate: rateText })].filter(Boolean).join(' ・')}
           </span>
           <Button
             variant="ghost"
             aria-label={t('expense.editRate')}
             onClick={() => {
-              setRateExpression(draft.exchangeRate === undefined ? '' : String(draft.exchangeRate))
+              setRateExpression(exchangeRate === undefined ? '' : String(exchangeRate))
               setKeypad('rate')
             }}
           >
@@ -108,7 +118,7 @@ export function AmountSection({ trip, draft, change, autoFocus }: FormSectionPro
         labels={labels}
         header={
           <span className="app-money">
-            {draft.currency}
+            {currency}
             {foreign && converted ? ` · ${t('expense.converted', { amount: converted })}` : null}
           </span>
         }
@@ -120,24 +130,24 @@ export function AmountSection({ trip, draft, change, autoFocus }: FormSectionPro
         onExpressionChange={setRateExpression}
         onDone={(rate) => {
           setKeypad(null)
-          change((d) => withManualRate(d, rate ?? undefined))
+          onManualRate(rate ?? undefined)
         }}
         labels={labels}
-        header={<span className="app-money">{`1 ${draft.currency} = ? ${trip.baseCurrency}`}</span>}
+        header={<span className="app-money">{`1 ${currency} = ? ${baseCurrency}`}</span>}
       />
       <SheetPicker
         open={pickingCurrency}
         title={t('expense.currency')}
         options={currencies.map((c) => ({ value: c, label: `${c} · ${currencyName(c, locale)}` }))}
-        value={draft.currency}
-        onSelect={(currency) => {
+        value={currency}
+        onSelect={(next) => {
           setPickingCurrency(false)
-          change((d) => withAutoRate({ ...d, currency }, trip))
+          onCurrency(next)
           // 換成零小數的幣別時，算式裡的小數要重算一次，免得欄位顯示 12.5 日圓
-          const result = evaluate(expression, decimalsOf(currency))
+          const result = evaluate(expression, decimalsOf(next))
           if (result.ok) {
             setExpression(String(result.value))
-            change((d) => ({ ...d, amount: result.value }))
+            onAmount(result.value)
           }
         }}
         onClose={() => setPickingCurrency(false)}

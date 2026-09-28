@@ -117,7 +117,7 @@ describe('adding from the list', () => {
     await user.click(screen.getByRole('button', { name: t('expenses.add') }))
     expect(currentRoute()).toBe('/trip/t1/expense/new')
     await waitFor(() => expect(screen.getByTestId('page')).toHaveAttribute('data-direction', 'up'))
-    await user.click(screen.getByRole('button', { name: t('expense.close') }))
+    await user.click(screen.getByRole('button', { name: t('form.close') }))
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
     await waitFor(() => expect(screen.getByTestId('page')).toHaveAttribute('data-direction', 'down'))
   })
@@ -129,9 +129,89 @@ describe('adding from the list', () => {
     const { user } = await renderApp('/', stores)
     await user.click(screen.getByRole('button', { name: /^東京/ }))
     await user.click(await screen.findByRole('button', { name: t('expenses.add') }))
-    await user.click(await screen.findByRole('button', { name: t('expense.close') }))
+    await user.click(await screen.findByRole('button', { name: t('form.close') }))
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
     history.back()
     await waitFor(() => expect(currentRoute()).toBe('/'))
+  })
+})
+
+describe('home-currency toggle (task#99)', () => {
+  it('shows both amounts by default, and only the original once switched off', async () => {
+    const { user, stores } = await setup()
+    const toggle = screen.getByRole('button', { name: t('expenses.showBase') })
+    expect(toggle).toHaveAttribute('aria-pressed', 'true')
+    expect(row('一蘭拉麵')).toHaveTextContent(plain(formatMoney(630, 'TWD')))
+    await user.click(toggle)
+    expect(toggle).toHaveAttribute('aria-pressed', 'false')
+    expect(row('一蘭拉麵')).toHaveTextContent(plain(formatMoney(3000, 'JPY')))
+    expect(row('一蘭拉麵')).not.toHaveTextContent(plain(formatMoney(630, 'TWD')))
+    // 本位幣的支出本來就只有一個金額，照常顯示
+    expect(row('淺草寺門票')).toHaveTextContent(plain(formatMoney(500, 'TWD')))
+    await waitFor(async () => expect((await stores.repo.getSettings()).showBaseAmounts).toBe(false))
+  })
+
+  // 合計與摘要是全團的帳，一律用本位幣
+  it('keeps day totals and the summary in the home currency', async () => {
+    const { user } = await setup()
+    await user.click(screen.getByRole('button', { name: t('expenses.showBase') }))
+    const dayTotal = formatMoney(convertToBaseMinor(3000, 0.21, 'TWD') + 500, 'TWD')
+    expect(screen.getAllByRole('region')[1]).toHaveTextContent(plain(t('expenses.dayTotal', { amount: dayTotal })))
+    expect(screen.getByText(plain(t('expenses.spent', { amount: formatMoney(1330, 'TWD') })))).toBeInTheDocument()
+  })
+})
+
+describe('expense filter (task#106)', () => {
+  async function openFilter(user: Awaited<ReturnType<typeof setup>>['user']) {
+    await user.click(screen.getByRole('button', { name: t('expenses.filter') }))
+    return within(screen.getByRole('dialog', { name: t('expenses.filter') }))
+  }
+
+  it('narrows the list, the day totals and a filtered total, but not the trip summary', async () => {
+    const { user } = await setup()
+    const sheet = await openFilter(user)
+    await user.click(within(sheet.getByRole('group', { name: t('expense.paidBy') })).getByRole('button', { name: '小美' }))
+    await user.click(sheet.getByRole('button', { name: t('filter.done') }))
+    expect(screen.getByRole('button', { name: /^淺草寺門票/ })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^一蘭拉麵/ })).not.toBeInTheDocument()
+    expect(screen.getAllByRole('region')).toHaveLength(1)
+    expect(screen.getByRole('region')).toHaveTextContent(plain(t('expenses.dayTotal', { amount: formatMoney(500, 'TWD') })))
+    expect(screen.getByRole('status')).toHaveTextContent(plain(t('expenses.filtered', { count: 1, amount: formatMoney(500, 'TWD') })))
+    // 摘要與預算是整趟旅程的帳，不跟著篩選
+    expect(screen.getByText(plain(t('expenses.spent', { amount: formatMoney(1330, 'TWD') })))).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: t('expenses.filter') })).toHaveAttribute('data-active')
+  })
+
+  it('keeps the filter after opening an expense and coming back, until it is cleared', async () => {
+    const { user } = await setup()
+    const sheet = await openFilter(user)
+    await user.click(within(sheet.getByRole('group', { name: t('expense.paidBy') })).getByRole('button', { name: '小美' }))
+    await user.click(sheet.getByRole('button', { name: t('filter.done') }))
+    await user.click(screen.getByRole('button', { name: /^淺草寺門票/ }))
+    await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expense/ticket'))
+    await user.click(screen.getByRole('button', { name: t('form.close') }))
+    await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
+    expect(await screen.findByRole('button', { name: /^淺草寺門票/ })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^一蘭拉麵/ })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: t('expenses.clearFilter') }))
+    expect(screen.getByRole('button', { name: /^一蘭拉麵/ })).toBeInTheDocument()
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+  })
+
+  it('says so when nothing matches', async () => {
+    const { user } = await setup()
+    const sheet = await openFilter(user)
+    await user.click(sheet.getByRole('button', { name: t('filter.draftsOnly') }))
+    expect(screen.getByText(t('expenses.noMatch'))).toBeInTheDocument()
+  })
+
+  // 一整排這趟旅程從沒用過的類別只是雜訊
+  it('offers only the categories and payment methods this trip uses', async () => {
+    const { user } = await setup()
+    const sheet = await openFilter(user)
+    const categories = within(sheet.getByRole('group', { name: t('expense.category') }))
+    expect(categories.getAllByRole('button').map((b) => b.textContent)).toEqual([t('cat.food')])
+    const methods = within(sheet.getByRole('group', { name: t('expense.paymentMethod') }))
+    expect(methods.getAllByRole('button').map((b) => b.textContent)).toEqual([t('pay.cash')])
   })
 })

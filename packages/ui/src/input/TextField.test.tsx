@@ -31,6 +31,13 @@ describe('TextField', () => {
     expect(onBlur).toHaveBeenCalledOnce()
   })
 
+  it('can keep its label for assistive tech only', () => {
+    render(<TextField label="名稱" value="" onChange={() => {}} hideLabel />)
+    const input = screen.getByLabelText('名稱')
+    expect(input).toBeInTheDocument()
+    expect(screen.getByText('名稱')).toHaveClass('bi-visually-hidden')
+  })
+
   it('marks itself invalid and points at the message when there is an error', () => {
     render(<TextField label="姓名" value="" onChange={vi.fn()} error="姓名不能空白" />)
     const input = screen.getByRole('textbox', { name: '姓名' })

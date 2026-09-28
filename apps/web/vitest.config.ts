@@ -12,5 +12,7 @@ export default defineConfig({
     env: { TZ: 'America/Los_Angeles' },
     include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
     setupFiles: ['src/test/setup.ts'],
+    // 多數是整個 app 掛起來、點十幾下的整合測試；整個 monorepo 平行跑時 5 秒不夠
+    testTimeout: 15_000,
   },
 })

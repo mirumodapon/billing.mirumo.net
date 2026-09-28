@@ -3,245 +3,431 @@
  * 寫死色值或引用 palette 層，換主題時就會留下一塊不跟著變的顏色。
  */
 
-.app-screen {
-  display: flex;
-  flex-direction: column;
-  height: 100dvh;
-}
+/*
+ * 放在 components 層：Tailwind v4 的 utility 在 utilities 層，沒分層的規則永遠勝過分層的，
+ * 不放進來的話，寫在這些 class 旁邊的 m-0、flex-row 之類全部無效（Plan 8 走查時發現）。
+ */
+@layer components {
 
-.app-scroll {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-}
+  .app-screen {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+  }
 
-.app-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--bi-space-3);
-  padding: var(--bi-space-4);
-  /* 讓開 FAB，最後一張卡片才不會被它蓋住 */
-  padding-bottom: calc(var(--bi-space-14) + var(--bi-space-8) + var(--bi-safe-bottom));
-}
+  .app-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
 
-.app-card {
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  gap: var(--bi-space-2);
-  width: 100%;
-  min-height: var(--bi-tap-min);
-  padding: var(--bi-space-4);
-  border: 0;
-  border-radius: var(--bi-radius-lg);
-  background: var(--bi-surface);
-  color: var(--bi-text);
-  text-align: start;
-  font: inherit;
-}
+  .app-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--bi-space-3);
+    padding: var(--bi-space-4);
+    /* 讓開 FAB，最後一張卡片才不會被它蓋住 */
+    padding-bottom: calc(var(--bi-space-14) + var(--bi-space-8) + var(--bi-safe-bottom));
+  }
 
-.app-card__title {
-  margin: 0;
-  font-size: var(--bi-text-lg);
-  font-weight: 600;
-  line-height: var(--bi-leading-tight);
-}
+  .app-card {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: var(--bi-space-2);
+    width: 100%;
+    min-height: var(--bi-tap-min);
+    padding: var(--bi-space-4);
+    border: 0;
+    border-radius: var(--bi-radius-lg);
+    background: var(--bi-surface);
+    color: var(--bi-text);
+    text-align: start;
+    font: inherit;
+  }
 
-.app-card__meta {
-  display: flex;
-  gap: var(--bi-space-2);
-  min-width: 0;
-  color: var(--bi-text-muted);
-  font-size: var(--bi-text-sm);
-}
+  .app-card__title {
+    margin: 0;
+    font-size: var(--bi-text-lg);
+    font-weight: 600;
+    line-height: var(--bi-leading-tight);
+  }
 
-/* 規格 6.6：英文較長，次要資訊優先截斷 */
-.app-card__meta > * {
-  min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
+  .app-card__meta {
+    display: flex;
+    gap: var(--bi-space-2);
+    min-width: 0;
+    color: var(--bi-text-muted);
+    font-size: var(--bi-text-sm);
+  }
 
-.app-money {
-  font-variant-numeric: tabular-nums;
-}
+  /* 規格 6.6：英文較長，次要資訊優先截斷 */
+  .app-card__meta > * {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
 
-.app-empty {
-  padding: var(--bi-space-12) var(--bi-space-6);
-  color: var(--bi-text-muted);
-  text-align: center;
-}
+  .app-money {
+    font-variant-numeric: tabular-nums;
+  }
 
-.app-form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--bi-space-4);
-  padding: var(--bi-space-4);
-}
+  .app-empty {
+    padding: var(--bi-space-12) var(--bi-space-6);
+    color: var(--bi-text-muted);
+    text-align: center;
+  }
 
-.app-field-label {
-  margin: 0 0 var(--bi-space-2);
-  color: var(--bi-text-muted);
-  font-size: var(--bi-text-sm);
-}
+  .app-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--bi-space-4);
+    padding: var(--bi-space-4);
+  }
 
-.app-error {
-  margin: var(--bi-space-1) 0 0;
-  color: var(--bi-danger);
-  font-size: var(--bi-text-sm);
-}
+  .app-field-label {
+    margin: 0 0 var(--bi-space-2);
+    color: var(--bi-text-muted);
+    font-size: var(--bi-text-sm);
+  }
 
-/* 一列「標籤 … 值 >」，點開 SheetPicker 或 CalcKeypad */
-.app-row {
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--bi-space-3);
-  width: 100%;
-  min-height: var(--bi-tap-min);
-  padding: var(--bi-space-2) var(--bi-space-3);
-  border: 1px solid var(--bi-border);
-  border-radius: var(--bi-radius-md);
-  background: var(--bi-surface);
-  color: var(--bi-text);
-  font: inherit;
-  text-align: start;
-}
+  .app-error {
+    margin: var(--bi-space-1) 0 0;
+    color: var(--bi-danger);
+    font-size: var(--bi-text-sm);
+  }
 
-.app-row__value {
-  color: var(--bi-text-muted);
-}
+  /* 一列「標籤 … 值 >」，點開 SheetPicker 或 CalcKeypad */
+  .app-row {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--bi-space-3);
+    width: 100%;
+    min-height: var(--bi-tap-min);
+    padding: var(--bi-space-2) var(--bi-space-3);
+    border: 1px solid var(--bi-border);
+    border-radius: var(--bi-radius-md);
+    background: var(--bi-surface);
+    color: var(--bi-text);
+    font: inherit;
+    text-align: start;
+  }
 
-/* 全螢幕表單的頂列：✕、標題、儲存（規格 4.4：儲存鍵固定在 header） */
-.app-form-header {
-  display: flex;
-  align-items: center;
-  gap: var(--bi-space-2);
-  padding: var(--bi-space-2) var(--bi-space-3);
-  border-bottom: 1px solid var(--bi-border);
-}
+  .app-row__value {
+    color: var(--bi-text-muted);
+  }
 
-.app-form-header__title {
-  flex: 1;
-  margin: 0;
-  font-size: var(--bi-text-lg);
-  font-weight: 600;
-  text-align: center;
-}
+  /* 清單列尾端的固定欄：放刪除鍵或留空，讓每一列的框左右緣都對齊（task#93） */
+  .app-slot {
+    display: inline-flex;
+    flex: none;
+    justify-content: center;
+    width: var(--bi-tap-min);
+  }
 
-/* 支出金額：大字、等寬數字，看起來像計算機的顯示 */
-.app-amount {
-  box-sizing: border-box;
-  width: 100%;
-  min-height: var(--bi-tap-min);
-  padding: var(--bi-space-2) var(--bi-space-3);
-  border: 1px solid var(--bi-border);
-  border-radius: var(--bi-radius-md);
-  background: var(--bi-surface);
-  color: var(--bi-text);
-  font: inherit;
-  font-size: var(--bi-text-2xl);
-  font-variant-numeric: tabular-nums;
-  text-align: end;
-  caret-color: transparent;
-}
+  /* 全螢幕表單的頂列：✕、標題、儲存（規格 4.4：儲存鍵固定在 header） */
+  .app-form-header {
+    display: flex;
+    align-items: center;
+    gap: var(--bi-space-2);
+    padding: var(--bi-space-2) var(--bi-space-3);
+    border-bottom: 1px solid var(--bi-border);
+  }
 
-/* 支出列表：黏頂摘要列、日期小標、每一筆 */
-.app-sticky {
-  position: sticky;
-  top: 0;
-  z-index: var(--bi-z-sticky);
-  display: flex;
-  flex-direction: column;
-  gap: var(--bi-space-2);
-  padding: var(--bi-space-3) var(--bi-space-4);
-  background: var(--bi-bg);
-  border-bottom: 1px solid var(--bi-border);
-}
+  .app-form-header__title {
+    flex: 1;
+    margin: 0;
+    font-size: var(--bi-text-lg);
+    font-weight: 600;
+    text-align: center;
+  }
 
-.app-day {
-  display: flex;
-  justify-content: space-between;
-  padding: var(--bi-space-3) var(--bi-space-4) var(--bi-space-1);
-  color: var(--bi-text-muted);
-  font-size: var(--bi-text-sm);
-}
+  /* 支出金額：大字、等寬數字，看起來像計算機的顯示 */
+  .app-amount {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: var(--bi-tap-min);
+    padding: var(--bi-space-2) var(--bi-space-3);
+    border: 1px solid var(--bi-border);
+    border-radius: var(--bi-radius-md);
+    background: var(--bi-surface);
+    color: var(--bi-text);
+    font: inherit;
+    font-size: var(--bi-text-2xl);
+    font-variant-numeric: tabular-nums;
+    text-align: end;
+    caret-color: transparent;
+  }
 
-.app-expense {
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  gap: var(--bi-space-3);
-  width: 100%;
-  min-height: var(--bi-tap-min);
-  padding: var(--bi-space-2) var(--bi-space-4);
-  border: 0;
-  background: var(--bi-bg);
-  color: var(--bi-text);
-  font: inherit;
-  text-align: start;
-}
+  /* 支出列表：黏頂摘要列、日期小標、每一筆 */
+  .app-sticky {
+    position: sticky;
+    top: 0;
+    z-index: var(--bi-z-sticky);
+    display: flex;
+    flex-direction: column;
+    gap: var(--bi-space-2);
+    padding: var(--bi-space-3) var(--bi-space-4);
+    background: var(--bi-bg);
+    border-bottom: 1px solid var(--bi-border);
+  }
 
-.app-expense__icon {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  width: var(--bi-tap-min);
-  height: var(--bi-tap-min);
-  border-radius: var(--bi-radius-md);
-}
+  .app-sticky__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--bi-space-2);
+  }
 
-.app-expense__body {
-  flex: 1;
-  min-width: 0;
-}
+  /* 摘要列右側的小圖示鍵（task#106）：開著或篩選中時換成強調色 */
+  .app-icon-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--bi-tap-min);
+    height: var(--bi-tap-min);
+    border: 0;
+    border-radius: var(--bi-radius-full);
+    background: transparent;
+    color: var(--bi-text-muted);
+    cursor: pointer;
+  }
 
-.app-expense__body > * {
-  display: block;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
+  .app-icon-toggle[aria-pressed='true'],
+  .app-icon-toggle[data-active] {
+    background: var(--bi-surface);
+    color: var(--bi-accent);
+  }
 
-.app-expense__amounts {
-  flex: none;
-  text-align: end;
-  font-variant-numeric: tabular-nums;
-}
+  .app-icon-toggle:focus-visible {
+    outline: 2px solid var(--bi-accent);
+    outline-offset: 2px;
+  }
 
-/* 金額區塊（規格 4.4 示意）：幣別貼在金額左邊，換算與匯率一行 */
-.app-amount-row {
-  display: flex;
-  align-items: stretch;
-  gap: var(--bi-space-2);
-}
+  /* 分攤的快速選擇鍵（task#105）：比一般按鈕輕，三個要排得進一行 */
+  .app-quick-pick {
+    min-height: var(--bi-tap-min);
+    padding: 0 var(--bi-space-3);
+    border: 1px solid var(--bi-border);
+    border-radius: var(--bi-radius-full);
+    background: transparent;
+    color: var(--bi-text);
+    font: inherit;
+    font-size: var(--bi-text-sm);
+    cursor: pointer;
+  }
 
-.app-currency {
-  box-sizing: border-box;
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  gap: var(--bi-space-1);
-  min-width: var(--bi-tap-min);
-  padding: 0 var(--bi-space-3);
-  border: 1px solid var(--bi-border);
-  border-radius: var(--bi-radius-md);
-  background: var(--bi-surface);
-  color: var(--bi-text);
-  font: inherit;
-  font-weight: 600;
-}
+  .app-quick-pick:focus-visible {
+    outline: 2px solid var(--bi-accent);
+    outline-offset: 2px;
+  }
 
-.app-converted {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--bi-space-2);
-  min-height: var(--bi-tap-min);
-  color: var(--bi-text-muted);
-  font-size: var(--bi-text-sm);
-  font-variant-numeric: tabular-nums;
+  .app-day {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--bi-space-3) var(--bi-space-4) var(--bi-space-1);
+    color: var(--bi-text-muted);
+    font-size: var(--bi-text-sm);
+  }
+
+  .app-expense {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: var(--bi-space-3);
+    width: 100%;
+    min-height: var(--bi-tap-min);
+    padding: var(--bi-space-2) var(--bi-space-4);
+    border: 0;
+    background: var(--bi-bg);
+    color: var(--bi-text);
+    font: inherit;
+    text-align: start;
+  }
+
+  .app-expense__icon {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: var(--bi-tap-min);
+    height: var(--bi-tap-min);
+    border-radius: var(--bi-radius-md);
+  }
+
+  .app-expense__body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .app-expense__body > * {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .app-expense__amounts {
+    flex: none;
+    text-align: end;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 金額區塊（規格 4.4 示意）：幣別貼在金額左邊，換算與匯率一行 */
+  .app-amount-row {
+    display: flex;
+    align-items: stretch;
+    gap: var(--bi-space-2);
+  }
+
+  .app-currency {
+    box-sizing: border-box;
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: var(--bi-space-1);
+    min-width: var(--bi-tap-min);
+    padding: 0 var(--bi-space-3);
+    border: 1px solid var(--bi-border);
+    border-radius: var(--bi-radius-md);
+    background: var(--bi-surface);
+    color: var(--bi-text);
+    font: inherit;
+    font-weight: 600;
+  }
+
+  /* 收據放大檢視：蓋住整個畫面，照片完整顯示不裁切（task#101） */
+  .app-photo-viewer {
+    position: fixed;
+    inset: 0;
+    z-index: var(--bi-z-dialog);
+    display: flex;
+    flex-direction: column;
+    background: var(--bi-scrim);
+  }
+
+  .app-photo-viewer img {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    object-fit: contain;
+  }
+
+  /* 檢視頁的一列「標籤 … 值」，唯讀 */
+  .app-fact {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--bi-space-3);
+    padding: var(--bi-space-2) 0;
+    border-bottom: 1px solid var(--bi-border);
+  }
+
+  .app-fact > :first-child {
+    color: var(--bi-text-muted);
+  }
+
+  /* 檢視頁（task#107）：頂端的摘要卡，下面是一張張的細節卡 */
+  .app-view-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--bi-space-1);
+    padding: var(--bi-space-6) var(--bi-space-4);
+    border-radius: var(--bi-radius-lg);
+    background: var(--bi-surface);
+    text-align: center;
+  }
+
+  .app-view-hero__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    margin-bottom: var(--bi-space-1);
+    border-radius: var(--bi-radius-lg);
+  }
+
+  .app-view-hero__amount {
+    margin: var(--bi-space-1) 0 0;
+    font-size: var(--bi-text-2xl);
+    font-weight: 600;
+  }
+
+  .app-view-hero__meta {
+    margin: 0;
+    color: var(--bi-text-muted);
+    font-size: var(--bi-text-sm);
+  }
+
+  .app-view-hero__people {
+    display: flex;
+    align-items: center;
+    gap: var(--bi-space-4);
+    color: var(--bi-text-muted);
+  }
+
+  /* 箭頭對齊頭像中線，而不是「頭像＋名字」那一整欄的中線 */
+  .app-view-hero__arrow {
+    display: inline-flex;
+    margin-bottom: calc(1lh + var(--bi-space-1));
+  }
+
+  .app-view-hero__person {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--bi-space-1);
+    color: var(--bi-text);
+  }
+
+  .app-view-card {
+    gap: 0;
+    padding-block: var(--bi-space-2);
+  }
+
+  .app-view-card > .app-card__title {
+    padding-block: var(--bi-space-2);
+  }
+
+  .app-view-card > .app-fact:last-child {
+    border-bottom: 0;
+  }
+
+  /* 各人分攤：頭像、名字、金額，下面一條占比 */
+  .app-share {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: var(--bi-space-1) var(--bi-space-3);
+    padding: var(--bi-space-2) 0;
+  }
+
+  .app-share__bar {
+    grid-column: 2 / 4;
+    height: 4px;
+    overflow: hidden;
+    border-radius: var(--bi-radius-full);
+    background: var(--bi-border);
+  }
+
+  .app-share__bar > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+  }
+
+  .app-converted {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--bi-space-2);
+    min-height: var(--bi-tap-min);
+    color: var(--bi-text-muted);
+    font-size: var(--bi-text-sm);
+    font-variant-numeric: tabular-nums;
+  }
 }

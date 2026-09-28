@@ -1,11 +1,12 @@
 import type { AttachmentMeta } from '@billing/core'
 import { Accordion, Button, Icon } from '@billing/ui'
-import { IconCamera, IconPhotoOff, IconX } from '@tabler/icons-react'
-import { useEffect, useRef, useState } from 'react'
+import { IconCamera } from '@tabler/icons-react'
+import { useRef } from 'react'
 import { compressImage } from '../../data/compressImage'
 import { useI18n } from '../../i18n/useI18n'
 import { useStores } from '../../stores/StoresProvider'
 import type { FormSectionProps } from './ExpenseFormScreen'
+import { ReceiptThumbnail } from '../forms/ReceiptThumbnail'
 
 /**
  * 收據照片（規格 7.3）。拍照後立刻壓縮再存，原圖不落地。
@@ -41,7 +42,7 @@ export function ReceiptSection({ draft, change, open, onToggle }: FormSectionPro
       <div className="app-form">
         <div className="flex flex-wrap gap-3">
           {draft.attachments.map((meta, index) => (
-            <Thumbnail
+            <ReceiptThumbnail
               key={meta.id}
               meta={meta}
               label={t('receipt.photo', { n: index + 1 })}
@@ -74,44 +75,3 @@ export function ReceiptSection({ draft, change, open, onToggle }: FormSectionPro
   )
 }
 
-function Thumbnail({ meta, label, onRemove }: { meta: AttachmentMeta; label: string; onRemove: () => void }) {
-  const { t } = useI18n()
-  const { blobs } = useStores()
-  const [url, setUrl] = useState<string | null | undefined>(undefined)
-
-  useEffect(() => {
-    let revoked = false
-    let created: string | undefined
-    void blobs.get(meta.id).then((blob) => {
-      if (revoked) return
-      if (!blob) return setUrl(null)
-      created = URL.createObjectURL(blob)
-      setUrl(created)
-    })
-    return () => {
-      revoked = true
-      if (created) URL.revokeObjectURL(created)
-    }
-  }, [blobs, meta.id])
-
-  return (
-    <figure className="relative m-0 h-20 w-20">
-      {url ? (
-        <img src={url} alt={label} className="h-20 w-20 rounded-lg object-cover" />
-      ) : url === null ? (
-        // 匯入不含照片的備份後（Plan 7 E7）：佔位而不是破圖
-        <div role="img" aria-label={t('receipt.missing')} className="app-card h-20 w-20 items-center justify-center p-1 text-center text-xs">
-          <Icon glyph={IconPhotoOff} />
-          <span>{t('receipt.missing')}</span>
-        </div>
-      ) : (
-        <div className="app-card h-20 w-20" aria-hidden="true" />
-      )}
-      <span className="absolute -right-2 -top-2">
-        <Button variant="ghost" aria-label={t('receipt.remove')} onClick={onRemove}>
-          <Icon glyph={IconX} />
-        </Button>
-      </span>
-    </figure>
-  )
-}

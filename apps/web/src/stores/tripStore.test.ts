@@ -248,3 +248,48 @@ describe('tripStore: expenses', () => {
     expect(await stores.repo.listExpenses('t2')).toHaveLength(1)
   })
 })
+
+describe('tripStore: transfers', () => {
+  async function opened() {
+    const stores = await withTrip()
+    await stores.trips.getState().loadTrips()
+    await stores.trips.getState().openTrip('t1')
+    return stores
+  }
+  const ids = (s: Awaited<ReturnType<typeof opened>>) => s.trips.getState().current!.transfers.map((x) => x.id)
+
+  it('shows a new transfer at once and keeps it after saving', async () => {
+    const stores = await opened()
+    const saving = stores.trips.getState().saveTransfer(makeTransfer({ id: 'x2', tripId: 't1', date: '2026-03-17' }))
+    expect(ids(stores)).toEqual(['x2', 'x1'])
+    expect((await saving)?.createdAt).toBeTruthy()
+    expect(await stores.repo.listTransfers('t1')).toHaveLength(2)
+  })
+
+  // 規格 2.5：轉帳不是消費，列表卡片的已花金額與預算都不動
+  it('leaves the trip’s spending summary alone', async () => {
+    const stores = await opened()
+    const before = stores.trips.getState().summaries.t1
+    await stores.trips.getState().saveTransfer(makeTransfer({ id: 'x2', tripId: 't1', amount: 99999 }))
+    expect(stores.trips.getState().summaries.t1).toBe(before)
+  })
+
+  it('rolls back a failed save', async () => {
+    const stores = await opened()
+    vi.spyOn(stores.repo, 'saveTransfer').mockRejectedValueOnce(new StorageError('write', 'transfer'))
+    expect(await stores.trips.getState().saveTransfer(makeTransfer({ id: 'x2', tripId: 't1' }))).toBeUndefined()
+    expect(ids(stores)).toEqual(['x1'])
+    expect(stores.ui.getState().queue[0]?.message).toBe(t('error.saveFailed'))
+  })
+
+  it('deletes a transfer naming both people, and brings it back on undo', async () => {
+    const stores = await opened()
+    await stores.trips.getState().deleteTransfer('x1')
+    expect(ids(stores)).toEqual([])
+    const snack = stores.ui.getState().queue[0]!
+    expect(snack.message).toBe(t('transfer.deleted', { from: '小美', to: '阿明' }))
+    snack.onAction!()
+    await vi.waitFor(async () => expect(await stores.repo.listTransfers('t1')).toHaveLength(1))
+    expect(ids(stores)).toEqual(['x1'])
+  })
+})

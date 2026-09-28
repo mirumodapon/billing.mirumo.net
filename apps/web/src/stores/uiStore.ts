@@ -1,4 +1,5 @@
 import { createStore, type StoreApi } from 'zustand/vanilla'
+import type { ExpenseFilter } from '../domain/expenseFilter'
 
 export interface SnackItem {
   id: string
@@ -12,9 +13,12 @@ export interface UiState {
   /** 回傳 id。同一個 id 再 show 一次會原地取代，而不是重複排隊 */
   show(item: Omit<SnackItem, 'id'> & { id?: string }): string
   dismiss(id: string): void
+  /** 支出列表的篩選，依旅程分開（task#106）。只活在這次開 app 期間 */
+  expenseFilters: Record<string, ExpenseFilter>
+  setExpenseFilter(tripId: string, filter: ExpenseFilter): void
 }
 
-/** 畫面層的暫時狀態（規格 7.5 的 useUiStore）。目前只有 snackbar 佇列 */
+/** 畫面層的暫時狀態（規格 7.5 的 useUiStore）：snackbar 佇列與支出篩選 */
 export function createUiStore(): StoreApi<UiState> {
   return createStore<UiState>((set) => ({
     queue: [],
@@ -32,6 +36,10 @@ export function createUiStore(): StoreApi<UiState> {
     },
     dismiss(id) {
       set((s) => ({ queue: s.queue.filter((q) => q.id !== id) }))
+    },
+    expenseFilters: {},
+    setExpenseFilter(tripId, filter) {
+      set((s) => ({ expenseFilters: { ...s.expenseFilters, [tripId]: filter } }))
     },
   }))
 }

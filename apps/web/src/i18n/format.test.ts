@@ -15,6 +15,21 @@ describe('formatMoney', () => {
     expect(formatMoney(1234, 'USD')).toMatch(/12\.34/)
   })
 
+  // task#98：zh-TW 的新台幣是「$」、en-US 的美元是「$」，同一個符號在兩個語系指不同的錢
+  it('always spells out NT$ and US$ so the currency is never ambiguous', () => {
+    for (const locale of ['zh-TW', 'en-US'] as const) {
+      setLocale(locale)
+      expect(formatMoney(1500, 'TWD'), locale).toMatch(/^NT\$1,500$/)
+      expect(formatMoney(1234, 'USD'), locale).toMatch(/^US\$12\.34$/)
+      expect(formatMoney(-400, 'TWD'), locale).toMatch(/^-NT\$400$/)
+    }
+  })
+
+  it('keeps the platform symbol for other currencies', () => {
+    setLocale('zh-TW')
+    expect(formatMoney(3000, 'JPY')).toBe(new Intl.NumberFormat('zh-TW', { style: 'currency', currency: 'JPY', maximumFractionDigits: 0 }).format(3000))
+  })
+
   it('handles negatives', () => {
     setLocale('zh-TW')
     expect(formatMoney(-500, 'TWD')).toMatch(/-|−|\(/)

@@ -217,3 +217,16 @@ describe('minimalTransfers', () => {
     expect(minimalTransfers(balances)).toEqual(minimalTransfers(balances))
   })
 })
+
+// task#96：草稿看得到、改得了，但在完成之前不影響淨額
+describe('netBalances: drafts', () => {
+  it('leaves draft expenses and transfers out of the balances', () => {
+    const finished = [expense({ id: 'e1', paidBy: 'a', amount: 300 })]
+    const withDrafts = netBalances(
+      trip,
+      [...finished, expense({ id: 'e2', paidBy: 'b', amount: 900, draft: true })],
+      [transfer({ id: 'x1', from: 'c', to: 'a', amount: 100, draft: true })],
+    )
+    expect(withDrafts).toEqual(netBalances(trip, finished, []))
+  })
+})

@@ -33,6 +33,9 @@ export interface TripState {
   saveExpense(expense: Expense): Promise<Expense | undefined>
   /** 樂觀移除 + snackbar「復原」（復原 = 把刪除前那一筆存回去） */
   deleteExpense(id: string): Promise<void>
+  /** 同 saveExpense，但不動摘要：轉帳不是消費（規格 2.5） */
+  saveTransfer(transfer: Transfer): Promise<Transfer | undefined>
+  deleteTransfer(id: string): Promise<void>
 }
 
 /**
@@ -43,13 +46,6 @@ function rollback(now: Trip[], before: Trip[], id: string): Trip[] {
   const old = before.find((t) => t.id === id)
   const rest = now.filter((t) => t.id !== id)
   return (old ? [...rest, old] : rest).sort(byStartDesc)
-}
-
-/** 同一個規則用在當前旅程的支出上：只還原 id 那一筆 */
-function rollbackExpense(now: Expense[], before: Expense[], id: string): Expense[] {
-  const old = before.find((e) => e.id === id)
-  const rest = now.filter((e) => e.id !== id)
-  return (old ? [...rest, old] : rest).sort(byDateDesc)
 }
 
 export function createTripStore({ repo, ui }: { repo: TripRepository; ui: StoreApi<UiState> }): StoreApi<TripState> {
@@ -127,51 +123,82 @@ export function createTripStore({ repo, ui }: { repo: TripRepository; ui: StoreA
       })
     },
 
-    async saveExpense(expense) {
-      const isOpen = get().current?.tripId === expense.tripId
-      const before = get().current?.expenses ?? []
-      const setExpenses = (change: (list: Expense[]) => Expense[]) =>
-        set((s) => (s.current?.tripId === expense.tripId ? { current: { ...s.current, expenses: change(s.current.expenses) } } : {}))
-
-      if (isOpen) setExpenses((list) => [...list.filter((e) => e.id !== expense.id), expense].sort(byDateDesc))
-      try {
-        const saved = await repo.saveExpense(expense)
-        setExpenses((list) => list.map((e) => (e.id === saved.id ? saved : e)).sort(byDateDesc))
-        await refreshSummary(expense.tripId)
-        return saved
-      } catch {
-        setExpenses((list) => rollbackExpense(list, before, expense.id))
-        saveFailed()
-        return undefined
-      }
-    },
-
-    async deleteExpense(id) {
-      const current = get().current
-      const expense = current?.expenses.find((e) => e.id === id)
-      if (!current || !expense) return
-      const before = current.expenses
-      const setExpenses = (change: (list: Expense[]) => Expense[]) =>
-        set((s) => (s.current?.tripId === current.tripId ? { current: { ...s.current, expenses: change(s.current.expenses) } } : {}))
-
-      setExpenses((list) => list.filter((e) => e.id !== id))
-      try {
-        await repo.deleteExpense(id)
-      } catch {
-        setExpenses((list) => rollbackExpense(list, before, id))
-        saveFailed()
-        return
-      }
-      await refreshSummary(current.tripId)
-      ui.getState().show({
-        id: 'expense-deleted',
-        message: t('expense.deleted', { name: expense.description.trim() || t('expense.untitled') }),
-        actionLabel: t('common.undo'),
-        // 存回刪除前那一筆就蓋掉墓碑（與旅程的復原同一個做法）
-        onAction: () => void get().saveExpense(expense),
-      })
-    },
+    saveExpense: (expense) => saveRecord('expenses', expense),
+    deleteExpense: (id) => deleteRecord('expenses', id),
+    saveTransfer: (transfer) => saveRecord('transfers', transfer),
+    deleteTransfer: (id) => deleteRecord('transfers', id),
   }))
+
+  type Kind = 'expenses' | 'transfers'
+  type RecordOf<K extends Kind> = K extends 'expenses' ? Expense : Transfer
+
+  const persist = {
+    expenses: { save: (r: Expense) => repo.saveExpense(r), remove: (id: string) => repo.deleteExpense(id) },
+    transfers: { save: (r: Transfer) => repo.saveTransfer(r), remove: (id: string) => repo.deleteTransfer(id) },
+  }
+
+  /** 只動當前旅程的那一份清單；存的是別趟旅程的紀錄時什麼都不改 */
+  function setRecords<K extends Kind>(kind: K, tripId: string, change: (list: RecordOf<K>[]) => RecordOf<K>[]) {
+    store.setState((s) =>
+      s.current?.tripId === tripId ? { current: { ...s.current, [kind]: change(s.current[kind] as RecordOf<K>[]) } } : {},
+    )
+  }
+
+  /** 同 saveTrip 的規則：只還原 id 那一筆 */
+  function rollbackRecord<R extends Expense | Transfer>(now: R[], before: R[], id: string): R[] {
+    const old = before.find((r) => r.id === id)
+    const rest = now.filter((r) => r.id !== id)
+    return (old ? [...rest, old] : rest).sort(byDateDesc)
+  }
+
+  /** 樂觀更新：先放進清單，存好後換成帶時間戳的那一筆；失敗只還原這一筆並跳 snackbar */
+  async function saveRecord<K extends Kind>(kind: K, record: RecordOf<K>): Promise<RecordOf<K> | undefined> {
+    const before = (store.getState().current?.[kind] ?? []) as RecordOf<K>[]
+    setRecords(kind, record.tripId, (list) => [...list.filter((r) => r.id !== record.id), record].sort(byDateDesc))
+    try {
+      // persist 是依 kind 查表，TypeScript 分不出兩邊的型別對得上，只能在這裡轉一次
+      const save = persist[kind].save as unknown as (r: RecordOf<K>) => Promise<RecordOf<K>>
+      const saved = await save(record)
+      setRecords(kind, record.tripId, (list) => list.map((r) => (r.id === saved.id ? saved : r)).sort(byDateDesc))
+      // 規格 2.5：轉帳不是消費，不影響總支出與預算
+      if (kind === 'expenses') await refreshSummary(record.tripId)
+      return saved
+    } catch {
+      setRecords(kind, record.tripId, (list) => rollbackRecord(list, before, record.id))
+      ui.getState().show({ id: 'save-failed', message: t('error.saveFailed') })
+      return undefined
+    }
+  }
+
+  /** 樂觀移除，成功後 snackbar 提供復原：存回刪除前那一筆就蓋掉墓碑 */
+  async function deleteRecord<K extends Kind>(kind: K, id: string): Promise<void> {
+    const current = store.getState().current
+    const before = (current?.[kind] ?? []) as RecordOf<K>[]
+    const record = before.find((r) => r.id === id)
+    if (!current || !record) return
+    setRecords(kind, current.tripId, (list) => list.filter((r) => r.id !== id))
+    try {
+      await persist[kind].remove(id)
+    } catch {
+      setRecords(kind, current.tripId, (list) => rollbackRecord(list, before, id))
+      ui.getState().show({ id: 'save-failed', message: t('error.saveFailed') })
+      return
+    }
+    if (kind === 'expenses') await refreshSummary(current.tripId)
+    ui.getState().show({
+      id: `${kind}-deleted`,
+      message: deletedMessage(record),
+      actionLabel: t('common.undo'),
+      onAction: () => void saveRecord(kind, record),
+    })
+  }
+
+  function deletedMessage(record: Expense | Transfer): string {
+    if ('description' in record) return t('expense.deleted', { name: record.description.trim() || t('expense.untitled') })
+    const members = store.getState().trips.find((trip) => trip.id === record.tripId)?.members ?? []
+    const name = (id: string) => members.find((m) => m.id === id)?.name ?? id
+    return t('transfer.deleted', { from: name(record.from), to: name(record.to) })
+  }
 
   /** 重算單一旅程的列表摘要：總支出與預算都跟著支出變 */
   async function refreshSummary(tripId: string) {

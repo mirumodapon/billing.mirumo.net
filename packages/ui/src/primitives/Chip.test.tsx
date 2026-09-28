@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
@@ -80,5 +82,19 @@ describe('Chip as a DOM element', () => {
   it('keeps its own selected marker in the plain form', () => {
     render(<Chip label="現金" selected={false} data-selected="true" />)
     expect(screen.getByText('現金')).not.toHaveAttribute('data-selected')
+  })
+})
+
+describe('Chip styles', () => {
+  const css = readFileSync(join(import.meta.dirname, 'Chip.css'), 'utf8')
+
+  it('keeps the tap-target height on the button form', () => {
+    expect(css).toMatch(/button\.bi-chip\s*{[^}]*min-height:\s*var\(--bi-tap-min\)/)
+  })
+
+  // 純標籤放在文字行裡（列表的「草稿」）：不能把那一行撐成按鈕那麼高
+  it('leaves the plain label compact', () => {
+    expect(css).not.toMatch(/(^|\n)\.bi-chip\s*{[^}]*min-height/)
+    expect(css).toMatch(/span\.bi-chip\s*{[^}]*padding:\s*0 /)
   })
 })

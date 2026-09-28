@@ -1,8 +1,9 @@
 import type { Trip } from '@billing/core'
-import { Accordion, DatePicker, SheetPicker, TextField } from '@billing/ui'
+import { Accordion, SheetPicker, TextField } from '@billing/ui'
 import { useState } from 'react'
 import { CURRENCIES, currencyName } from '../../domain/currencies'
 import { useI18n } from '../../i18n/useI18n'
+import { DateField } from '../forms/DateField'
 
 export interface BasicInfoSectionProps {
   trip: Trip
@@ -23,12 +24,6 @@ export function BasicInfoSection({ trip, hasRecords, open, onToggle, save }: Bas
   const [nameError, setNameError] = useState(false)
   const [dateError, setDateError] = useState(false)
   const [pickingCurrency, setPickingCurrency] = useState(false)
-  const dateLabels = {
-    other: t('date.other'),
-    calendarTitle: t('date.calendarTitle'),
-    prevMonth: t('date.prevMonth'),
-    nextMonth: t('date.nextMonth'),
-  }
 
   const saveName = () => {
     const trimmed = name.trim()
@@ -58,25 +53,9 @@ export function BasicInfoSection({ trip, hasRecords, open, onToggle, save }: Bas
           error={nameError ? t('newTrip.nameRequired') : undefined}
         />
         <TextField label={t('newTrip.destination')} value={destination} onChange={setDestination} onBlur={saveDestination} />
+        <DateField label={t('newTrip.startDate')} value={trip.startDate} onChange={(d) => saveDates(d, trip.endDate)} />
         <div>
-          <p className="app-field-label">{t('newTrip.startDate')}</p>
-          <DatePicker
-            value={trip.startDate}
-            onChange={(d) => saveDates(d, trip.endDate)}
-            locale={locale}
-            ariaLabel={t('newTrip.startDate')}
-            labels={dateLabels}
-          />
-        </div>
-        <div>
-          <p className="app-field-label">{t('newTrip.endDate')}</p>
-          <DatePicker
-            value={trip.endDate}
-            onChange={(d) => saveDates(trip.startDate, d)}
-            locale={locale}
-            ariaLabel={t('newTrip.endDate')}
-            labels={dateLabels}
-          />
+          <DateField label={t('newTrip.endDate')} value={trip.endDate} onChange={(d) => saveDates(trip.startDate, d)} />
           {dateError ? <p className="app-error">{t('newTrip.dateOrder')}</p> : null}
         </div>
         {hasRecords ? (

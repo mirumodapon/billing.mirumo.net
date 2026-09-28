@@ -26,12 +26,12 @@ export interface CalcKeypadProps {
 }
 
 // 規格 5.3 的版面，由上而下、由左而右
-const ROWS: (CalcKey | 'done')[][] = [
+const ROWS: (CalcKey | 'done' | 'equals')[][] = [
   ['7', '8', '9', 'back'],
   ['4', '5', '6', '÷'],
   ['1', '2', '3', '×'],
   ['.', '0', '000', '−'],
-  ['clear', 'done', '+'],
+  ['clear', 'equals', 'done', '+'],
 ]
 
 /**
@@ -91,6 +91,23 @@ export function CalcKeypad({
                   onClick={done}
                 >
                   {labels.done}
+                </button>
+              )
+            }
+            if (key === 'equals') {
+              // task#95：求值並把算式換成結果，鍵盤留著可以接著算；算不出來就不動
+              return (
+                <button
+                  key="equals"
+                  type="button"
+                  className="bi-keypad__key"
+                  data-kind="op"
+                  onPointerDown={keepFocus}
+                  onClick={() => {
+                    if (result.ok) onExpressionChange(String(result.value))
+                  }}
+                >
+                  =
                 </button>
               )
             }

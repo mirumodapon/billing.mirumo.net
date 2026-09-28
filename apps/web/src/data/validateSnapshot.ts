@@ -67,13 +67,25 @@ export function validateSnapshot(input: unknown): SnapshotCheck {
     for (const id of duplicates(members.map((m) => m.id))) problems.push(`${at}: member ${id} appears more than once`)
     const ids = new Set(members.map((m) => m.id))
     if (!ids.has(trip.selfMemberId)) problems.push(`${at}: selfMemberId ${trip.selfMemberId} is not a member`)
+    // task#92：旅程專用的付款方式是選填的；有的話每一筆都要有 id 與名稱，id 不能重複
+    if (trip.paymentMethods !== undefined) {
+      const methods = Array.isArray(trip.paymentMethods) ? trip.paymentMethods : []
+      if (!Array.isArray(trip.paymentMethods) || methods.some((m) => !isText(m?.id) || typeof m?.name !== 'string')) {
+        problems.push(`${at}: malformed payment methods`)
+      }
+      for (const id of duplicates(methods.map((m) => m?.id))) problems.push(`${at}: payment method ${id} appears more than once`)
+    }
     membersByTrip.set(trip.id, ids)
   }
 
   const checkRecord = (at: string, record: Expense | Transfer, referenced: Set<string>) => {
     if (!isValidIso(record.date)) problems.push(`${at}: invalid date`)
     if (!isAmount(record.amount)) problems.push(`${at}: amount is not a number`)
-    if (!isRate(record.exchangeRate)) problems.push(`${at}: exchange rate must be a positive number`)
+    // 草稿可以還沒有匯率（存成 0，task#96）；完成的紀錄一定要有
+    if (record.draft !== undefined && typeof record.draft !== 'boolean') problems.push(`${at}: draft must be true or false`)
+    if (!isRate(record.exchangeRate) && !(record.draft === true && record.exchangeRate === 0)) {
+      problems.push(`${at}: exchange rate must be a positive number`)
+    }
     const members = membersByTrip.get(record.tripId)
     if (!members) {
       problems.push(`${at}: trip ${record.tripId} does not exist`)
@@ -94,7 +106,9 @@ export function validateSnapshot(input: unknown): SnapshotCheck {
     }
     checkRecord(at, expense, membersOfExpense(expense))
     if (!categoryIds.has(expense.categoryId)) problems.push(`${at}: category ${expense.categoryId} does not exist`)
-    if (!methodIds.has(expense.paymentMethodId)) {
+    // 旅程專用的付款方式也算（task#92）
+    const tripMethods = trips.find((trip) => trip.id === expense.tripId)?.paymentMethods ?? []
+    if (!methodIds.has(expense.paymentMethodId) && !tripMethods.some((m) => m?.id === expense.paymentMethodId)) {
       problems.push(`${at}: payment method ${expense.paymentMethodId} does not exist`)
     }
   }
@@ -102,7 +116,8 @@ export function validateSnapshot(input: unknown): SnapshotCheck {
   for (const transfer of transfers) {
     const at = `transfer ${transfer.id}`
     checkRecord(at, transfer, membersOfTransfer(transfer))
-    if (transfer.from === transfer.to) problems.push(`${at}: sends money to the same person`)
+    // 草稿可以還沒選好對象（task#96）
+    if (transfer.from === transfer.to && transfer.draft !== true) problems.push(`${at}: sends money to the same person`)
   }
 
   return problems.length > 0 ? { ok: false, problems } : { ok: true, snapshot: input as unknown as Snapshot }

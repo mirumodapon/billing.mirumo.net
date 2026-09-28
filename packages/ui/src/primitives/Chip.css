@@ -2,7 +2,6 @@
   display: inline-flex;
   align-items: center;
   gap: var(--bi-space-2);
-  min-height: var(--bi-tap-min);
   padding: var(--bi-space-2) var(--bi-space-4);
   border: 1px solid var(--bi-border);
   border-radius: var(--bi-radius-full);
@@ -14,7 +13,19 @@
   white-space: nowrap;
 }
 
+/*
+ * 點擊目標的最小高度只給可點的 chip。純標籤不必讓手指按到，套上去只會
+ * 把它所在的那一行撐高（例如列表上的「草稿」標記）
+ */
+span.bi-chip {
+  gap: var(--bi-space-1);
+  padding: 0 var(--bi-space-2);
+  font-size: var(--bi-text-xs);
+  vertical-align: middle;
+}
+
 button.bi-chip {
+  min-height: var(--bi-tap-min);
   cursor: pointer;
   transition: transform var(--bi-dur-press) var(--bi-ease-out);
 }

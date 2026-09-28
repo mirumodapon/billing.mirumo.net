@@ -19,6 +19,15 @@ export interface ExchangeRateTable {
   byMethod: Record<string, number>
 }
 
+/**
+ * 只用於這趟旅程的付款方式（task#92），例如當地的交通卡。全域的付款方式在 app 的設定裡，
+ * core 不需要知道——計算只認 paymentMethodId 這個字串。
+ */
+export interface TripPaymentMethod {
+  id: string
+  name: string
+}
+
 export interface TripBudget {
   /** 本位幣十進位金額。未設定為 undefined，不用 0 當預設 */
   total?: number
@@ -39,6 +48,8 @@ export interface Trip {
   selfMemberId: string
   budget: TripBudget
   rates: ExchangeRateTable
+  /** 這趟旅程專用的付款方式；選填，舊資料沒有這個欄位 */
+  paymentMethods?: TripPaymentMethod[]
   /** ISO 8601 UTC，如 `2026-03-15T08:30:00.000Z`。儲存層與匯出格式都依賴這個形狀 */
   createdAt: string
   updatedAt: string
@@ -92,6 +103,8 @@ export interface Expense {
 
   split: Split
   attachments: AttachmentMeta[]
+  /** 草稿：看得到、改得了，但不算進任何合計（task#96）。選填，舊資料沒有這個欄位 */
+  draft?: boolean
 
   /** ISO 8601 UTC，如 `2026-03-15T08:30:00.000Z`。儲存層與匯出格式都依賴這個形狀 */
   createdAt: string
@@ -115,6 +128,8 @@ export interface Transfer {
   exchangeRate: number
   kind: TransferKind
   note: string
+  /** 草稿：不算進淨額（task#96） */
+  draft?: boolean
   /** ISO 8601 UTC，如 `2026-03-15T08:30:00.000Z`。儲存層與匯出格式都依賴這個形狀 */
   createdAt: string
   updatedAt: string

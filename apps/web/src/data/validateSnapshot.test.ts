@@ -140,3 +140,56 @@ describe('validateSnapshot', () => {
     expect(problems.length).toBeGreaterThanOrEqual(3)
   })
 })
+
+describe('validateSnapshot: trip payment methods (task#92)', () => {
+  it('accepts a trip with its own payment methods, and older trips without the field', () => {
+    const trip = makeTrip({ paymentMethods: [{ id: 'suica', name: 'Suica' }] })
+    expect(validateSnapshot(snapshot({ trips: [trip] }))).toMatchObject({ ok: true })
+    expect(validateSnapshot(snapshot({ trips: [makeTrip()] }))).toMatchObject({ ok: true })
+  })
+
+  it('rejects malformed or duplicated trip payment methods', () => {
+    const malformed = makeTrip({ paymentMethods: [{ id: '', name: 'x' }] })
+    expect(problemsOf(snapshot({ trips: [malformed] }))).toContain('trip t1: malformed payment methods')
+    const notArray = { ...makeTrip(), paymentMethods: 'suica' } as unknown as ReturnType<typeof makeTrip>
+    expect(problemsOf(snapshot({ trips: [notArray] }))).toContain('trip t1: malformed payment methods')
+    const twice = makeTrip({ paymentMethods: [{ id: 'suica', name: 'A' }, { id: 'suica', name: 'B' }] })
+    expect(problemsOf(snapshot({ trips: [twice] }))).toContain('trip t1: payment method suica appears more than once')
+  })
+})
+
+describe('validateSnapshot: records using trip payment methods (task#92)', () => {
+  // 修正前：只認全域的付款方式，用了旅程專用付款方式的支出讓整份備份匯不進來
+  it('accepts an expense paid with one of its trip’s own payment methods', () => {
+    const trip = makeTrip({ paymentMethods: [{ id: 'suica', name: 'Suica' }] })
+    expect(validateSnapshot(snapshot({ trips: [trip], expenses: [makeExpense({ paymentMethodId: 'suica' })] }))).toMatchObject({ ok: true })
+  })
+
+  it('still rejects a payment method that is in neither list', () => {
+    expect(problemsOf(snapshot({ expenses: [makeExpense({ paymentMethodId: 'nowhere' })] }))).toContain('expense e1: payment method nowhere does not exist')
+  })
+})
+
+describe('validateSnapshot: drafts (task#96)', () => {
+  it('accepts a draft that has no rate yet', () => {
+    expect(validateSnapshot(snapshot({ expenses: [makeExpense({ draft: true, exchangeRate: 0, amount: 0 })] }))).toMatchObject({ ok: true })
+  })
+
+  it('still requires a rate on a finished record', () => {
+    expect(problemsOf(snapshot({ expenses: [makeExpense({ exchangeRate: 0 })] }))).toContain('expense e1: exchange rate must be a positive number')
+  })
+
+  it('rejects a draft flag that is not true or false', () => {
+    const odd = { ...makeExpense(), draft: 'yes' } as unknown as ReturnType<typeof makeExpense>
+    expect(problemsOf(snapshot({ expenses: [odd] }))).toContain('expense e1: draft must be true or false')
+  })
+
+  // 表單允許把沒選好對象的轉帳存成草稿；匯出後要能匯回來
+  it('accepts a draft transfer that has not picked a second person yet', () => {
+    expect(validateSnapshot(snapshot({ transfers: [makeTransfer({ draft: true, from: 'a', to: 'a' })] }))).toMatchObject({ ok: true })
+  })
+
+  it('still rejects a finished transfer to the same person', () => {
+    expect(problemsOf(snapshot({ transfers: [makeTransfer({ id: 'tr', from: 'a', to: 'a' })] }))).toContain('transfer tr: sends money to the same person')
+  })
+})

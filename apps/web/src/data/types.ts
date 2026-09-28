@@ -37,6 +37,11 @@ export interface AppSettings {
     categoryId?: string
     paymentMethodId?: string
   }
+  /**
+   * 支出列表的外幣支出要不要同時顯示換算後的本位幣（task#99）。
+   * 選填、沒有就是顯示：舊的設定與舊的備份不必遷移
+   */
+  showBaseAmounts?: boolean
 }
 
 export const APP_ID = 'billing-travel-split'

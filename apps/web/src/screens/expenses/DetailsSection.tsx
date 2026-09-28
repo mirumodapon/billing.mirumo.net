@@ -1,8 +1,10 @@
-import { Accordion, ChipGroup, DatePicker } from '@billing/ui'
+import { Accordion, ChipGroup } from '@billing/ui'
 import { withAutoRate } from '../../domain/expenseDraft'
 import { displayName } from '../../domain/names'
+import { paymentMethodsFor } from '../../domain/paymentMethods'
 import { useI18n } from '../../i18n/useI18n'
 import { useSettings } from '../../stores/StoresProvider'
+import { DateField } from '../forms/DateField'
 import type { FormSectionProps } from './ExpenseFormScreen'
 
 /**
@@ -10,9 +12,10 @@ import type { FormSectionProps } from './ExpenseFormScreen'
  * 典型情境下不必展開；收折時的摘要讓人一眼確認帶入的值對不對。
  */
 export function DetailsSection({ trip, draft, change, open, onToggle }: FormSectionProps & { open: boolean; onToggle: () => void }) {
-  const { t, locale, date } = useI18n()
+  const { t, date } = useI18n()
   const categories = useSettings((s) => s.settings.categories)
-  const methods = useSettings((s) => s.settings.paymentMethods)
+  const globalMethods = useSettings((s) => s.settings.paymentMethods)
+  const methods = paymentMethodsFor(globalMethods, trip)
   const category = categories.find((c) => c.id === draft.categoryId)
   const method = methods.find((m) => m.id === draft.paymentMethodId)
   const payer = trip.members.find((m) => m.id === draft.paidBy)
@@ -49,19 +52,7 @@ export function DetailsSection({ trip, draft, change, open, onToggle }: FormSect
             onChange={(paidBy) => change((d) => ({ ...d, paidBy }))}
           />
         </div>
-        <div>
-          <p className="app-field-label">{t('expense.date')}</p>
-          <DatePicker
-            value={draft.date}
-            onChange={(iso) => change((d) => ({ ...d, date: iso }))}
-            locale={locale}
-            ariaLabel={t('expense.date')}
-            labels={{ other: t('date.other'), calendarTitle: t('date.calendarTitle'), prevMonth: t('date.prevMonth'), nextMonth: t('date.nextMonth') }}
-            // 規格 5.4：日期條只列旅程那幾天，其餘走「其他日期」
-            rangeStart={trip.startDate}
-            rangeEnd={trip.endDate}
-          />
-        </div>
+        <DateField label={t('expense.date')} value={draft.date} onChange={(iso) => change((d) => ({ ...d, date: iso }))} />
       </div>
     </Accordion>
   )

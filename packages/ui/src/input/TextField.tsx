@@ -11,6 +11,11 @@ export interface TextFieldProps {
   autoFocus?: boolean
   /** 離開欄位時。設定頁在這時才存檔，而不是每按一個鍵存一次 */
   onBlur?: () => void
+  /**
+   * 標籤只給輔助技術，畫面上不顯示。用在一列列同類的欄位（清單裡每一項的名稱），
+   * 那時可見的標籤只是重複、還會讓欄位與旁邊沒有標籤的列對不齊
+   */
+  hideLabel?: boolean
 }
 
 export function TextField({
@@ -22,12 +27,13 @@ export function TextField({
   error,
   autoFocus,
   onBlur,
+  hideLabel = false,
 }: TextFieldProps) {
   const id = useId()
   const errorId = `${id}-error`
   return (
     <div className="bi-field" data-invalid={error ? true : undefined}>
-      <label className="bi-field__label" htmlFor={id}>
+      <label className={hideLabel ? 'bi-visually-hidden' : 'bi-field__label'} htmlFor={id}>
         {label}
       </label>
       <input

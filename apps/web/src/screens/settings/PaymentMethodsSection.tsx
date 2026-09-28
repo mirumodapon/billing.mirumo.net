@@ -41,9 +41,15 @@ export function PaymentMethodsSection({ usage }: { usage: RecordUsage | null }) 
           />
         ))}
       </ul>
-      <div className="flex items-end gap-2">
+      <div className="flex items-center gap-2">
         <div className="min-w-0 flex-1">
-          <TextField label={t('settings.newPaymentMethod')} value={newName} onChange={setNewName} />
+          <TextField
+            label={t('settings.newPaymentMethod')}
+            hideLabel
+            placeholder={t('settings.newPaymentMethod')}
+            value={newName}
+            onChange={setNewName}
+          />
         </div>
         <Button variant="secondary" onClick={add}>
           {t('settings.addPaymentMethod')}
@@ -71,27 +77,33 @@ function MethodRow({ method, used, usageKnown, onRename, onRemove }: MethodRowPr
     else if (trimmed !== name) onRename(trimmed)
   }
 
-  if (method.builtin) {
-    // 內建的名稱來自語言檔，不能改
-    return (
-      <li className="app-row">
-        <span>{name}</span>
-        <span className="app-row__value">{t('settings.builtin')}</span>
-      </li>
-    )
-  }
+  /*
+   * 每一列都是「框 + 固定寬的尾端欄」（task#93）：內建列的尾端留空、自訂列放刪除鍵，
+   * 所有框的左右緣因此對齊。自訂列的名稱欄不放可見標籤——一列列都是名稱，標籤只是重複
+   */
   return (
-    <li className="flex items-end gap-2">
-      <div className="min-w-0 flex-1">
-        <TextField label={t('settings.paymentMethodName', { name })} value={draft} onChange={setDraft} onBlur={commit} />
+    <li className="flex flex-col gap-1">
+      <div className="flex items-center gap-2">
+        {method.builtin ? (
+          // 內建的名稱來自語言檔，不能改
+          <div className="app-row flex-1">
+            <span>{name}</span>
+            <span className="app-row__value">{t('settings.builtin')}</span>
+          </div>
+        ) : (
+          <div className="min-w-0 flex-1">
+            <TextField label={t('settings.paymentMethodName', { name })} hideLabel value={draft} onChange={setDraft} onBlur={commit} />
+          </div>
+        )}
+        <span className="app-slot">
+          {!method.builtin && usageKnown && used === 0 ? (
+            <Button variant="ghost" aria-label={t('settings.removeItem', { name })} onClick={onRemove}>
+              <Icon glyph={IconTrash} />
+            </Button>
+          ) : null}
+        </span>
       </div>
-      {used > 0 ? (
-        <span className="app-field-label pb-3">{tPlural('settings.usedBy', { count: used })}</span>
-      ) : usageKnown ? (
-        <Button variant="ghost" aria-label={t('settings.removeItem', { name })} onClick={onRemove}>
-          <Icon glyph={IconTrash} />
-        </Button>
-      ) : null}
+      {!method.builtin && used > 0 ? <p className="app-field-label m-0">{tPlural('settings.usedBy', { count: used })}</p> : null}
     </li>
   )
 }

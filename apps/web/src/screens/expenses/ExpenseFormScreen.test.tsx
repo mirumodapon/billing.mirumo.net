@@ -15,25 +15,25 @@ async function setup(route: string) {
 }
 
 describe('ExpenseFormScreen: frame', () => {
-  it('opens a blank new expense with saving blocked until it is filled', async () => {
+  it('opens a blank new expense that would save as a draft until it is filled', async () => {
     await setup('/trip/t1/expense/new')
     expect(screen.getByRole('heading', { name: t('expense.new') })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: t('expense.save') })).toBeDisabled()
+    expect(screen.getByRole('button', { name: t('form.saveDraft') })).toBeEnabled()
   })
 
   it('opens an existing expense for editing', async () => {
-    await setup('/trip/t1/expense/e1')
+    await setup('/trip/t1/expense/e1/edit')
     expect(screen.getByRole('heading', { name: t('expense.edit') })).toBeInTheDocument()
     expect(screen.getByLabelText(t('expense.description'))).toHaveValue('一蘭拉麵')
-    expect(screen.getByRole('button', { name: t('expense.save') })).toBeEnabled()
+    expect(screen.getByRole('button', { name: t('form.save') })).toBeEnabled()
   })
 
   it('saves an edit and leaves the form', async () => {
-    const { user, stores } = await setup('/trip/t1/expense/e1')
+    const { user, stores } = await setup('/trip/t1/expense/e1/edit')
     const field = screen.getByLabelText(t('expense.description'))
     await user.clear(field)
     await user.type(field, '豚骨拉麵')
-    await user.click(screen.getByRole('button', { name: t('expense.save') }))
+    await user.click(screen.getByRole('button', { name: t('form.save') }))
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
     expect((await stores.repo.listExpenses('t1')).map((e) => [e.id, e.description])).toEqual([['e1', '豚骨拉麵']])
   })
@@ -41,7 +41,7 @@ describe('ExpenseFormScreen: frame', () => {
   // 直接由 session 還原進表單時前面沒有頁面：關閉要去支出列表，不是退出 app
   it('closes to the expenses tab when there is no page to go back to', async () => {
     const { user } = await setup('/trip/t1/expense/new')
-    await user.click(screen.getByRole('button', { name: t('expense.close') }))
+    await user.click(screen.getByRole('button', { name: t('form.close') }))
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
   })
 
@@ -80,9 +80,9 @@ describe('ExpenseFormScreen: acceptance and memory', () => {
     await user.click(screen.getByLabelText(t('expense.description')))
     await user.type(screen.getByLabelText(t('expense.description')), '豚骨拉麵')
     // 3. 儲存
-    await user.click(screen.getByRole('button', { name: t('expense.save') }))
+    await user.click(screen.getByRole('button', { name: t('form.save') }))
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
-    expect(screen.getByRole('button', { name: /^豚骨拉麵/ })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: /^豚骨拉麵/ })).toBeInTheDocument()
     const created = (await stores.repo.listExpenses('t1')).find((e) => e.description === '豚骨拉麵')!
     // 沒有上一筆的付款方式 → 第一個（現金）→ 匯率先取「日圓×現金」（規格 4.4 的帶入順序）
     expect(created).toMatchObject({ amount: 3800, currency: 'JPY', exchangeRate: 0.215, paidBy: 'a', split: { mode: 'even', participants: ['a', 'b', 'c'] } })
@@ -93,10 +93,10 @@ describe('ExpenseFormScreen: acceptance and memory', () => {
 
   it('keeps the id and the fixed rate when editing, even after changing the payment method', async () => {
     const stores = await tripWithJapan()
-    const { user } = await renderApp('/trip/t1/expense/e1', stores)
+    const { user } = await renderApp('/trip/t1/expense/e1/edit', stores)
     await user.click(screen.getByRole('button', { name: new RegExp(`^${t('expense.details')}`) }))
     await user.click(screen.getByRole('radio', { name: t('pay.cash') }))
-    await user.click(screen.getByRole('button', { name: t('expense.save') }))
+    await user.click(screen.getByRole('button', { name: t('form.save') }))
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
     expect(await stores.repo.listExpenses('t1')).toEqual([expect.objectContaining({ id: 'e1', paymentMethodId: 'pay.cash', exchangeRate: 0.2 })])
   })
@@ -111,7 +111,7 @@ describe('ExpenseFormScreen: acceptance and memory', () => {
     await user.click(details())
     await user.click(screen.getByRole('radio', { name: t('cat.transport') }))
     await user.click(screen.getByRole('radio', { name: t('pay.mobile') }))
-    await user.click(screen.getByRole('button', { name: t('expense.save') }))
+    await user.click(screen.getByRole('button', { name: t('form.save') }))
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
     await user.click(await screen.findByRole('button', { name: t('expenses.add') }))
     await screen.findByRole('heading', { name: t('expense.new') })
@@ -120,10 +120,10 @@ describe('ExpenseFormScreen: acceptance and memory', () => {
 
   it('does not change the defaults when editing an old expense', async () => {
     const stores = await tripWithJapan()
-    const { user } = await renderApp('/trip/t1/expense/e1', stores)
+    const { user } = await renderApp('/trip/t1/expense/e1/edit', stores)
     await user.click(screen.getByRole('button', { name: new RegExp(`^${t('expense.details')}`) }))
     await user.click(screen.getByRole('radio', { name: t('cat.shopping') }))
-    await user.click(screen.getByRole('button', { name: t('expense.save') }))
+    await user.click(screen.getByRole('button', { name: t('form.save') }))
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
     expect((await stores.repo.getSettings()).lastUsed).toEqual({})
   })

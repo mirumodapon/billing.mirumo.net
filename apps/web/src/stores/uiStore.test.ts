@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { EMPTY_FILTER } from '../domain/expenseFilter'
 import { createUiStore } from './uiStore'
 
 describe('uiStore', () => {
@@ -31,5 +32,15 @@ describe('uiStore', () => {
     ui.getState().show({ message: 'b' })
     ui.getState().show({ id: 'x', message: 'c' })
     expect(ui.getState().queue.map((s) => s.message)).toEqual(['c', 'b'])
+  })
+})
+
+describe('uiStore: expense filters (task#106)', () => {
+  // 點進一筆再回來列表會重新掛載：篩選要留在 store，不能跟著元件消失
+  it('keeps a filter per trip', () => {
+    const ui = createUiStore()
+    ui.getState().setExpenseFilter('t1', { ...EMPTY_FILTER, payers: ['a'] })
+    expect(ui.getState().expenseFilters.t1?.payers).toEqual(['a'])
+    expect(ui.getState().expenseFilters.t2).toBeUndefined()
   })
 })

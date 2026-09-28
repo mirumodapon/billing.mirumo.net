@@ -13,6 +13,7 @@ import {
   problemsOf,
   toExpense,
   withAutoRate,
+  willSaveAsDraft,
   withManualRate,
   type DraftContext,
   type ExpenseDraft,
@@ -81,6 +82,16 @@ describe('newDraft: defaults (spec 4.4)', () => {
 
   it('starts empty, with no photos and an untouched rate', () => {
     expect(newDraft(ctx())).toMatchObject({ amount: undefined, description: '', attachments: [], rateTouched: false })
+  })
+})
+
+describe('newDraft: trip payment methods (task#92)', () => {
+  it('reuses a trip-only payment method as the last one used', () => {
+    const withSuica = { ...trip, paymentMethods: [{ id: 'suica', name: 'Suica' }] }
+    const settings = { ...defaultSettings(), lastUsed: { paymentMethodId: 'suica' } }
+    expect(newDraft({ ...ctx({ settings }), trip: withSuica }).paymentMethodId).toBe('suica')
+    // 另一趟旅程沒有這個付款方式：退回第一個
+    expect(newDraft(ctx({ settings })).paymentMethodId).toBe('pay.cash')
   })
 })
 
@@ -298,11 +309,50 @@ describe('isExpenseDraft', () => {
     { ...newDraft(ctx()), amount: Number.NaN },
     { ...newDraft(ctx()), description: undefined },
     { ...newDraft(ctx()), rateTouched: 'yes' },
+    { ...newDraft(ctx()), isDraft: 'yes' },
     { ...newDraft(ctx()), split: { mode: 'even' } },
     { ...newDraft(ctx()), split: { mode: 'items', items: [{ id: 'i' }], overflowRule: 'prorata' } },
     { ...newDraft(ctx()), split: { mode: 'items', items: [], overflowRule: 'sideways' } },
     { ...newDraft(ctx()), split: { mode: 'magic' } },
   ])('rejects %j', (value) => {
     expect(isExpenseDraft(value)).toBe(false)
+  })
+})
+
+describe('drafts (task#96)', () => {
+  it('saves an unfinished form as a draft, with 0 for what is missing', () => {
+    const e = toExpense(filled({ amount: undefined, exchangeRate: undefined }), 't1')
+    expect(e).toMatchObject({ draft: true, amount: 0, exchangeRate: 0 })
+  })
+
+  it('reopens a draft with the missing amount and rate unset, so the rate is filled in again', () => {
+    const d = draftFromExpense(makeExpense({ draft: true, amount: 0, exchangeRate: 0 }))
+    expect(d).toMatchObject({ amount: undefined, exchangeRate: undefined, rateTouched: false, isDraft: true })
+    expect(withAutoRate(d, trip).exchangeRate).toBe(0.215)
+  })
+
+  // 完成的一筆若金額真的是 0（例如招待），不能被當成「未填」
+  it('keeps a real zero on a finished expense', () => {
+    expect(draftFromExpense(makeExpense({ amount: 0 })).amount).toBe(0)
+  })
+
+  it('saves a finished form as a draft when asked to', () => {
+    const d = filled({ isDraft: true })
+    expect(willSaveAsDraft(d)).toBe(true)
+    expect(toExpense(d, 't1').draft).toBe(true)
+  })
+
+  it('saves a finished form as a real expense, with no draft key', () => {
+    expect(willSaveAsDraft(filled())).toBe(false)
+    expect(toExpense(filled(), 't1')).not.toHaveProperty('draft')
+  })
+
+  it('forces a draft while fields are missing, whatever the toggle says', () => {
+    expect(willSaveAsDraft(filled({ isDraft: false, description: '' }))).toBe(true)
+  })
+
+  it('turns a finished draft into a real expense when the toggle is switched off', () => {
+    const d = draftFromExpense(makeExpense({ draft: true }))
+    expect(toExpense({ ...d, isDraft: false }, 't1')).not.toHaveProperty('draft')
   })
 })

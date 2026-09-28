@@ -11,6 +11,7 @@ import {
   type Trip,
 } from '@billing/core'
 import type { AppSettings } from '../data/types'
+import { paymentMethodsFor } from './paymentMethods'
 
 /**
  * 新增／編輯支出表單的狀態（Plan 7）。
@@ -47,6 +48,11 @@ export interface ExpenseDraft {
   paidBy: string
   split: SplitDraft
   attachments: AttachmentMeta[]
+  /**
+   * 使用者把它標成草稿（task#96）。選填：舊版自動保存的表單沒有這個欄位。
+   * 欄位還沒填完時不論這裡怎麼設，一律存成草稿——見 willSaveAsDraft
+   */
+  isDraft?: boolean
 }
 
 export interface DraftContext {
@@ -85,7 +91,8 @@ export function newDraft({ trip, expenses, settings, today }: DraftContext): Exp
   // 上一筆用的項目後來被刪了，就退回第一個：不能帶入一個不存在的 id
   const pick = (id: string | undefined, list: { id: string }[]) => (id && list.some((x) => x.id === id) ? id : (list[0]?.id ?? ''))
   const categoryId = pick(settings.lastUsed.categoryId, settings.categories)
-  const paymentMethodId = pick(settings.lastUsed.paymentMethodId, settings.paymentMethods)
+  // 旅程專用的付款方式也算（task#92）：上一筆用的是它的話照樣帶入
+  const paymentMethodId = pick(settings.lastUsed.paymentMethodId, paymentMethodsFor(settings.paymentMethods, trip))
   return {
     amount: undefined,
     currency,
@@ -98,6 +105,7 @@ export function newDraft({ trip, expenses, settings, today }: DraftContext): Exp
     paidBy: trip.selfMemberId,
     split: { mode: 'even', participants: memberOrder(trip) },
     attachments: [],
+    isDraft: false,
   }
 }
 
@@ -108,12 +116,15 @@ export function draftFromExpense(e: Expense): ExpenseDraft {
       : e.split.mode === 'exact'
         ? { mode: 'exact', amounts: { ...e.split.amounts } }
         : { mode: 'even', participants: [...e.split.participants] }
+  // 草稿存的時候缺什麼就記 0（task#96）；打開時還原成「未填」，匯率也恢復自動帶入
+  const missingAmount = e.draft === true && e.amount === 0
+  const missingRate = e.draft === true && e.exchangeRate === 0
   return {
     id: e.id,
-    amount: e.amount,
+    amount: missingAmount ? undefined : e.amount,
     currency: e.currency,
-    exchangeRate: e.exchangeRate,
-    rateTouched: true,
+    exchangeRate: missingRate ? undefined : e.exchangeRate,
+    rateTouched: !missingRate,
     description: e.description,
     date: e.date,
     categoryId: e.categoryId,
@@ -121,6 +132,7 @@ export function draftFromExpense(e: Expense): ExpenseDraft {
     paidBy: e.paidBy,
     split,
     attachments: [...e.attachments],
+    isDraft: e.draft === true,
   }
 }
 
@@ -178,9 +190,18 @@ function toSplit(split: SplitDraft, currency: string): Split {
   }
 }
 
-/** problemsOf 為空時才能呼叫。時間戳留空：由 Repository 蓋（規格 7.1） */
+/** 使用者標了草稿，或還有欄位沒填完：存下去會是一筆草稿（task#96） */
+export function willSaveAsDraft(d: ExpenseDraft): boolean {
+  return d.isDraft === true || problemsOf(d).length > 0
+}
+
+/**
+ * 轉成要存的紀錄。欄位不完整也可以：那時存成草稿，缺的金額與匯率記 0（task#96）。
+ * 時間戳留空：由 Repository 蓋（規格 7.1）
+ */
 export function toExpense(d: ExpenseDraft, tripId: string): Expense {
   return {
+    ...(willSaveAsDraft(d) ? { draft: true } : {}),
     id: d.id ?? crypto.randomUUID(),
     tripId,
     date: d.date,
@@ -237,6 +258,7 @@ export function isExpenseDraft(value: unknown): value is ExpenseDraft {
   if (d.id !== undefined && typeof d.id !== 'string') return false
   if (!isOptionalNumber(d.amount) || !isOptionalNumber(d.exchangeRate)) return false
   if (typeof d.rateTouched !== 'boolean' || !Array.isArray(d.attachments)) return false
+  if (d.isDraft !== undefined && typeof d.isDraft !== 'boolean') return false
   const split = d.split as Record<string, unknown> | null
   if (typeof split !== 'object' || split === null) return false
   if (split.mode === 'even') return isStringArray(split.participants)

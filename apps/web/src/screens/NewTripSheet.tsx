@@ -1,4 +1,4 @@
-import { Button, DatePicker, Sheet, SheetPicker, TextField } from '@billing/ui'
+import { Button, Sheet, SheetPicker, TextField } from '@billing/ui'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { CURRENCIES, currencyName } from '../domain/currencies'
@@ -6,6 +6,7 @@ import { todayIso } from '../domain/dates'
 import { createTrip, validateTripDraft, type TripDraft, type TripDraftError } from '../domain/newTrip'
 import { useI18n } from '../i18n/useI18n'
 import { useSettings, useStores } from '../stores/StoresProvider'
+import { DateField } from './forms/DateField'
 
 function blankDraft(currency: string): TripDraft {
   const today = todayIso()
@@ -36,12 +37,6 @@ export function NewTripSheet({ open, onClose }: { open: boolean; onClose: () => 
 
   const set = <K extends keyof TripDraft>(key: K, value: TripDraft[K]) => setDraft((d) => ({ ...d, [key]: value }))
   const error = (e: TripDraftError) => (errors.includes(e) ? t(`newTrip.${e}`) : undefined)
-  const dateLabels = {
-    other: t('date.other'),
-    calendarTitle: t('date.calendarTitle'),
-    prevMonth: t('date.prevMonth'),
-    nextMonth: t('date.nextMonth'),
-  }
 
   const create = async () => {
     const found = validateTripDraft(draft)
@@ -59,25 +54,9 @@ export function NewTripSheet({ open, onClose }: { open: boolean; onClose: () => 
       <div className="app-form">
         <TextField label={t('newTrip.name')} value={draft.name} onChange={(v) => set('name', v)} error={error('nameRequired')} />
         <TextField label={t('newTrip.destination')} value={draft.destination} onChange={(v) => set('destination', v)} />
+        <DateField label={t('newTrip.startDate')} value={draft.startDate} onChange={(v) => set('startDate', v)} />
         <div>
-          <p className="app-field-label">{t('newTrip.startDate')}</p>
-          <DatePicker
-            value={draft.startDate}
-            onChange={(v) => set('startDate', v)}
-            locale={locale}
-            ariaLabel={t('newTrip.startDate')}
-            labels={dateLabels}
-          />
-        </div>
-        <div>
-          <p className="app-field-label">{t('newTrip.endDate')}</p>
-          <DatePicker
-            value={draft.endDate}
-            onChange={(v) => set('endDate', v)}
-            locale={locale}
-            ariaLabel={t('newTrip.endDate')}
-            labels={dateLabels}
-          />
+          <DateField label={t('newTrip.endDate')} value={draft.endDate} onChange={(v) => set('endDate', v)} />
           {error('dateOrder') ? <p className="app-error">{error('dateOrder')}</p> : null}
         </div>
         <button type="button" className="app-row" aria-haspopup="dialog" onClick={() => setPickingCurrency(true)}>

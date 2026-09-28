@@ -1,21 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createDraftWriter, onPageHidden } from '../../data/drafts'
-import { isExpenseDraft, type ExpenseDraft } from '../../domain/expenseDraft'
 import { useStores } from '../../stores/StoresProvider'
 
-type State = { status: 'loading' } | { status: 'ready'; draft: ExpenseDraft; restored: boolean }
+type State<T> = { status: 'loading' } | { status: 'ready'; draft: T; restored: boolean }
 
 /**
- * 支出表單的草稿（規格 7.9）：以路由為 key，每個路由一份。
+ * 全螢幕表單的草稿（規格 7.9）：以路由為 key，每個路由一份。支出與轉帳表單共用。
  *
  * - 進表單先讀草稿；有就還原並標記 restored，讓畫面顯示提示
  * - 每次變更 debounce 300ms 寫入；切到背景（visibilitychange → hidden）與卸載時立刻寫
  * - 存檔成功或使用者捨棄時，取消待寫入的內容並刪掉草稿
  */
-export function useExpenseDraft(route: string, initial: ExpenseDraft) {
+export function useFormDraft<T>(route: string, initial: T, isValid: (value: unknown) => value is T) {
   const { drafts } = useStores()
-  const [state, setState] = useState<State>({ status: 'loading' })
-  const current = useRef<ExpenseDraft>(initial)
+  const [state, setState] = useState<State<T>>({ status: 'loading' })
+  const current = useRef<T>(initial)
   const writer = useMemo(() => createDraftWriter(drafts, route), [drafts, route])
 
   useEffect(() => {
@@ -28,7 +27,7 @@ export function useExpenseDraft(route: string, initial: ExpenseDraft) {
         saved = undefined
       }
       if (cancelled) return
-      if (isExpenseDraft(saved)) {
+      if (isValid(saved)) {
         current.current = saved
         setState({ status: 'ready', draft: saved, restored: true })
         return
@@ -40,7 +39,7 @@ export function useExpenseDraft(route: string, initial: ExpenseDraft) {
     return () => {
       cancelled = true
     }
-    // initial 只在第一次決定要不要用它；之後換了也不重新載入
+    // initial 與 isValid 只在第一次決定要不要用它；之後換了也不重新載入
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [drafts, route])
 
@@ -57,7 +56,7 @@ export function useExpenseDraft(route: string, initial: ExpenseDraft) {
     /** 與進表單時的初始值不同：按 ✕ 時要詢問要不要保留 */
     dirty: JSON.stringify(draft) !== JSON.stringify(initial),
 
-    setDraft(update: (d: ExpenseDraft) => ExpenseDraft) {
+    setDraft(update: (d: T) => T) {
       const next = update(current.current)
       current.current = next
       setState((s) => (s.status === 'ready' ? { ...s, draft: next } : s))

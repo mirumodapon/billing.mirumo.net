@@ -2,7 +2,7 @@ import { cleanup, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { clearSession, readSession } from '../../data/session'
 import { makeExpense, makeTrip } from '../../data/testing/fixtures'
-import { formatDate } from '../../i18n/format'
+import { pickDate } from '../../test/pickDate'
 import { t } from '../../i18n'
 import { makeStores, renderApp } from '../../test/renderApp'
 
@@ -80,8 +80,7 @@ describe('SetupTab: details', () => {
     const { user, stores } = await setup({ trip: { startDate: '2026-03-14', endDate: '2026-03-14' } })
     const panel = await openBasic(user)
     const spy = vi.spyOn(stores.repo, 'saveTrip')
-    const endDays = panel.getByRole('radiogroup', { name: t('newTrip.endDate') })
-    await user.click(within(endDays).getByRole('radio', { name: new RegExp(`^${formatDate('2026-03-12')}`) }))
+    await pickDate(user, t('newTrip.endDate'), '2026-03-12', panel)
     expect(panel.getByText(t('newTrip.dateOrder'))).toBeInTheDocument()
     expect(spy).not.toHaveBeenCalled()
   })
@@ -89,8 +88,7 @@ describe('SetupTab: details', () => {
   it('saves a new end date', async () => {
     const { user, stores } = await setup({ trip: { startDate: '2026-03-14', endDate: '2026-03-14' } })
     const panel = await openBasic(user)
-    const endDays = panel.getByRole('radiogroup', { name: t('newTrip.endDate') })
-    await user.click(within(endDays).getByRole('radio', { name: new RegExp(`^${formatDate('2026-03-16')}`) }))
+    await pickDate(user, t('newTrip.endDate'), '2026-03-16', panel)
     await waitFor(async () => expect((await stores.repo.getTrip('t1'))?.endDate).toBe('2026-03-16'))
   })
 

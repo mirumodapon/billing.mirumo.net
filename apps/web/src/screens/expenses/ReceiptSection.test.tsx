@@ -22,7 +22,7 @@ async function open(attachments: AttachmentMeta[] = []) {
   const stores = await makeStores()
   await stores.repo.saveTrip(makeTrip({ id: 't1' }))
   await stores.repo.saveExpense(makeExpense({ id: 'e1', tripId: 't1', attachments }))
-  const app = await renderApp('/trip/t1/expense/e1', stores)
+  const app = await renderApp('/trip/t1/expense/e1/edit', stores)
   const header = () => screen.getByRole('button', { name: new RegExp(`^${t('receipt.title')}`) })
   await app.user.click(header())
   return { ...app, header, panel: () => within(screen.getByTestId('section-receipt-panel')) }
@@ -41,7 +41,8 @@ describe('ReceiptSection', () => {
     await waitFor(() => expect(header()).toHaveTextContent(tPlural('receipt.count', { count: 1 })))
     expect(mockedCompress).toHaveBeenCalledWith(original)
     expect(await stores.blobs.usage()).toEqual({ bytes: 1200, count: 1 })
-    expect(await panel().findByRole('img', { name: t('receipt.photo', { n: 1 }) })).toHaveAttribute('src', 'blob:preview')
+    const thumb = await panel().findByRole('button', { name: t('receipt.photo', { n: 1 }) })
+    expect(thumb.querySelector('img')).toHaveAttribute('src', 'blob:preview')
   })
 
   it('saves the photo’s details with the expense', async () => {
@@ -49,7 +50,7 @@ describe('ReceiptSection', () => {
     const { user, header, stores } = await open()
     pick(new File(['x'], 'r.jpg', { type: 'image/jpeg' }))
     await waitFor(() => expect(header()).toHaveTextContent(tPlural('receipt.count', { count: 1 })))
-    await user.click(screen.getByRole('button', { name: t('expense.save') }))
+    await user.click(screen.getByRole('button', { name: t('form.save') }))
     await waitFor(async () => expect((await stores.repo.listExpenses('t1'))[0]?.attachments).toEqual([
       { id: expect.any(String), mimeType: 'image/webp', byteSize: 900, width: 1200, height: 1600 },
     ]))
@@ -67,7 +68,7 @@ describe('ReceiptSection', () => {
     const id = await stores.blobs.put(new Blob(['x']))
     await stores.repo.saveTrip(makeTrip({ id: 't1' }))
     await stores.repo.saveExpense(makeExpense({ id: 'e1', tripId: 't1', attachments: [{ id, mimeType: 'image/webp', byteSize: 1, width: 1, height: 1 }] }))
-    const { user } = await renderApp('/trip/t1/expense/e1', stores)
+    const { user } = await renderApp('/trip/t1/expense/e1/edit', stores)
     const header = () => screen.getByRole('button', { name: new RegExp(`^${t('receipt.title')}`) })
     await user.click(header())
     const spy = vi.spyOn(stores.blobs, 'delete')

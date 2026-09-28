@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { defaultSettings } from '../../data/defaults'
 import { clearSession } from '../../data/session'
 import { makeTrip } from '../../data/testing/fixtures'
-import { formatDate } from '../../i18n/format'
+import { pickDate } from '../../test/pickDate'
 import { t } from '../../i18n'
 import { currentRoute, makeStores, renderApp } from '../../test/renderApp'
 
@@ -38,17 +38,15 @@ describe('DetailsSection', () => {
     const { user, header, panel, stores } = await openNew()
     await user.click(header())
     await user.click(within(panel().getByRole('radiogroup', { name: t('expense.paidBy') })).getByRole('radio', { name: '小美' }))
-    const dates = within(panel().getByRole('radiogroup', { name: t('expense.date') }))
-    // 規格 5.4：日期條只列旅程那幾天
-    expect(dates.getAllByRole('radio')).toHaveLength(3)
-    await user.click(dates.getByRole('radio', { name: new RegExp(`^${formatDate('2026-03-16')}`) }))
+    // task#97：日期欄點開直接是月曆
+    await pickDate(user, t('expense.date'), '2026-03-16', panel())
     await user.click(panel().getByRole('radio', { name: t('cat.transport') }))
     // 存下去看實際寫了什麼
     await user.click(screen.getByLabelText(t('expense.amount')))
     await user.click(screen.getByRole('button', { name: '5' }))
     await user.click(screen.getByLabelText(t('expense.description')))
     await user.type(screen.getByLabelText(t('expense.description')), '地鐵')
-    await user.click(screen.getByRole('button', { name: t('expense.save') }))
+    await user.click(screen.getByRole('button', { name: t('form.save') }))
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
     expect((await stores.repo.listExpenses('t1'))[0]).toMatchObject({ paidBy: 'b', date: '2026-03-16', categoryId: 'cat.transport' })
   })
@@ -67,7 +65,7 @@ describe('form sections', () => {
   it('start closed on every new form, whatever the last one had open', async () => {
     const { user, header } = await openNew()
     await user.click(header())
-    await user.click(screen.getByRole('button', { name: t('expense.close') }))
+    await user.click(screen.getByRole('button', { name: t('form.close') }))
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
     location.hash = '#/trip/t1/expense/new'
     await screen.findByRole('heading', { name: t('expense.new') })
