@@ -5,9 +5,20 @@ on:
     branches: [main]
   pull_request:
 
+# 只讀：CI 只需要取出程式碼，不需要寫入權限（task#64）
+permissions:
+  contents: read
+
+# 同一分支推了新 commit 就取消還在跑的舊工作
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     runs-on: ubuntu-latest
+    # 卡住的工作不要一直佔著 runner
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
