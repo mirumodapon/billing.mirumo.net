@@ -83,7 +83,7 @@ describe('BackupSection: import (Plan 10 P3/P4)', () => {
     expect(sheet.getByTestId('import-summary')).toHaveTextContent(t('backup.importSummary', { trips: 1, expenses: 0, photos: 0 }))
     await user.click(sheet.getByRole('button', { name: t('backup.merge') }))
     // 匯入要寫整份資料庫，整套測試一起跑時比預設的 1 秒久
-    expect(await screen.findByText(t('backup.imported'), undefined, { timeout: 5000 })).toBeInTheDocument()
+    expect(await screen.findByText(t('backup.imported'))).toBeInTheDocument()
     expect((await stores.repo.listTrips()).map((trip) => trip.name).sort()).toEqual(['大阪', '東京'])
     // store 重新載入：不必重開 app 就看得到
     expect(stores.trips.getState().trips.map((trip) => trip.name).sort()).toEqual(['大阪', '東京'])
@@ -99,7 +99,7 @@ describe('BackupSection: import (Plan 10 P3/P4)', () => {
     await user.click(sheet.getByRole('button', { name: t('backup.replace') }))
     await user.click(within(screen.getByRole('dialog', { name: t('backup.replaceTitle') })).getByRole('button', { name: t('backup.replace') }))
     // 匯入要寫整份資料庫，整套測試一起跑時比預設的 1 秒久
-    expect(await screen.findByText(t('backup.imported'), undefined, { timeout: 5000 })).toBeInTheDocument()
+    expect(await screen.findByText(t('backup.imported'))).toBeInTheDocument()
     expect((await stores.repo.listTrips()).map((trip) => trip.name)).toEqual(['大阪'])
   })
 
