@@ -33,6 +33,9 @@ export interface TripRepository {
 
   exportSnapshot(): Promise<Snapshot>
   importSnapshot(snapshot: Snapshot, mode: 'replace' | 'merge'): Promise<void>
+
+  /** 清空資料庫裡的一切：旅程、紀錄、照片、設定、填到一半的表單（task#133） */
+  clearAll(): Promise<void>
 }
 
 export interface RepositoryOptions {
@@ -244,6 +247,18 @@ export class IdbTripRepository implements TripRepository {
         // tx.done 一定要一起等：交易失敗時它的 rejection 沒人接，會變成未處理錯誤
         tx.done,
       ])
+    })
+  }
+
+  /**
+   * 清空每個 object store，而不是刪掉整個資料庫：照片與草稿各自開著連線，
+   * deleteDatabase 會被它們擋住一直等；clear 不需要獨佔，結構留著照常使用（task#133）
+   */
+  clearAll(): Promise<void> {
+    return guard('write', 'database', async () => {
+      const stores = [...this.db.objectStoreNames]
+      const tx = this.db.transaction(stores, 'readwrite')
+      await Promise.all([...stores.map((store) => tx.objectStore(store).clear()), tx.done])
     })
   }
 
