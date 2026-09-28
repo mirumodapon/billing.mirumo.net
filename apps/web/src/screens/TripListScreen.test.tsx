@@ -34,6 +34,12 @@ describe('TripListScreen', () => {
     expect(screen.getByRole('button', { name: t('trip.new') })).toBeInTheDocument()
   })
 
+  // task#123：這裡沒有分頁列，新增鍵不必替它讓位，底部與右邊的距離一致
+  it('places the add button without room for a tab bar', async () => {
+    await renderApp('/')
+    expect(screen.getByRole('button', { name: t('trip.new') })).toHaveClass('bi-fab--no-tabbar')
+  })
+
   it('lists trips newest first with their dates and spending', async () => {
     await withTrips()
     const titles = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)

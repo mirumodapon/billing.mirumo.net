@@ -22,6 +22,11 @@
   cursor: pointer;
 }
 
+/* 沒有分頁列的畫面：底部與右邊同樣只隔 safe area 加一格間距（task#123） */
+.bi-fab--no-tabbar {
+  bottom: calc(var(--bi-safe-bottom) + var(--bi-space-4));
+}
+
 .bi-fab:active {
   transform: scale(0.97);
   transition: transform var(--bi-dur-press) var(--bi-ease-out);

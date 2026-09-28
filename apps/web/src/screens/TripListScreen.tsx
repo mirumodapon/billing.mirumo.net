@@ -56,7 +56,8 @@ export function TripListScreen() {
           </div>
         )}
       </div>
-      <Fab glyph={IconPlus} ariaLabel={t('trip.new')} onPress={() => setCreating(true)} />
+      {/* 旅程清單沒有分頁列（task#123） */}
+      <Fab glyph={IconPlus} ariaLabel={t('trip.new')} onPress={() => setCreating(true)} overTabBar={false} />
       <NewTripSheet open={creating} onClose={() => setCreating(false)} />
       {confirm.dialog}
     </div>
