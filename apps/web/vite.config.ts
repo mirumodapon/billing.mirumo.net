@@ -4,7 +4,11 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import { appDefines } from './appDefines'
 
+// 部署到 GitHub Pages 時由 workflow 帶入（例如 /billing.mirumo.net/）；自訂網域或本機是根目錄
+const base = process.env.BASE_PATH ?? '/'
+
 export default defineConfig({
+  base,
   define: appDefines(),
   resolve: {
     conditions: ['development', 'import', 'module', 'browser', 'default'],
@@ -19,7 +23,8 @@ export default defineConfig({
         short_name: 'Travel Split',
         display: 'standalone',
         orientation: 'portrait',
-        start_url: '/',
+        start_url: base,
+        scope: base,
         theme_color: '#1e1e2e',
         background_color: '#1e1e2e',
         // task#88：Android 安裝需要 PNG；maskable 版的圖案縮在安全區內
