@@ -133,6 +133,8 @@
    * 兩者就會不同步，而 Fab 壓在分頁列上時兩個都會變難點。
    */
   --bi-tabbar-height: 56px;
+  /* 頂部列的高度：比觸控下限高一點，標題不會擠在一條細帶裡（task#124） */
+  --bi-appbar-height: 52px;
 
   /* ── 動效 ── */
   --bi-dur-press: 120ms;
