@@ -63,9 +63,9 @@ export function ExpenseViewScreen() {
           className="app-view-hero__icon"
           style={category ? { background: `var(--bi-${category.colorKey})`, color: `var(--bi-${category.colorKey}-fg)` } : { background: 'var(--bi-bg)' }}
         >
-          <Icon glyph={categoryGlyph(category, expense.categoryId)} size="lg" />
+          <Icon glyph={categoryGlyph(category, expense.categoryId, expense.topUpFor !== undefined)} size="lg" />
         </span>
-        <span className="app-view-hero__meta">{categoryLabel(category, expense.categoryId)}</span>
+        <span className="app-view-hero__meta">{categoryLabel(category, expense.categoryId, expense.topUpFor !== undefined)}</span>
         <p className="app-view-hero__amount app-money">{money(toMinor(expense.amount, decimalsOf(expense.currency)), expense.currency)}</p>
         {foreign && expense.exchangeRate > 0 ? (
           <p className="app-view-hero__meta app-money">

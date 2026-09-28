@@ -36,16 +36,19 @@ export function DetailsSection({ trip, draft, change, open, onToggle }: FormSect
   return (
     <Accordion title={t('expense.details')} summary={summary} open={open} onToggle={onToggle} data-testid="section-details">
       <div className="app-form">
-        <div>
-          <p className="app-field-label">{t('expense.category')}</p>
-          <ChipGroup
-            ariaLabel={t('expense.category')}
-            value={draft.categoryId}
-            // 類別可以留空（task#127）：第一個是「未分類」，新的一筆一開始就選在這裡，也用它取消已選的類別
-            options={[{ value: NO_CATEGORY, label: t('cat.none') }, ...categories.map((c) => ({ value: c.id, label: displayName(c), colorKey: c.colorKey }))]}
-            onChange={(categoryId) => change((d) => ({ ...d, categoryId }))}
-          />
-        </div>
+        {/* 儲值固定歸在「儲值」，不選類別（task#142） */}
+        {draft.topUpFor ? null : (
+          <div>
+            <p className="app-field-label">{t('expense.category')}</p>
+            <ChipGroup
+              ariaLabel={t('expense.category')}
+              value={draft.categoryId}
+              // 類別可以留空（task#127）：第一個是「未分類」，新的一筆一開始就選在這裡，也用它取消已選的類別
+              options={[{ value: NO_CATEGORY, label: t('cat.none') }, ...categories.map((c) => ({ value: c.id, label: displayName(c), colorKey: c.colorKey }))]}
+              onChange={(categoryId) => change((d) => ({ ...d, categoryId }))}
+            />
+          </div>
+        )}
         <div>
           <p className="app-field-label">{t('expense.paymentMethod')}</p>
           <ChipGroup

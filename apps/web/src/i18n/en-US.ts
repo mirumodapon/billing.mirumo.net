@@ -12,6 +12,7 @@ export const enUS: Record<TranslationKey, string> = {
   'cat.ticket': 'Tickets',
   'cat.other': 'Other',
   'cat.none': 'Uncategorized',
+  'cat.topUp': 'Top-up',
   'pay.cash': 'Cash',
   'pay.credit': 'Credit card',
   'pay.mobile': 'Mobile pay',

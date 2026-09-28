@@ -1,6 +1,6 @@
 import type { Trip, TripCategory } from '@billing/core'
 import { CATEGORY_ICONS, type CategoryIconName } from '@billing/ui'
-import { IconDots, IconQuestionMark, type TablerIcon } from '@tabler/icons-react'
+import { IconDots, IconQuestionMark, IconWallet, type TablerIcon } from '@tabler/icons-react'
 import type { Category } from '../data/types'
 import { t } from '../i18n'
 import { displayName } from './names'
@@ -11,16 +11,18 @@ const isIconName = (name: string): name is CategoryIconName => name in CATEGORY_
 export const NO_CATEGORY = ''
 
 /**
- * 一筆支出的類別圖示：沒選類別的是問號（task#127）；
+ * 一筆支出的類別圖示：儲值固定是錢包（task#142，儲值不選類別）；沒選類別的是問號（task#127）；
  * 引用的類別已經不在清單裡（例如刪掉了）的沿用「其他」的點點
  */
-export function categoryGlyph(category: Category | undefined, categoryId: string): TablerIcon {
+export function categoryGlyph(category: Category | undefined, categoryId: string, topUp = false): TablerIcon {
+  if (topUp) return IconWallet
   if (category) return CATEGORY_ICONS[category.icon]
   return categoryId === NO_CATEGORY ? IconQuestionMark : IconDots
 }
 
-/** 一筆支出的類別名稱：沒選的叫「未分類」，找不到的顯示原本的 id */
-export function categoryLabel(category: Category | undefined, categoryId: string): string {
+/** 一筆支出的類別名稱：儲值叫「儲值」，沒選的叫「未分類」，找不到的顯示原本的 id */
+export function categoryLabel(category: Category | undefined, categoryId: string, topUp = false): string {
+  if (topUp) return t('cat.topUp')
   if (category) return displayName(category)
   return categoryId === NO_CATEGORY ? t('cat.none') : categoryId
 }

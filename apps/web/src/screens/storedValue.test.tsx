@@ -86,6 +86,35 @@ describe('usage counts with top-ups (task#139)', () => {
   })
 })
 
+// task#142：儲值固定歸在「儲值」：不選類別，列表上是錢包不是問號，也不出現在類別篩選
+describe('the top-up category (task#142)', () => {
+  it('shows a wallet in the list instead of a question mark', async () => {
+    await setup('/trip/t1/expenses', { paymentMethods: [suica] }, [
+      { id: 'top', date: '2026-03-15', description: '儲值', amount: 5000, currency: 'JPY', exchangeRate: 0.2, paymentMethodId: 'pay.credit', topUpFor: 'suica', categoryId: '' },
+    ])
+    const row = await screen.findByRole('button', { name: /^儲值/ })
+    expect(row.querySelector('.tabler-icon-wallet')).not.toBeNull()
+    expect(row.querySelector('.tabler-icon-question-mark')).toBeNull()
+  })
+
+  it('asks for no category on the top-up form', async () => {
+    const { user } = await setup('/trip/t1/expense/new?topUp=suica', { paymentMethods: [suica] })
+    await screen.findByRole('heading', { name: t('topUp.title', { name: 'Suica' }) })
+    await user.click(screen.getByRole('button', { name: new RegExp(`^${t('expense.details')}`) }))
+    expect(screen.queryByRole('radiogroup', { name: t('expense.category') })).not.toBeInTheDocument()
+  })
+
+  it('keeps top-ups out of the category filter', async () => {
+    const { user } = await setup('/trip/t1/expenses', { paymentMethods: [suica] }, [
+      { id: 'top', date: '2026-03-15', description: '儲值', amount: 5000, currency: 'JPY', exchangeRate: 0.2, paymentMethodId: 'pay.credit', topUpFor: 'suica', categoryId: '' },
+      { id: 'lunch', date: '2026-03-15', description: '午餐', amount: 300, currency: 'TWD', exchangeRate: 1, paymentMethodId: 'pay.cash' },
+    ])
+    await user.click(await screen.findByRole('button', { name: t('expenses.filter') }))
+    const categories = within(within(screen.getByRole('dialog', { name: t('expenses.filter') })).getByRole('group', { name: t('expense.category') }))
+    expect(categories.queryByRole('button', { name: t('cat.none') })).not.toBeInTheDocument()
+  })
+})
+
 describe('topping up (task#115)', () => {
   it('opens a top-up form from the card, in the card’s currency, paid another way', async () => {
     const { user, stores } = await setup('/trip/t1/setup', { paymentMethods: [suica] })
@@ -99,7 +128,6 @@ describe('topping up (task#115)', () => {
     expect(methods.queryByRole('radio', { name: 'Suica' })).not.toBeInTheDocument()
     await user.click(screen.getByLabelText(t('expense.amount')))
     for (const k of ['5', '0', '0', '0']) await user.click(screen.getByRole('button', { name: k }))
-    await pickCategory(user)
     await user.click(screen.getByRole('button', { name: t('form.save') }))
     await waitFor(async () => expect((await stores.repo.listExpenses('t1'))[0]).toMatchObject({ topUpFor: 'suica', currency: 'JPY', amount: 5000 }))
     expect((await stores.repo.listExpenses('t1'))[0]).not.toHaveProperty('fromBalance')

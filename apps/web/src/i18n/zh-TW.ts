@@ -12,6 +12,7 @@ export const zhTW = {
   'cat.ticket': '票券',
   'cat.other': '其他',
   'cat.none': '未分類',
+  'cat.topUp': '儲值',
   'pay.cash': '現金',
   'pay.credit': '信用卡',
   'pay.mobile': '行動支付',
