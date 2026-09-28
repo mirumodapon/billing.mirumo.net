@@ -483,6 +483,24 @@
     border-radius: inherit;
   }
 
+  /*
+   * 消費明細的一列（task#129）：品項名稱用一般字色，下面一行小字說是哪一筆、哪一天，
+   * 金額對齊第一行。列與列之間只留間距不畫線：每列兩行字，再加分隔線會很亂
+   */
+  .app-item-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--bi-space-3);
+    padding-block: var(--bi-space-2);
+  }
+
+  .app-item-row__meta {
+    display: block;
+    color: var(--bi-text-muted);
+    font-size: var(--bi-text-sm);
+  }
+
   .app-converted {
     display: flex;
     align-items: center;

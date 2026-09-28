@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import type { Trip } from '@billing/core'
 import { cleanup, screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
@@ -144,6 +146,17 @@ describe('StatsTab: members and my items (Plan 9 Task 4)', () => {
     expect(items.getAllByTestId('stats-item')[0]).not.toHaveTextContent('・')
     expect(items.getByTestId('stats-overflow')).toHaveTextContent(plain(formatMoney(50, 'TWD')))
     expect(screen.queryByTestId('stats-members')).not.toBeInTheDocument()
+  })
+
+  // task#129：每列有兩行字，列與列之間再畫線看起來很亂：用自己的列樣式，只留間距
+  it('lays out my items without a divider between rows', async () => {
+    const { user } = await setup()
+    await user.click(within(screen.getByRole('radiogroup', { name: t('stats.scope') })).getByRole('radio', { name: t('stats.memberSelf', { name: '阿明' }) }))
+    const rows = within(screen.getByTestId('stats-items-panel')).getAllByTestId('stats-item')
+    for (const row of rows) expect(row).toHaveClass('app-item-row')
+    const css = readFileSync(join(import.meta.dirname, '../screens.css'), 'utf8')
+    const rule = css.match(/\.app-item-row\s*{([^}]*)}/)?.[1] ?? ''
+    expect(rule).not.toMatch(/border/)
   })
 })
 

@@ -129,17 +129,17 @@ function MyItems({ items, format }: { items: NonNullable<StatsView['items']>; fo
   return (
     <ul className="m-0 list-none p-0">
       {items.rows.map((row) => (
-        <li key={`${row.expenseId}-${row.itemId ?? ''}`} className="app-fact" data-testid="stats-item">
+        <li key={`${row.expenseId}-${row.itemId ?? ''}`} className="app-item-row" data-testid="stats-item">
           <span>
             {row.name.trim() || t('expense.untitled')}
             {/* 明細品項加上是哪一筆（task#112） */}
-            <span className="app-field-label m-0 block">{row.expenseName ? `${row.expenseName}・${date(row.date)}` : date(row.date)}</span>
+            <span className="app-item-row__meta">{row.expenseName ? `${row.expenseName}・${date(row.date)}` : date(row.date)}</span>
           </span>
           <span className="app-money">{format(row.shareMinor)}</span>
         </li>
       ))}
       {items.overflowMinor !== 0 ? (
-        <li className="app-fact" data-testid="stats-overflow">
+        <li className="app-item-row" data-testid="stats-overflow">
           <span>{t('stats.overflow')}</span>
           <span className="app-money">{format(items.overflowMinor)}</span>
         </li>
