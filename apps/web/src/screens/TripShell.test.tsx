@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { clearSession } from '../data/session'
@@ -20,6 +22,17 @@ describe('TripShell', () => {
     expect(screen.getByRole('radiogroup', { name: t('stats.scope') })).toBeInTheDocument()
     expect(screen.getAllByRole('tab')).toHaveLength(4)
     expect(screen.getByRole('tab', { name: t('tab.stats') })).toHaveAttribute('aria-selected', 'true')
+  })
+
+  /*
+   * task#131（同 task#122）：捲動區不是定位基準的話，只給輔助技術的隱藏標籤會以整頁為基準，
+   * 把整頁撐得比螢幕高，變成外層與捲動區兩層捲動，手機上滑不動
+   */
+  it('scrolls its content in an area that contains hidden labels', async () => {
+    await withTrip('/trip/t1/setup')
+    expect(screen.getByRole('main')).toHaveClass('app-scroll')
+    const css = readFileSync(join(import.meta.dirname, 'screens.css'), 'utf8')
+    expect(css).toMatch(/\.app-scroll\s*{[^}]*position:\s*relative/)
   })
 
   it('opens the expenses tab when no tab is named', async () => {

@@ -60,6 +60,8 @@
 }
 
 .bi-sheet__body {
+  /* 捲動區要是裡面隱藏標籤（絕對定位）的定位基準，否則它們會超出捲動範圍（task#131） */
+  position: relative;
   flex: 1 1 auto;
   min-height: 0;
   padding: 0 var(--bi-space-4) var(--bi-space-4);
