@@ -88,7 +88,7 @@ export const enUS: Record<TranslationKey, string> = {
   'crash.reload': 'Reload',
   'crash.home': 'Back to trips',
   'about.title': 'About',
-  'about.version': '{version} ({hash})',
+  'about.version': 'Travel Split {version} ({hash})',
   'errors.title': 'Error log',
   'errors.none': 'No errors recorded.',
   'errors.copy': 'Copy all',
