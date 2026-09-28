@@ -1,5 +1,5 @@
 import { convertToBaseMinor, decimalsOf, toMinor, type Expense, type Trip } from '@billing/core'
-import { CATEGORY_ICONS, Icon, SwipeAction } from '@billing/ui'
+import { CATEGORY_ICONS, Chip, Icon, SwipeAction } from '@billing/ui'
 import { IconDots, IconPaperclip, IconTrash } from '@tabler/icons-react'
 import type { Category } from '../../data/types'
 import { useI18n } from '../../i18n/useI18n'
@@ -26,6 +26,8 @@ export function ExpenseRow({ expense, trip, category, onOpen, onDelete, showBase
         ? tPlural('split.summaryItems', { count: expense.split.items.length })
         : t('split.summaryExact')
   const name = expense.description.trim() || t('expense.untitled')
+  const cardId = expense.topUpFor ?? (expense.fromBalance ? expense.paymentMethodId : undefined)
+  const cardName = cardId ? trip.paymentMethods?.find((m) => m.id === cardId)?.name : undefined
   const foreign = expense.currency !== trip.baseCurrency
   const original = money(toMinor(expense.amount, decimalsOf(expense.currency)), expense.currency)
   // 草稿可能還沒有匯率（存成 0）：那時換算不出本位幣，只顯示原幣
@@ -49,6 +51,13 @@ export function ExpenseRow({ expense, trip, category, onOpen, onDelete, showBase
               <>
                 {' '}
                 <DraftTag />
+              </>
+            ) : null}
+            {/* 預存卡（task#115）：用卡付的只扣餘額、儲值才是花費，列表上看得出是哪一種 */}
+            {cardName ? (
+              <>
+                {' '}
+                <Chip label={expense.topUpFor ? t('stored.topUpTag', { name: cardName }) : t('stored.paidWith', { name: cardName })} />
               </>
             ) : null}
             {expense.attachments.length > 0 ? (
