@@ -90,6 +90,5 @@ describe('PaymentMethodsSection layout (task#93)', () => {
     expect(inBox(await section.findByRole('button', { name: t('settings.removeItem', { name: '禮券' }) }))).not.toBeNull()
     expect(inBox(await section.findByText(tPlural('settings.usedBy', { count: 1 })))).not.toBeNull()
     expect(inBox(section.getByRole('button', { name: t('settings.addPaymentMethod') }))).not.toBeNull()
-    expect(section.getAllByRole('listitem').every((row) => row.querySelector('.app-slot') === null)).toBe(true)
   })
 })

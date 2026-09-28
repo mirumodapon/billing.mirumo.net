@@ -126,12 +126,32 @@
     color: var(--bi-text-muted);
   }
 
-  /* 清單列尾端的固定欄：放刪除鍵或留空，讓每一列的框左右緣都對齊（task#93） */
-  .app-slot {
-    display: inline-flex;
-    flex: none;
-    justify-content: center;
-    width: var(--bi-tap-min);
+  /*
+   * 框裡有主要按鈕與尾端按鈕兩顆的列（task#113，類別）：框畫在外層，
+   * 主要按鈕填滿剩下的寬度，刪除鍵在框內右側
+   */
+  .app-row--split {
+    gap: 0;
+    padding: 0;
+    padding-inline-end: var(--bi-space-1);
+  }
+
+  .app-row__main {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--bi-space-3);
+    min-width: 0;
+    min-height: var(--bi-tap-min);
+    padding: var(--bi-space-2) var(--bi-space-3);
+    border: 0;
+    border-radius: inherit;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
   }
 
   /* 新增成員那一列在頭像的位置放圖示，與上面的成員列對齊（task#103）。尺寸同 md 頭像 */

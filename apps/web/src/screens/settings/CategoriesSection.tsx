@@ -43,8 +43,10 @@ export function CategoriesSection({ usage }: { usage: RecordUsage | null }) {
           const used = usage?.categories[category.id] ?? 0
           const name = displayName(category)
           return (
-            <li key={category.id} className="flex items-center gap-2">
-              <button type="button" className="app-row flex-1" onClick={() => setEditing({ category })}>
+            // 整列寬的框，刪除鍵在框內右側（task#113，與付款方式同一個版面）。
+            // 按鈕裡不能再放按鈕，所以框是外層，裡面是「編輯」與「刪除」兩顆並排
+            <li key={category.id} className="app-row app-row--split">
+              <button type="button" className="app-row__main" onClick={() => setEditing({ category })}>
                 <span className="flex items-center gap-3">
                   <span
                     className="inline-flex h-8 w-8 items-center justify-center rounded-full"
@@ -58,14 +60,12 @@ export function CategoriesSection({ usage }: { usage: RecordUsage | null }) {
                   {category.builtin ? t('settings.builtin') : used > 0 ? tPlural('settings.usedBy', { count: used }) : null}
                 </span>
               </button>
-              {/* 固定寬的尾端欄，與付款方式同樣讓每一列的框對齊（task#93）。使用次數讀到之前不給刪 */}
-              <span className="app-slot">
-                {!category.builtin && usage && used === 0 ? (
-                  <Button variant="ghost" aria-label={t('settings.removeItem', { name })} onClick={() => confirm.ask(name, 'permanent', () => remove(category.id))}>
-                    <Icon glyph={IconTrash} />
-                  </Button>
-                ) : null}
-              </span>
+              {/* 使用次數讀到之前不給刪 */}
+              {!category.builtin && usage && used === 0 ? (
+                <Button variant="ghost" aria-label={t('settings.removeItem', { name })} onClick={() => confirm.ask(name, 'permanent', () => remove(category.id))}>
+                  <Icon glyph={IconTrash} />
+                </Button>
+              ) : null}
             </li>
           )
         })}

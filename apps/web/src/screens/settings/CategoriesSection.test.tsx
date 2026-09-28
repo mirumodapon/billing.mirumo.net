@@ -108,3 +108,14 @@ describe('CategoriesSection', () => {
     for (const icon of icons) expect(icon).toHaveAccessibleName(/\S/)
   })
 })
+
+describe('CategoriesSection layout (task#113)', () => {
+  // 整列寬的框：刪除鍵在框內右側，與付款方式一樣，不再另留一欄讓框變窄
+  it('keeps the delete button inside the full-width row', async () => {
+    const { section } = await setup()
+    const remove = await section.findByRole('button', { name: t('settings.removeItem', { name: '雜支' }) })
+    const row = remove.closest('li')!
+    expect(row).toHaveClass('app-row')
+    expect(within(row).getByRole('button', { name: /^雜支/ })).toHaveClass('app-row__main')
+  })
+})
