@@ -257,6 +257,7 @@ export const zhTW = {
   'tripMethods.none': '無',
   'tripMethods.newName': '新付款方式的名稱',
   'tripMethods.add': '新增',
+  'tripMethods.usedByBoth': '{expenses} 筆支出、{topUps} 筆儲值使用中',
   'stored.label': '預存模式・{currency}',
   'stored.toggle': '{name} 的預存模式',
   'stored.currency': '預存模式的幣別',
@@ -356,6 +357,7 @@ export const zhTWPlurals = {
   'storage.photos': '收據照片 {count} 張',
   'receipt.count': '{count} 張',
   'settings.usedBy': '{count} 筆支出使用中',
+  'tripMethods.usedByTopUps': '{count} 筆儲值使用中',
 } as const
 
 export type TranslationKey = keyof typeof zhTW

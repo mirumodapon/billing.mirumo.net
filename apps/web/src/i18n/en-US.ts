@@ -257,6 +257,7 @@ export const enUS: Record<TranslationKey, string> = {
   'tripMethods.none': 'None',
   'tripMethods.newName': 'New payment method',
   'tripMethods.add': 'Add',
+  'tripMethods.usedByBoth': 'Used by expenses ({expenses}) and top-ups ({topUps})',
   'stored.label': 'Stored-value mode · {currency}',
   'stored.toggle': 'Stored-value mode for {name}',
   'stored.currency': 'Stored-value currency',
@@ -356,4 +357,5 @@ export const enUSPlurals: Record<PluralKey, { one: string; other: string }> = {
   'storage.photos': { one: '{count} receipt photo', other: '{count} receipt photos' },
   'receipt.count': { one: '{count} photo', other: '{count} photos' },
   'settings.usedBy': { one: 'Used by {count} expense', other: 'Used by {count} expenses' },
+  'tripMethods.usedByTopUps': { one: 'Used by {count} top-up', other: 'Used by {count} top-ups' },
 }

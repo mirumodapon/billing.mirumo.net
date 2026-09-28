@@ -5,7 +5,7 @@ import { defaultSettings } from '../data/defaults'
 import { clearSession } from '../data/session'
 import { makeExpense, makeTrip } from '../data/testing/fixtures'
 import { formatMoney } from '../i18n/format'
-import { t } from '../i18n'
+import { t, tPlural } from '../i18n'
 import { currentRoute, makeStores, renderApp } from '../test/renderApp'
 import { pickCategory } from '../test/pickCategory'
 
@@ -69,6 +69,20 @@ describe('stored-value cards in trip setup (task#115)', () => {
     ])
     const panel = await openMethods(user)
     expect(panel.getByRole('button', { name: t('stored.toggle', { name: 'Suica' }) })).toBeDisabled()
+  })
+})
+
+// task#139：儲值不是支出，使用筆數分開寫
+describe('usage counts with top-ups (task#139)', () => {
+  it('counts top-ups apart from expenses, on the card and on what paid for the top-up', async () => {
+    const { user } = await setup('/trip/t1/setup', { paymentMethods: [suica] }, [
+      { id: 'top', amount: 5000, currency: 'JPY', paymentMethodId: 'pay.credit', topUpFor: 'suica' },
+      { id: 'ride', amount: 200, currency: 'JPY', paymentMethodId: 'suica', fromBalance: true },
+    ])
+    const panel = await openMethods(user)
+    expect(panel.getByText(t('tripMethods.usedByBoth', { expenses: 1, topUps: 1 }))).toBeInTheDocument()
+    expect(panel.getByText(tPlural('tripMethods.usedByTopUps', { count: 1 }))).toBeInTheDocument()
+    expect(panel.queryByText(tPlural('settings.usedBy', { count: 2 }))).not.toBeInTheDocument()
   })
 })
 

@@ -74,19 +74,27 @@ export function TripPaymentMethodsSection({ trip, open, onToggle, save }: TripPa
         <ul className="m-0 flex list-none flex-col gap-3 p-0">
           {methods.map((method) => {
             const live = expenses.filter((e) => !e.deletedAt)
-            const paid = live.filter((e) => e.paymentMethodId === method.id).length
-            const topUps = live.filter((e) => e.topUpFor === method.id).length
+            // 儲值不是支出（task#137）：用它付的支出與跟它有關的儲值分開算（task#139）。
+            // 儲值有關的是「替這張卡儲值」與「用這個付款方式付儲值的錢」兩種
+            const spent = live.filter((e) => e.paymentMethodId === method.id && !e.topUpFor).length
+            const topUps = live.filter((e) => e.topUpFor === method.id || (e.topUpFor !== undefined && e.paymentMethodId === method.id)).length
+            const usedLabel =
+              topUps === 0
+                ? tPlural('settings.usedBy', { count: spent })
+                : spent === 0
+                  ? tPlural('tripMethods.usedByTopUps', { count: topUps })
+                  : t('tripMethods.usedByBoth', { expenses: spent, topUps })
             return (
               <MethodRow
                 key={method.id}
                 method={method}
-                used={paid + topUps}
+                used={spent + topUps}
                 balance={balances[method.id]}
                 onRename={(name) => update((list) => list.map((m) => (m.id === method.id ? { ...m, name } : m)))}
                 onRemove={() => confirm.ask(tripMethodName(method), 'permanent', () => update((list) => list.filter((m) => m.id !== method.id)))}
                 onStoredToggle={() => (method.storedValue ? setStored(method.id, undefined) : setPickingCurrencyFor(method.id))}
                 onTopUp={() => navigate(`/trip/${trip.id}/expense/new?topUp=${method.id}`)}
-                usedLabel={(count) => tPlural('settings.usedBy', { count })}
+                usedLabel={usedLabel}
               />
             )
           })}
@@ -129,7 +137,8 @@ interface MethodRowProps {
   onRemove: () => void
   onStoredToggle: () => void
   onTopUp: () => void
-  usedLabel: (count: number) => string
+  /** 使用筆數的說明（有使用時才顯示） */
+  usedLabel: string
 }
 
 function MethodRow({ method, used, balance, onRename, onRemove, onStoredToggle, onTopUp, usedLabel }: MethodRowProps) {
@@ -157,7 +166,7 @@ function MethodRow({ method, used, balance, onRename, onRemove, onStoredToggle, 
         <Icon glyph={IconWallet} />
       </Button>
       {used > 0 ? (
-        <span className="px-2">{usedLabel(used)}</span>
+        <span className="px-2">{usedLabel}</span>
       ) : (
         <Button variant="ghost" aria-label={t('settings.removeItem', { name })} onClick={onRemove}>
           <Icon glyph={IconTrash} />
