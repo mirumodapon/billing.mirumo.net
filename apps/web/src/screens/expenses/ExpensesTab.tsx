@@ -1,10 +1,13 @@
 import { convertToBaseMinor, countsInTotals, type Expense } from '@billing/core'
-import { Chip, Fab, ProgressBar } from '@billing/ui'
-import { IconPlus } from '@tabler/icons-react'
+import { Button, Fab, Icon, ProgressBar } from '@billing/ui'
+import { IconArrowsExchange, IconFilter, IconFilterFilled, IconPlus } from '@tabler/icons-react'
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
+import { EMPTY_FILTER, filterExpenses, isFilterActive, type ExpenseFilter } from '../../domain/expenseFilter'
 import { formatWeekday } from '../../i18n/format'
 import { useI18n } from '../../i18n/useI18n'
-import { useSettings, useStores, useTrips } from '../../stores/StoresProvider'
+import { useSettings, useStores, useTrips, useUi } from '../../stores/StoresProvider'
+import { ExpenseFilterSheet } from './ExpenseFilterSheet'
 import { ExpenseRow } from './ExpenseRow'
 
 /** 依日期分組，保留 store 裡新到舊的順序（規格 4.3） */
@@ -19,14 +22,21 @@ export function ExpensesTab() {
   const { tripId = '' } = useParams()
   const { t, money, date } = useI18n()
   const navigate = useNavigate()
-  const { trips, settings } = useStores()
+  const { trips, settings, ui } = useStores()
   const trip = useTrips((s) => s.trips.find((x) => x.id === tripId))
   const expenses = useTrips((s) => (s.current?.tripId === tripId ? s.current.expenses : undefined))
   const summary = useTrips((s) => s.summaries[tripId])
   const categories = useSettings((s) => s.settings.categories)
   // 沒設定過就是顯示（task#99）
   const showBase = useSettings((s) => s.settings.showBaseAmounts ?? true)
+  const filter = useUi((s) => s.expenseFilters[tripId]) ?? EMPTY_FILTER
+  const [filtering, setFiltering] = useState(false)
   if (!trip || !expenses) return null
+
+  const setFilter = (next: ExpenseFilter) => ui.getState().setExpenseFilter(tripId, next)
+  const active = isFilterActive(filter)
+  const shown = active ? filterExpenses(expenses, filter) : expenses
+  const baseTotal = (list: Expense[]) => list.reduce((sum, e) => sum + convertToBaseMinor(e.amount, e.exchangeRate, trip.baseCurrency), 0)
 
   const budget = summary?.budget
   const spent = money(summary?.spentMinor ?? 0, trip.baseCurrency)
@@ -34,9 +44,25 @@ export function ExpensesTab() {
   return (
     <>
       <div className="app-sticky">
-        <span className="app-money">
-          {budget ? t('expenses.summary', { spent, budget: money(budget.budgetMinor, trip.baseCurrency) }) : t('expenses.spent', { amount: spent })}
-        </span>
+        <div className="app-sticky__row">
+          <span className="app-money">
+            {budget ? t('expenses.summary', { spent, budget: money(budget.budgetMinor, trip.baseCurrency) }) : t('expenses.spent', { amount: spent })}
+          </span>
+          <span className="flex">
+            <button
+              type="button"
+              className="app-icon-toggle"
+              aria-label={t('expenses.showBase')}
+              aria-pressed={showBase}
+              onClick={() => void settings.getState().update((s) => ({ ...s, showBaseAmounts: !showBase }))}
+            >
+              <Icon glyph={IconArrowsExchange} />
+            </button>
+            <button type="button" className="app-icon-toggle" aria-label={t('expenses.filter')} aria-haspopup="dialog" data-active={active || undefined} onClick={() => setFiltering(true)}>
+              <Icon glyph={active ? IconFilterFilled : IconFilter} />
+            </button>
+          </span>
+        </div>
         {budget ? (
           <ProgressBar
             ratio={budget.ratio}
@@ -44,17 +70,22 @@ export function ExpensesTab() {
             ariaLabel={t('expenses.budget', { percent: Math.min(999, Math.round(budget.ratio * 100)) })}
           />
         ) : null}
-        <div>
-          <Chip
-            label={t('expenses.showBase')}
-            selected={showBase}
-            onSelect={() => void settings.getState().update((s) => ({ ...s, showBaseAmounts: !showBase }))}
-          />
-        </div>
+        {active ? (
+          <div role="status" className="app-sticky__row app-field-label m-0">
+            <span className="app-money">
+              {t('expenses.filtered', { count: shown.length, amount: money(baseTotal(shown.filter(countsInTotals)), trip.baseCurrency) })}
+            </span>
+            <Button variant="ghost" onClick={() => setFilter(EMPTY_FILTER)}>
+              {t('expenses.clearFilter')}
+            </Button>
+          </div>
+        ) : null}
       </div>
       {expenses.length === 0 ? <p className="app-empty">{t('expenses.empty')}</p> : null}
+      {expenses.length > 0 && shown.length === 0 ? <p className="app-empty">{t('expenses.noMatch')}</p> : null}
+      <ExpenseFilterSheet open={filtering} onClose={() => setFiltering(false)} trip={trip} expenses={expenses} filter={filter} onChange={setFilter} />
       <div className="pb-24">
-        {byDay(expenses).map(([day, list]) => (
+        {byDay(shown).map(([day, list]) => (
           <section key={day} aria-label={`${date(day)} ${formatWeekday(day)}`}>
             <h2 className="app-day m-0 font-normal">
               <span>
@@ -62,10 +93,7 @@ export function ExpensesTab() {
               </span>
               <span className="app-money">
                 {t('expenses.dayTotal', {
-                  amount: money(
-                    list.filter(countsInTotals).reduce((sum, e) => sum + convertToBaseMinor(e.amount, e.exchangeRate, trip.baseCurrency), 0),
-                    trip.baseCurrency,
-                  ),
+                  amount: money(baseTotal(list.filter(countsInTotals)), trip.baseCurrency),
                 })}
               </span>
             </h2>

@@ -160,3 +160,58 @@ describe('home-currency toggle (task#99)', () => {
     expect(screen.getByText(plain(t('expenses.spent', { amount: formatMoney(1330, 'TWD') })))).toBeInTheDocument()
   })
 })
+
+describe('expense filter (task#106)', () => {
+  async function openFilter(user: Awaited<ReturnType<typeof setup>>['user']) {
+    await user.click(screen.getByRole('button', { name: t('expenses.filter') }))
+    return within(screen.getByRole('dialog', { name: t('expenses.filter') }))
+  }
+
+  it('narrows the list, the day totals and a filtered total, but not the trip summary', async () => {
+    const { user } = await setup()
+    const sheet = await openFilter(user)
+    await user.click(within(sheet.getByRole('group', { name: t('expense.paidBy') })).getByRole('button', { name: '小美' }))
+    await user.click(sheet.getByRole('button', { name: t('filter.done') }))
+    expect(screen.getByRole('button', { name: /^淺草寺門票/ })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^一蘭拉麵/ })).not.toBeInTheDocument()
+    expect(screen.getAllByRole('region')).toHaveLength(1)
+    expect(screen.getByRole('region')).toHaveTextContent(plain(t('expenses.dayTotal', { amount: formatMoney(500, 'TWD') })))
+    expect(screen.getByRole('status')).toHaveTextContent(plain(t('expenses.filtered', { count: 1, amount: formatMoney(500, 'TWD') })))
+    // 摘要與預算是整趟旅程的帳，不跟著篩選
+    expect(screen.getByText(plain(t('expenses.spent', { amount: formatMoney(1330, 'TWD') })))).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: t('expenses.filter') })).toHaveAttribute('data-active')
+  })
+
+  it('keeps the filter after opening an expense and coming back, until it is cleared', async () => {
+    const { user } = await setup()
+    const sheet = await openFilter(user)
+    await user.click(within(sheet.getByRole('group', { name: t('expense.paidBy') })).getByRole('button', { name: '小美' }))
+    await user.click(sheet.getByRole('button', { name: t('filter.done') }))
+    await user.click(screen.getByRole('button', { name: /^淺草寺門票/ }))
+    await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expense/ticket'))
+    await user.click(screen.getByRole('button', { name: t('form.close') }))
+    await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
+    expect(await screen.findByRole('button', { name: /^淺草寺門票/ })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^一蘭拉麵/ })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: t('expenses.clearFilter') }))
+    expect(screen.getByRole('button', { name: /^一蘭拉麵/ })).toBeInTheDocument()
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+  })
+
+  it('says so when nothing matches', async () => {
+    const { user } = await setup()
+    const sheet = await openFilter(user)
+    await user.click(sheet.getByRole('button', { name: t('filter.draftsOnly') }))
+    expect(screen.getByText(t('expenses.noMatch'))).toBeInTheDocument()
+  })
+
+  // 一整排這趟旅程從沒用過的類別只是雜訊
+  it('offers only the categories and payment methods this trip uses', async () => {
+    const { user } = await setup()
+    const sheet = await openFilter(user)
+    const categories = within(sheet.getByRole('group', { name: t('expense.category') }))
+    expect(categories.getAllByRole('button').map((b) => b.textContent)).toEqual([t('cat.food')])
+    const methods = within(sheet.getByRole('group', { name: t('expense.paymentMethod') }))
+    expect(methods.getAllByRole('button').map((b) => b.textContent)).toEqual([t('pay.cash')])
+  })
+})

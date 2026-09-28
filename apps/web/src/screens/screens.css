@@ -175,6 +175,56 @@
     border-bottom: 1px solid var(--bi-border);
   }
 
+  .app-sticky__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--bi-space-2);
+  }
+
+  /* 摘要列右側的小圖示鍵（task#106）：開著或篩選中時換成強調色 */
+  .app-icon-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--bi-tap-min);
+    height: var(--bi-tap-min);
+    border: 0;
+    border-radius: var(--bi-radius-full);
+    background: transparent;
+    color: var(--bi-text-muted);
+    cursor: pointer;
+  }
+
+  .app-icon-toggle[aria-pressed='true'],
+  .app-icon-toggle[data-active] {
+    background: var(--bi-surface);
+    color: var(--bi-accent);
+  }
+
+  .app-icon-toggle:focus-visible {
+    outline: 2px solid var(--bi-accent);
+    outline-offset: 2px;
+  }
+
+  /* 分攤的快速選擇鍵（task#105）：比一般按鈕輕，三個要排得進一行 */
+  .app-quick-pick {
+    min-height: var(--bi-tap-min);
+    padding: 0 var(--bi-space-3);
+    border: 1px solid var(--bi-border);
+    border-radius: var(--bi-radius-full);
+    background: transparent;
+    color: var(--bi-text);
+    font: inherit;
+    font-size: var(--bi-text-sm);
+    cursor: pointer;
+  }
+
+  .app-quick-pick:focus-visible {
+    outline: 2px solid var(--bi-accent);
+    outline-offset: 2px;
+  }
+
   .app-day {
     display: flex;
     justify-content: space-between;
