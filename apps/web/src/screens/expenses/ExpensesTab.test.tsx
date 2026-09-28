@@ -217,6 +217,21 @@ describe('expense filter (task#106)', () => {
     const methods = within(sheet.getByRole('group', { name: t('expense.paymentMethod') }))
     expect(methods.getAllByRole('button').map((b) => b.textContent)).toEqual([t('pay.cash')])
   })
+
+  // task#127：有沒選類別的支出時，可以只看未分類的
+  it('offers uncategorised when some expense has no category, and narrows to those', async () => {
+    const { stores } = await setup()
+    await stores.repo.saveExpense(makeExpense({ id: 'drink', tripId: 't1', date: '2026-03-15', description: '飲料', categoryId: '' }))
+    cleanup()
+    const app = await renderApp('/trip/t1/expenses', stores)
+    const sheet = await openFilter(app.user)
+    const categories = within(sheet.getByRole('group', { name: t('expense.category') }))
+    expect(categories.getAllByRole('button').map((b) => b.textContent)).toEqual([t('cat.none'), t('cat.food')])
+    await app.user.click(categories.getByRole('button', { name: t('cat.none') }))
+    await app.user.click(sheet.getByRole('button', { name: t('filter.done') }))
+    expect(screen.getByRole('button', { name: /^飲料/ })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^一蘭拉麵/ })).not.toBeInTheDocument()
+  })
 })
 
 describe('expense filter across a restart (task#91, spec 7.9)', () => {

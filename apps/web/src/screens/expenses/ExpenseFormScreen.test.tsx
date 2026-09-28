@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { clearSession } from '../../data/session'
 import { makeExpense, makeTrip } from '../../data/testing/fixtures'
@@ -71,7 +71,7 @@ describe('ExpenseFormScreen: acceptance and memory', () => {
    * 規格 §10 第 6 階段的驗收條件：記一筆最少三個動作。
    * 輸入金額 → 輸入說明 → 儲存，不展開任何區塊；分攤是全員均分、匯率是旅程匯率表帶入的值。
    */
-  // 類別不再帶入（使用者要求）：規格 4.4 的「最少三個動作」多了選類別這一步
+  // 類別不帶入（使用者要求），選類別是第四個動作；不選也能存，是未分類（task#127，見下一個測試）
   it('records an expense in four actions: amount, description, category, save', async () => {
     const stores = await tripWithJapan()
     const { user } = await renderApp('/trip/t1/expenses', stores)
@@ -93,6 +93,33 @@ describe('ExpenseFormScreen: acceptance and memory', () => {
     for (const header of [t('expense.details'), t('split.title'), t('receipt.title')]) {
       expect(screen.queryByRole('button', { name: new RegExp(`^${header}`) })).not.toBeInTheDocument()
     }
+  })
+
+  // task#127：類別可以留空。不選就是未分類，照樣是一筆完成的支出，列表上的圖示是問號
+  it('saves a finished expense without a category, shown with a question mark', async () => {
+    const stores = await tripWithJapan()
+    const { user } = await renderApp('/trip/t1/expense/new', stores)
+    for (const k of ['5', '0', '0']) await user.click(key(k))
+    await user.click(screen.getByLabelText(t('expense.description')))
+    await user.type(screen.getByLabelText(t('expense.description')), '飲料')
+    await user.click(screen.getByRole('button', { name: t('form.save') }))
+    await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
+    const created = (await stores.repo.listExpenses('t1')).find((e) => e.description === '飲料')!
+    expect(created.categoryId).toBe('')
+    expect(created.draft).toBeUndefined()
+    const row = await screen.findByRole('button', { name: /^飲料/ })
+    expect(row.querySelector('.tabler-icon-question-mark')).not.toBeNull()
+  })
+
+  it('offers uncategorised first in the form and uses it to clear a chosen category', async () => {
+    const stores = await tripWithJapan()
+    const { user } = await renderApp('/trip/t1/expense/e1/edit', stores)
+    await user.click(screen.getByRole('button', { name: new RegExp(`^${t('expense.details')}`) }))
+    const group = within(screen.getByRole('radiogroup', { name: t('expense.category') }))
+    expect(group.getAllByRole('radio')[0]).toHaveAccessibleName(t('cat.none'))
+    await user.click(group.getByRole('radio', { name: t('cat.none') }))
+    await user.click(screen.getByRole('button', { name: t('form.save') }))
+    await waitFor(async () => expect((await stores.repo.listExpenses('t1')).find((e) => e.id === 'e1')?.categoryId).toBe(''))
   })
 
   it('keeps the id and the fixed rate when editing, even after changing the payment method', async () => {

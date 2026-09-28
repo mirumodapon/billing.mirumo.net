@@ -7,7 +7,7 @@ import { useI18n } from '../../i18n/useI18n'
 import { useSettings, useTrips } from '../../stores/StoresProvider'
 import { DateField } from '../forms/DateField'
 import type { FormSectionProps } from './ExpenseFormScreen'
-import { categoriesFor } from '../../domain/categories'
+import { categoriesFor, NO_CATEGORY } from '../../domain/categories'
 import { storedBalances, storedMethodIds } from '../../domain/storedValue'
 
 // selector 每次回新的 [] 會讓 useSyncExternalStore 無限重繪
@@ -41,7 +41,8 @@ export function DetailsSection({ trip, draft, change, open, onToggle }: FormSect
           <ChipGroup
             ariaLabel={t('expense.category')}
             value={draft.categoryId}
-            options={categories.map((c) => ({ value: c.id, label: displayName(c), colorKey: c.colorKey }))}
+            // 類別可以留空（task#127）：第一個是「未分類」，新的一筆一開始就選在這裡，也用它取消已選的類別
+            options={[{ value: NO_CATEGORY, label: t('cat.none') }, ...categories.map((c) => ({ value: c.id, label: displayName(c), colorKey: c.colorKey }))]}
             onChange={(categoryId) => change((d) => ({ ...d, categoryId }))}
           />
         </div>

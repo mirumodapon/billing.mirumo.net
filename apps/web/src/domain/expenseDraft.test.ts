@@ -70,9 +70,9 @@ describe('newDraft: defaults (spec 4.4)', () => {
     expect(newDraft(ctx({ settings }))).toMatchObject({ categoryId: '', paymentMethodId: 'pay.credit' })
   })
 
-  it('counts a missing category as unfinished, so the form saves a draft', () => {
-    expect(problemsOf(filled({ categoryId: '' }))).toContain('categoryRequired')
-    expect(problemsOf(filled())).not.toContain('categoryRequired')
+  // task#127：類別可以留空，沒選也是一筆完成的支出（未分類），不是草稿
+  it('lets an expense without a category be finished', () => {
+    expect(problemsOf(filled({ categoryId: '' }))).toEqual([])
   })
 
   // 上一筆用的自訂類別後來被刪了：不能帶入一個不存在的 id

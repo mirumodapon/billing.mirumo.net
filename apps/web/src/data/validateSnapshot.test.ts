@@ -246,11 +246,12 @@ describe('validateSnapshot: stored-value cards (task#115)', () => {
   })
 })
 
-describe('validateSnapshot: drafts without a category', () => {
-  // 類別不再帶入：沒選類別就存下去的是草稿，匯出後要能匯回來；完成的紀錄仍要有類別
-  it('accepts a draft with no category yet, but not a finished expense', () => {
+describe('validateSnapshot: expenses without a category', () => {
+  // task#127：類別可以留空，草稿與完成的紀錄都一樣；但引用一個不存在的類別仍然不行
+  it('accepts an expense with no category, draft or not, but not one naming a missing category', () => {
     expect(validateSnapshot(snapshot({ expenses: [makeExpense({ draft: true, categoryId: '' })] }))).toMatchObject({ ok: true })
-    expect(problemsOf(snapshot({ expenses: [makeExpense({ categoryId: '' })] }))).toContain('expense e1: category  does not exist')
+    expect(validateSnapshot(snapshot({ expenses: [makeExpense({ categoryId: '' })] }))).toMatchObject({ ok: true })
+    expect(problemsOf(snapshot({ expenses: [makeExpense({ categoryId: 'cat.gone' })] }))).toContain('expense e1: category cat.gone does not exist')
   })
 })
 

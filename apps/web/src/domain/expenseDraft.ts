@@ -69,7 +69,6 @@ export interface DraftContext {
 export type DraftProblem =
   | 'amountRequired'
   | 'descriptionRequired'
-  | 'categoryRequired'
   | 'rateRequired'
   | 'noParticipants'
   | 'exactUnbalanced'
@@ -102,7 +101,7 @@ export function newDraft({ trip, expenses, settings, today }: DraftContext): Exp
     rateTouched: false,
     description: '',
     date: today >= trip.startDate && today <= trip.endDate ? today : trip.startDate,
-    // 類別不帶入：每一筆都自己選（使用者要求）。沒選之前算沒填完，存下去是草稿
+    // 類別不帶入：每一筆都自己選（使用者要求）。也可以一直不選，就是「未分類」（task#127）
     categoryId: '',
     paymentMethodId,
     paidBy: trip.selfMemberId,
@@ -185,7 +184,6 @@ export function problemsOf(d: ExpenseDraft, storedMethods: ReadonlySet<string> =
   const problems: DraftProblem[] = []
   if (minor(d.amount, d.currency) <= 0) problems.push('amountRequired')
   if (!d.description.trim()) problems.push('descriptionRequired')
-  if (!d.categoryId) problems.push('categoryRequired')
   const hasRate = d.exchangeRate !== undefined && d.exchangeRate > 0
   if (!hasRate && !isCardPayment(d, storedMethods)) problems.push('rateRequired')
   const split = d.split

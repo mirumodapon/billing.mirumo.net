@@ -17,7 +17,7 @@ import {
 import type { AccentSlot } from '@billing/ui'
 import type { Category } from '../data/types'
 import { t } from '../i18n'
-import { displayName } from './names'
+import { categoryLabel } from './categories'
 
 export interface StatsView {
   /** 目前口徑的總額，本位幣最小單位 */
@@ -61,7 +61,8 @@ export function statsView(trip: Trip, expenses: Expense[], scope: Scope, categor
         // 併出來的「其他」可能不在設定裡（Plan 9 T6）
         return {
           key: c.categoryId,
-          label: category ? displayName(category) : c.categoryId === 'cat.other' ? t('cat.other') : c.categoryId,
+          // 沒選類別的叫「未分類」（task#127）
+          label: !category && c.categoryId === 'cat.other' ? t('cat.other') : categoryLabel(category, c.categoryId),
           value: c.totalMinor,
           colorKey: category?.colorKey ?? 'accent8',
         }

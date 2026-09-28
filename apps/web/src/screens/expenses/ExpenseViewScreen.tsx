@@ -1,6 +1,5 @@
 import { convertToBaseMinor, decimalsOf, sharesOf, toMinor } from '@billing/core'
-import { Avatar, CATEGORY_ICONS, Icon } from '@billing/ui'
-import { IconDots } from '@tabler/icons-react'
+import { Avatar, Icon } from '@billing/ui'
 import { Navigate, useParams } from 'react-router'
 import { BootSkeleton } from '../../app/BootSkeleton'
 import { displayName } from '../../domain/names'
@@ -11,7 +10,7 @@ import { useSettings, useStores, useTrips } from '../../stores/StoresProvider'
 import { ReceiptThumbnail } from '../forms/ReceiptThumbnail'
 import { DraftNote, Fact, ViewShell } from '../forms/ViewShell'
 import { useOpenTrip } from '../useOpenTrip'
-import { categoriesFor } from '../../domain/categories'
+import { categoriesFor, categoryGlyph, categoryLabel } from '../../domain/categories'
 
 /** 支出的唯讀檢視（task#101）：金額、明細、各人分攤、收據 */
 export function ExpenseViewScreen() {
@@ -63,9 +62,9 @@ export function ExpenseViewScreen() {
           className="app-view-hero__icon"
           style={category ? { background: `var(--bi-${category.colorKey})`, color: `var(--bi-${category.colorKey}-fg)` } : { background: 'var(--bi-bg)' }}
         >
-          <Icon glyph={category ? CATEGORY_ICONS[category.icon] : IconDots} size="lg" />
+          <Icon glyph={categoryGlyph(category, expense.categoryId)} size="lg" />
         </span>
-        <span className="app-view-hero__meta">{category ? displayName(category) : expense.categoryId}</span>
+        <span className="app-view-hero__meta">{categoryLabel(category, expense.categoryId)}</span>
         <p className="app-view-hero__amount app-money">{money(toMinor(expense.amount, decimalsOf(expense.currency)), expense.currency)}</p>
         {foreign && expense.exchangeRate > 0 ? (
           <p className="app-view-hero__meta app-money">

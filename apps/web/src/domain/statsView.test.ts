@@ -45,6 +45,13 @@ describe('statsView: category share', () => {
     expect(statsView(trip, expenses, 'self', categories).categories.map((c) => c.key)).toEqual(['cat.food'])
   })
 
+  // task#127：沒選類別的支出自成一塊，叫「未分類」
+  it('groups expenses without a category as uncategorised', () => {
+    const plain = makeExpense({ id: 'u', paidBy: 'a', amount: 800, currency: 'TWD', exchangeRate: 1, categoryId: '' })
+    const slice = statsView(trip, [...expenses, plain], 'group', categories).categories.find((c) => c.key === '')
+    expect(slice).toMatchObject({ label: t('cat.none'), value: 800 })
+  })
+
   it('folds categories under 3% into other (spec 3.5)', () => {
     const tiny = makeExpense({ id: 't', paidBy: 'a', amount: 100, currency: 'TWD', exchangeRate: 1, categoryId: 'cat.shopping' })
     const view = statsView(trip, [...expenses, tiny], 'group', categories)
