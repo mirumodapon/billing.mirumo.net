@@ -2,6 +2,8 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./dist",
+    // buildinfo 放進 dist：清掉 dist 時它也一起消失，tsc -b 才不會以為型別檔還在而跳過（task#78）
+    "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo",
     "rootDir": "./src",
     "jsx": "react-jsx"
   },

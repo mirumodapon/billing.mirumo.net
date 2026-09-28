@@ -13,6 +13,11 @@ export default tseslint.config(
     plugins: { 'react-hooks': reactHooks },
     rules: { ...reactHooks.configs.recommended.rules },
   },
+  // 建置用的 Node 腳本（例如 apps/web/scripts/check-deps-built.mjs）
+  {
+    files: ['**/scripts/**/*.mjs'],
+    languageOptions: { globals: globals.node },
+  },
   // 相依方向：core 不得依賴任何 workspace 套件
   {
     files: ['packages/core/**/*.ts'],
