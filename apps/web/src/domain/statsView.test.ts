@@ -103,3 +103,27 @@ describe('statsView: members and my items', () => {
     expect(statsView(trip, expenses, 'group', categories).items).toBeUndefined()
   })
 })
+
+describe('statsView: from another member (per-member stats)', () => {
+  // 小美：晚餐 1000 + 地鐵 600，付款人是誰不影響
+  it('adds up the chosen member’s share', () => {
+    const view = statsView(trip, expenses, 'self', categories, 'b')
+    expect(view.totalMinor).toBe(1600)
+    expect(view.categories.map((c) => [c.key, c.value])).toEqual([
+      ['cat.food', 1000],
+      ['cat.transport', 600],
+    ])
+    expect(view.items?.rows.map((r) => [r.expenseId, r.shareMinor])).toEqual([
+      ['e1', 1000],
+      ['e2', 600],
+    ])
+  })
+
+  // 個人預算是「我」的預算：看別人時不畫每日預算線，總預算仍照原樣算
+  it('keeps the budget mine and draws my daily budget only for me', () => {
+    const mine = makeTrip({ startDate: '2026-03-14', endDate: '2026-03-16', budget: { total: 5000, daily: 2000, scope: 'self' } })
+    expect(statsView(mine, expenses, 'self', categories, 'b').budget?.usedMinor).toBe(1000)
+    expect(statsView(mine, expenses, 'self', categories, 'b').dailyBudgetMinor).toBeUndefined()
+    expect(statsView(mine, expenses, 'self', categories, 'a').dailyBudgetMinor).toBe(2000)
+  })
+})

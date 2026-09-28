@@ -78,6 +78,8 @@ export interface SessionState {
   route: string
   tripId?: string
   statsScope?: 'self' | 'group'
+  /** 統計從哪位成員的視角看（statsScope 為 self 時）。沒有或已不在旅程裡就是我 */
+  statsMember?: string
   /** 帶著旅程 id：換到別趟旅程時不能套用上一趟的成員與類別（task#91） */
   filters?: ExpenseFilter & { tripId: string }
   openAccordion?: string

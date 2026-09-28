@@ -1,11 +1,14 @@
 import type { Expense, Trip } from '@billing/core'
-import { Accordion, Avatar, BarChart, Donut, ProgressBar, SegmentedControl } from '@billing/ui'
+import { Accordion, Avatar, BarChart, ChipGroup, Donut, ProgressBar } from '@billing/ui'
 import { useParams } from 'react-router'
 import { statsView, type StatsView } from '../../domain/statsView'
 import { formatCompact } from '../../i18n/format'
 import { useI18n } from '../../i18n/useI18n'
 import { useSettings, useTrips } from '../../stores/StoresProvider'
-import { useCollapsedStats, useStatsScope } from './useStatsScope'
+import { useCollapsedStats, useStatsViewpoint } from './useStatsViewpoint'
+
+/** 視角選單裡「全團」的值。成員 id 是 UUID，不會撞到 */
+const GROUP = 'group'
 
 /** 統計（規格 4.5，tab 2）。數字都來自 statsView；這裡只排版 */
 export function StatsTab() {
@@ -19,22 +22,29 @@ export function StatsTab() {
 function Stats({ trip, expenses }: { trip: Trip; expenses: Expense[] }) {
   const { t, money, date } = useI18n()
   const categories = useSettings((s) => s.settings.categories)
-  const [scope, setScope] = useStatsScope()
+  const [viewpoint, setViewpoint] = useStatsViewpoint(trip)
   const [isOpen, toggle] = useCollapsedStats()
-  const view = statsView(trip, expenses, scope, categories)
+  const memberId = viewpoint.scope === 'self' ? viewpoint.memberId : trip.selfMemberId
+  const view = statsView(trip, expenses, viewpoint.scope, categories, memberId)
   const format = (minor: number) => money(minor, trip.baseCurrency)
   const budget = view.budget
+  const viewed = trip.members.find((m) => m.id === memberId)
 
   return (
     <div className="flex flex-col gap-2 p-4 pb-24">
-      <SegmentedControl
+      {/* 全團，或任何一位成員的視角：看的是那個人該負擔多少，與誰先付無關 */}
+      <ChipGroup
         ariaLabel={t('stats.scope')}
-        value={scope}
+        value={viewpoint.scope === 'group' ? GROUP : viewpoint.memberId}
         options={[
-          { value: 'self', label: t('stats.self') },
-          { value: 'group', label: t('stats.group') },
+          { value: GROUP, label: t('stats.group') },
+          ...trip.members.map((m) => ({
+            value: m.id,
+            label: m.id === trip.selfMemberId ? t('stats.memberSelf', { name: m.name }) : m.name,
+            colorKey: m.colorKey,
+          })),
         ]}
-        onChange={setScope}
+        onChange={(value) => setViewpoint(value === GROUP ? { scope: 'group' } : { scope: 'self', memberId: value })}
       />
       <Accordion title={t('stats.overview')} summary={format(view.totalMinor)} open={isOpen('overview')} onToggle={() => toggle('overview')} data-testid="stats-overview">
         <div className="flex flex-col gap-2">
@@ -81,7 +91,7 @@ function Stats({ trip, expenses }: { trip: Trip; expenses: Expense[] }) {
         </Accordion>
       ) : null}
       {view.items ? (
-        <Accordion title={t('stats.myItems')} open={isOpen('items')} onToggle={() => toggle('items')} data-testid="stats-items">
+        <Accordion title={memberId === trip.selfMemberId ? t('stats.myItems') : t('stats.memberItems', { name: viewed?.name ?? '' })} open={isOpen('items')} onToggle={() => toggle('items')} data-testid="stats-items">
           <MyItems items={view.items} format={format} />
         </Accordion>
       ) : null}

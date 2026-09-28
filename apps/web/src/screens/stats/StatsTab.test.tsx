@@ -2,7 +2,7 @@ import type { Trip } from '@billing/core'
 import { cleanup, screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { defaultSettings } from '../../data/defaults'
-import { clearSession, readSession } from '../../data/session'
+import { clearSession, readSession, writeSession } from '../../data/session'
 import { makeExpense, makeTrip } from '../../data/testing/fixtures'
 import { formatMoney } from '../../i18n/format'
 import { t } from '../../i18n'
@@ -38,12 +38,12 @@ describe('StatsTab: scope (spec 4.5, Plan 9 T1)', () => {
 
   it('switches to my share and remembers it', async () => {
     const { user, scope, stores } = await setup()
-    await user.click(scope().getByRole('radio', { name: t('stats.self') }))
+    await user.click(scope().getByRole('radio', { name: t('stats.memberSelf', { name: '阿明' }) }))
     expect(total()).toHaveTextContent(plain(t('stats.total', { amount: formatMoney(1000, 'TWD') })))
     expect(readSession()?.statsScope).toBe('self')
     cleanup()
     await renderApp('/trip/t1/stats', stores)
-    expect(within(screen.getByRole('radiogroup', { name: t('stats.scope') })).getByRole('radio', { name: t('stats.self') })).toBeChecked()
+    expect(within(screen.getByRole('radiogroup', { name: t('stats.scope') })).getByRole('radio', { name: t('stats.memberSelf', { name: '阿明' }) })).toBeChecked()
   })
 })
 
@@ -85,7 +85,7 @@ describe('StatsTab: overview, categories, daily (Plan 9 Task 3)', () => {
   // Plan 9 T3：拿「我」的花費比全團的每日預算是錯的警示
   it('leaves out the daily budget line in the other scope', async () => {
     const { user, scope } = await setup({ budget: { daily: 2000, scope: 'group' } })
-    await user.click(scope().getByRole('radio', { name: t('stats.self') }))
+    await user.click(scope().getByRole('radio', { name: t('stats.memberSelf', { name: '阿明' }) }))
     expect(within(screen.getByRole('figure', { name: t('stats.daily') })).queryByTestId('budget-line')).not.toBeInTheDocument()
   })
 
@@ -136,10 +136,31 @@ describe('StatsTab: members and my items (Plan 9 Task 4)', () => {
     )
     cleanup()
     await renderApp('/trip/t1/stats', stores)
-    await user.click(within(screen.getByRole('radiogroup', { name: t('stats.scope') })).getByRole('radio', { name: t('stats.self') }))
+    await user.click(within(screen.getByRole('radiogroup', { name: t('stats.scope') })).getByRole('radio', { name: t('stats.memberSelf', { name: '阿明' }) }))
     const items = within(screen.getByTestId('stats-items-panel'))
     expect(items.getAllByTestId('stats-item').map((r) => r.firstChild?.firstChild?.textContent)).toEqual(['晚餐', '生啤'])
     expect(items.getByTestId('stats-overflow')).toHaveTextContent(plain(formatMoney(50, 'TWD')))
     expect(screen.queryByTestId('stats-members')).not.toBeInTheDocument()
+  })
+})
+
+describe('StatsTab: from any member (per-member stats)', () => {
+  it('shows another member’s share and what they shared in, and remembers who', async () => {
+    const { user, scope, stores } = await setup()
+    await user.click(scope().getByRole('radio', { name: '小美' }))
+    expect(total()).toHaveTextContent(plain(t('stats.total', { amount: formatMoney(1600, 'TWD') })))
+    expect(screen.getByRole('button', { name: new RegExp(`^${t('stats.memberItems', { name: '小美' })}`) })).toBeInTheDocument()
+    expect(readSession()).toMatchObject({ statsScope: 'self', statsMember: 'b' })
+    cleanup()
+    await renderApp('/trip/t1/stats', stores)
+    expect(within(screen.getByRole('radiogroup', { name: t('stats.scope') })).getByRole('radio', { name: '小美' })).toBeChecked()
+  })
+
+  // 記住的成員被移除（或是別趟旅程的人）時，不能壞掉：退回我自己
+  it('falls back to me when the remembered member is not in this trip', async () => {
+    writeSession({ route: '/trip/t1/stats', statsScope: 'self', statsMember: 'gone' })
+    const { scope } = await setup()
+    expect(scope().getByRole('radio', { name: t('stats.memberSelf', { name: '阿明' }) })).toBeChecked()
+    expect(total()).toHaveTextContent(plain(t('stats.total', { amount: formatMoney(1000, 'TWD') })))
   })
 })

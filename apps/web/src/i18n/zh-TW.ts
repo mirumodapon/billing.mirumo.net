@@ -38,6 +38,8 @@ export const zhTW = {
   'stats.totalLabel': '總計',
   'stats.members': '成員比較',
   'stats.myItems': '我的消費明細',
+  'stats.memberItems': '{name}的消費明細',
+  'stats.memberSelf': '{name}（我）',
   'stats.overflow': '攤回的服務費、稅與折扣',
   'tripList.title': '我的旅程',
   'settings.title': '設定',

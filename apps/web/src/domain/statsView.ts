@@ -38,16 +38,21 @@ export interface StatsView {
 /** 併入「其他」的門檻（規格 3.5） */
 const MERGE_BELOW = 0.03
 
-/** 統計 tab 要的所有數字（Plan 9）。計算都交給 core，這裡只整理成畫面要的形狀 */
-export function statsView(trip: Trip, expenses: Expense[], scope: Scope, categories: Category[]): StatsView {
+/**
+ * 統計 tab 要的所有數字（Plan 9）。計算都交給 core，這裡只整理成畫面要的形狀。
+ *
+ * `self` 口徑看的是 memberId 那個人該負擔的部分（預設是我），可以切到任何成員的視角。
+ * 預算不跟著換人：個人預算是「我」的預算。
+ */
+export function statsView(trip: Trip, expenses: Expense[], scope: Scope, categories: Category[], memberId: string = trip.selfMemberId): StatsView {
   const order = trip.members.map((m) => m.id)
-  const base = { scope, selfMemberId: trip.selfMemberId, baseCurrency: trip.baseCurrency, memberOrder: order }
+  const base = { scope, selfMemberId: memberId, baseCurrency: trip.baseCurrency, memberOrder: order }
   const live = expenses.filter(countsInTotals)
-  const sum = (s: Scope) => live.reduce((total, e) => total + contributionOf(e, s, trip.selfMemberId, trip.baseCurrency, order), 0)
+  const sum = (s: Scope, who: string) => live.reduce((total, e) => total + contributionOf(e, s, who, trip.baseCurrency, order), 0)
   const minor = (v: number) => toMinor(v, decimalsOf(trip.baseCurrency))
 
   const view: StatsView = {
-    totalMinor: sum(scope),
+    totalMinor: sum(scope, memberId),
     // 我沒分到的類別金額是 0，併進「其他」後仍會留下一個 0 的區塊：一律拿掉
     categories: byCategory(live, { ...base, mergeThreshold: MERGE_BELOW })
       .filter((c) => c.totalMinor !== 0)
@@ -65,8 +70,10 @@ export function statsView(trip: Trip, expenses: Expense[], scope: Scope, categor
   }
 
   const { total, daily, scope: budgetScope } = trip.budget
-  if (total !== undefined) view.budget = budgetStatus(sum(budgetScope), minor(total))
-  if (daily !== undefined && budgetScope === scope) view.dailyBudgetMinor = minor(daily)
+  if (total !== undefined) view.budget = budgetStatus(sum(budgetScope, trip.selfMemberId), minor(total))
+  // 每日預算線只在看的正是預算那個口徑時畫：全團預算配全團、我的預算配我自己（Plan 9 T3）
+  const sameAsBudget = budgetScope === scope && (scope === 'group' || memberId === trip.selfMemberId)
+  if (daily !== undefined && sameAsBudget) view.dailyBudgetMinor = minor(daily)
 
   if (scope === 'group') {
     const owed: Record<string, number> = {}
@@ -75,7 +82,7 @@ export function statsView(trip: Trip, expenses: Expense[], scope: Scope, categor
     }
     view.members = trip.members.map((m) => ({ id: m.id, name: m.name, colorKey: m.colorKey, owedMinor: owed[m.id] ?? 0 }))
   } else {
-    const { items, overflowMinor } = itemBreakdown(live, { selfMemberId: trip.selfMemberId, baseCurrency: trip.baseCurrency, memberOrder: order })
+    const { items, overflowMinor } = itemBreakdown(live, { selfMemberId: memberId, baseCurrency: trip.baseCurrency, memberOrder: order })
     view.items = { rows: [...items].sort((x, y) => y.shareMinor - x.shareMinor), overflowMinor }
   }
   return view

@@ -38,6 +38,8 @@ export const enUS: Record<TranslationKey, string> = {
   'stats.totalLabel': 'Total',
   'stats.members': 'By member',
   'stats.myItems': 'What I shared in',
+  'stats.memberItems': 'What {name} shared in',
+  'stats.memberSelf': '{name} (me)',
   'stats.overflow': 'Service charge, tax and discounts',
   'tripList.title': 'My trips',
   'settings.title': 'Settings',

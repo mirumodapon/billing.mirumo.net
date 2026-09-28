@@ -50,6 +50,7 @@ describe('session', () => {
       '{"route":"/","filters":{"categoryIds":[],"payers":[],"paymentMethodIds":[],"draftsOnly":false}}',
       '{"route":"/","scrollTop":{"/":"far"}}',
       '{"route":"/","collapsedStats":"daily"}',
+      '{"route":"/","statsMember":3}',
     ]) {
       localStorage.setItem(SESSION_KEY, bad)
       expect(readSession(), bad).toBeNull()
