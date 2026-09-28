@@ -246,16 +246,25 @@ describe('validateSnapshot: stored-value cards (task#115)', () => {
   })
 })
 
-describe('validateSnapshot: drafts without a category', () => {
-  // 類別不再帶入：沒選類別就存下去的是草稿，匯出後要能匯回來；完成的紀錄仍要有類別
-  it('accepts a draft with no category yet, but not a finished expense', () => {
+describe('validateSnapshot: expenses without a category', () => {
+  // task#127：類別可以留空，草稿與完成的紀錄都一樣；但引用一個不存在的類別仍然不行
+  it('accepts an expense with no category, draft or not, but not one naming a missing category', () => {
     expect(validateSnapshot(snapshot({ expenses: [makeExpense({ draft: true, categoryId: '' })] }))).toMatchObject({ ok: true })
-    expect(problemsOf(snapshot({ expenses: [makeExpense({ categoryId: '' })] }))).toContain('expense e1: category  does not exist')
+    expect(validateSnapshot(snapshot({ expenses: [makeExpense({ categoryId: '' })] }))).toMatchObject({ ok: true })
+    expect(problemsOf(snapshot({ expenses: [makeExpense({ categoryId: 'cat.gone' })] }))).toContain('expense e1: category cat.gone does not exist')
   })
 })
 
-describe('validateSnapshot: card payments without a rate (task#119)', () => {
-  it('accepts a card payment with no rate, but not an ordinary expense', () => {
+describe('validateSnapshot: stored-value records without a rate', () => {
+  // task#137：儲值不算進合計，沒有匯率也可以
+  it('accepts a top-up with no rate', () => {
+    const trip = makeTrip({ paymentMethods: [{ id: 'suica', name: 'Suica', storedValue: { currency: 'JPY' } }] })
+    const top = makeExpense({ id: 'top', paymentMethodId: 'pay.credit', topUpFor: 'suica', exchangeRate: 0 })
+    expect(validateSnapshot(snapshot({ trips: [trip], expenses: [top] }))).toMatchObject({ ok: true })
+  })
+
+  // task#119 的舊版允許用卡付的沒有匯率：那時匯出的備份仍要匯得回來
+  it('still accepts a card payment with no rate from an older backup, but not an ordinary expense', () => {
     const trip = makeTrip({ paymentMethods: [{ id: 'suica', name: 'Suica', storedValue: { currency: 'JPY' } }] })
     const ride = makeExpense({ id: 'ride', paymentMethodId: 'suica', fromBalance: true, exchangeRate: 0 })
     expect(validateSnapshot(snapshot({ trips: [trip], expenses: [ride] }))).toMatchObject({ ok: true })

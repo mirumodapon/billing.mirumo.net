@@ -1,15 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { convertToBaseMinor, decimalsOf, fromMinor, toMinor } from './money'
+import { convertToBaseMinor, decimalsOf, fromMinor, minDisplayDecimalsOf, toMinor } from './money'
 
 describe('decimalsOf', () => {
-  it('treats TWD as zero-decimal by design', () => {
-    expect(decimalsOf('TWD')).toBe(0)
-  })
-
-  it('returns 0 for other zero-decimal currencies', () => {
-    expect(decimalsOf('JPY')).toBe(0)
-    expect(decimalsOf('KRW')).toBe(0)
-    expect(decimalsOf('VND')).toBe(0)
+  // task#136：台幣、日圓等也可以有小數，精度一律兩位；顯示時沒有小數就不寫
+  it('gives everyday whole-unit currencies two decimals too', () => {
+    expect(decimalsOf('TWD')).toBe(2)
+    expect(decimalsOf('JPY')).toBe(2)
+    expect(decimalsOf('KRW')).toBe(2)
+    expect(decimalsOf('VND')).toBe(2)
   })
 
   it('returns 2 for two-decimal currencies', () => {
@@ -19,6 +17,18 @@ describe('decimalsOf', () => {
 
   it('falls back to 2 for unknown currencies', () => {
     expect(decimalsOf('XXX')).toBe(2)
+  })
+})
+
+describe('minDisplayDecimalsOf (task#136)', () => {
+  it('writes no decimals for a whole amount in an everyday whole-unit currency', () => {
+    expect(minDisplayDecimalsOf('TWD')).toBe(0)
+    expect(minDisplayDecimalsOf('JPY')).toBe(0)
+  })
+
+  it('pads other currencies to their precision', () => {
+    expect(minDisplayDecimalsOf('USD')).toBe(2)
+    expect(minDisplayDecimalsOf('XXX')).toBe(2)
   })
 })
 
@@ -68,8 +78,8 @@ describe('fromMinor', () => {
 
 describe('convertToBaseMinor', () => {
   it('converts foreign amount to base currency minor units', () => {
-    // ¥3,800 × 0.21 = NT$798，TWD 為 0 位
-    expect(convertToBaseMinor(3800, 0.21, 'TWD')).toBe(798)
+    // ¥3,800 × 0.21 = NT$798，TWD 兩位小數（task#136）
+    expect(convertToBaseMinor(3800, 0.21, 'TWD')).toBe(79800)
   })
 
   it('rounds to the base currency precision', () => {
@@ -78,7 +88,7 @@ describe('convertToBaseMinor', () => {
   })
 
   it('returns the same amount when the rate is 1', () => {
-    expect(convertToBaseMinor(500, 1, 'TWD')).toBe(500)
+    expect(convertToBaseMinor(500, 1, 'TWD')).toBe(50000)
   })
 
   // 沒有這道守衛，NaN 會一路傳到最糟的終點：每個人淨額都是 NaN，而

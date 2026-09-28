@@ -100,9 +100,11 @@ export function validateSnapshot(input: unknown): SnapshotCheck {
   const checkRecord = (at: string, record: Expense | Transfer, referenced: Set<string>) => {
     if (!isValidIso(record.date)) problems.push(`${at}: invalid date`)
     if (!isAmount(record.amount)) problems.push(`${at}: amount is not a number`)
-    // 草稿可以還沒有匯率（存成 0，task#96），用預存卡付的也不需要（不算進合計，task#119）；其餘一定要有
+    // 草稿可以還沒有匯率（存成 0，task#96），儲值也不需要（不算進合計，task#137）。
+    // 舊版（task#119）用卡付的可以沒有匯率，那樣的備份仍要匯得回來；其餘一定要有
     if (record.draft !== undefined && typeof record.draft !== 'boolean') problems.push(`${at}: draft must be true or false`)
-    const rateOptional = record.draft === true || (record as Partial<Expense>).fromBalance === true
+    const stored = record as Partial<Expense>
+    const rateOptional = record.draft === true || stored.topUpFor !== undefined || stored.fromBalance === true
     if (!isRate(record.exchangeRate) && !(rateOptional && record.exchangeRate === 0)) {
       problems.push(`${at}: exchange rate must be a positive number`)
     }
@@ -127,9 +129,9 @@ export function validateSnapshot(input: unknown): SnapshotCheck {
     checkRecord(at, expense, membersOfExpense(expense))
     // 旅程專用的類別也算，但只限這筆支出自己的旅程（task#114）
     const tripCategories = trips.find((trip) => trip.id === expense.tripId)?.categories ?? []
-    // 類別不帶入之後，還沒選類別的草稿類別是空字串；完成的紀錄一定要有
-    const unchosenDraft = expense.draft === true && expense.categoryId === ''
-    if (!unchosenDraft && !categoryIds.has(expense.categoryId) && !tripCategories.some((c) => c?.id === expense.categoryId)) {
+    // 類別可以留空（task#127）：沒選類別的是空字串，草稿與完成的紀錄都可以
+    const uncategorized = expense.categoryId === ''
+    if (!uncategorized && !categoryIds.has(expense.categoryId) && !tripCategories.some((c) => c?.id === expense.categoryId)) {
       problems.push(`${at}: category ${expense.categoryId} does not exist`)
     }
     // task#115：用預存卡付的旗標；儲值的對象必須是這趟旅程的預存卡

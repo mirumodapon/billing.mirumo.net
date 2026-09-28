@@ -52,14 +52,14 @@ describe('ItemsSplit', () => {
   it('shows the difference to pay back, and how to split it', async () => {
     const { panel, addItem } = await openItems(['3', '8', '0', '0'])
     await addItem(['3', '4', '0', '0'])
-    expect(panel().getByRole('status')).toHaveTextContent(plain(t('split.overflow', { amount: formatMoney(400, 'TWD') })))
+    expect(panel().getByRole('status')).toHaveTextContent(plain(t('split.overflow', { amount: formatMoney(40000, 'TWD') })))
     expect(panel().getByRole('radiogroup', { name: t('split.overflowRule') })).toBeInTheDocument()
   })
 
   it('handles a discount the same way', async () => {
     const { panel, addItem } = await openItems(['3', '4', '0', '0'])
     await addItem(['3', '8', '0', '0'])
-    expect(panel().getByRole('status')).toHaveTextContent(plain(t('split.overflow', { amount: formatMoney(-400, 'TWD') })))
+    expect(panel().getByRole('status')).toHaveTextContent(plain(t('split.overflow', { amount: formatMoney(-40000, 'TWD') })))
   })
 
   it('hides the difference choice when the items add up exactly', async () => {

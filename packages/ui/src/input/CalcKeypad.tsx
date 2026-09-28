@@ -17,6 +17,8 @@ export interface CalcKeypadProps {
   expression: string
   /** 幣別的小數位數。0 時小數點鍵停用 */
   decimals: number
+  /** 結果至少寫幾位小數，預設等於 decimals。整數計價的幣別傳 0（task#136） */
+  minDecimals?: number
   onExpressionChange: (expression: string) => void
   /** 按下完成：算得出來給數值，什麼都沒輸入給 null */
   onDone: (value: number | null) => void
@@ -46,6 +48,7 @@ export function CalcKeypad({
   open,
   expression,
   decimals,
+  minDecimals,
   onExpressionChange,
   onDone,
   labels,
@@ -67,14 +70,15 @@ export function CalcKeypad({
 
   return createPortal(
     <SafeArea edges={['bottom', 'left', 'right']} data-testid="keypad-safe">
-      <div className="bi-keypad">
+      {/* 整個鍵盤的按下都擋焦點，不只按鍵本身：連點時常落在縫或顯示區上（task#135） */}
+      <div className="bi-keypad" onPointerDown={keepFocus}>
         {header ? <div className="bi-keypad__header">{header}</div> : null}
         <div className="bi-keypad__display">
           <div className="bi-keypad__expression" data-testid="calc-expression">
             {formatExpression(expression)}
           </div>
           <output className="bi-keypad__result" data-testid="calc-result" aria-live="polite">
-            {result.ok ? `= ${formatResult(result.value, decimals)}` : ''}
+            {result.ok ? `= ${formatResult(result.value, decimals, minDecimals)}` : ''}
           </output>
         </div>
         <div className="bi-keypad__grid">
@@ -87,7 +91,6 @@ export function CalcKeypad({
                   className="bi-keypad__key"
                   data-kind="done"
                   disabled={blocked}
-                  onPointerDown={keepFocus}
                   onClick={done}
                 >
                   {labels.done}
@@ -102,7 +105,6 @@ export function CalcKeypad({
                   type="button"
                   className="bi-keypad__key"
                   data-kind="op"
-                  onPointerDown={keepFocus}
                   onClick={() => {
                     if (result.ok) onExpressionChange(String(result.value))
                   }}
@@ -118,7 +120,6 @@ export function CalcKeypad({
                   type="button"
                   className="bi-keypad__key"
                   data-kind="fn"
-                  onPointerDown={keepFocus}
                   onClick={() => press('back')}
                 >
                   <Icon glyph={IconBackspace} size="lg" ariaLabel={labels.backspace} />
@@ -133,7 +134,6 @@ export function CalcKeypad({
                 className="bi-keypad__key"
                 data-kind={isOp ? 'op' : key === 'clear' ? 'fn' : 'digit'}
                 disabled={key === '.' && decimals === 0}
-                onPointerDown={keepFocus}
                 onClick={() => press(key)}
               >
                 {key === 'clear' ? labels.clear : key}

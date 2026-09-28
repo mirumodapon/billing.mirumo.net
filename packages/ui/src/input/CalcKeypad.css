@@ -9,6 +9,11 @@
 
 .bi-keypad {
   animation: bi-keypad-in var(--bi-dur-sheet) var(--bi-ease-out);
+  /*
+   * 連點不是「點兩下放大」（task#135）。iOS 不理 viewport 的 maximum-scale，
+   * 放大會讓畫面移動，下一下就點到鍵盤外面、金額欄位失焦、鍵盤收起
+   */
+  touch-action: manipulation;
 }
 
 .bi-keypad__header {

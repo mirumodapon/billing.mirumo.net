@@ -64,9 +64,9 @@ describe('netBalances', () => {
   it('computes paid, owed and net for each member', () => {
     const balances = netBalances(trip, [expense({ paidBy: 'a', amount: 300 })], [])
     expect(balances).toEqual([
-      { memberId: 'a', paidMinor: 300, owedMinor: 100, netMinor: 200 },
-      { memberId: 'b', paidMinor: 0, owedMinor: 100, netMinor: -100 },
-      { memberId: 'c', paidMinor: 0, owedMinor: 100, netMinor: -100 },
+      { memberId: 'a', paidMinor: 30000, owedMinor: 10000, netMinor: 20000 },
+      { memberId: 'b', paidMinor: 0, owedMinor: 10000, netMinor: -10000 },
+      { memberId: 'c', paidMinor: 0, owedMinor: 10000, netMinor: -10000 },
     ])
   })
 
@@ -92,9 +92,9 @@ describe('netBalances', () => {
     )
     // a 墊了 900，三人各該負擔 300
     expect(balances).toEqual([
-      { memberId: 'a', paidMinor: 900, owedMinor: 300, netMinor: 600 },
-      { memberId: 'b', paidMinor: 0, owedMinor: 300, netMinor: -300 },
-      { memberId: 'c', paidMinor: 0, owedMinor: 300, netMinor: -300 },
+      { memberId: 'a', paidMinor: 90000, owedMinor: 30000, netMinor: 60000 },
+      { memberId: 'b', paidMinor: 0, owedMinor: 30000, netMinor: -30000 },
+      { memberId: 'c', paidMinor: 0, owedMinor: 30000, netMinor: -30000 },
     ])
   })
 
@@ -109,8 +109,8 @@ describe('netBalances', () => {
     )
     // b 總共給了 150，不是最後一筆的 50
     expect(balances).toEqual([
-      { memberId: 'a', paidMinor: 0, owedMinor: 0, netMinor: -150 },
-      { memberId: 'b', paidMinor: 0, owedMinor: 0, netMinor: 150 },
+      { memberId: 'a', paidMinor: 0, owedMinor: 0, netMinor: -15000 },
+      { memberId: 'b', paidMinor: 0, owedMinor: 0, netMinor: 15000 },
       { memberId: 'c', paidMinor: 0, owedMinor: 0, netMinor: 0 },
     ])
   })
@@ -120,9 +120,9 @@ describe('netBalances', () => {
     const byId = Object.fromEntries(balances.map((b) => [b.memberId, b]))
     // b 已還清，a 只剩 c 欠的 100
     expect(byId.b!.netMinor).toBe(0)
-    expect(byId.a!.netMinor).toBe(100)
+    expect(byId.a!.netMinor).toBe(10000)
     // 轉帳不改變支出總額
-    expect(byId.a!.owedMinor).toBe(100)
+    expect(byId.a!.owedMinor).toBe(10000)
   })
 
   it('keeps net summing to zero after transfers', () => {
@@ -137,8 +137,8 @@ describe('netBalances', () => {
   it('converts foreign-currency transfers using their own stored rate', () => {
     const balances = netBalances(trip, [], [transfer({ from: 'a', to: 'c', amount: 10000, currency: 'JPY', exchangeRate: 0.21, kind: 'loan' })])
     const byId = Object.fromEntries(balances.map((b) => [b.memberId, b]))
-    expect(byId.a!.netMinor).toBe(2100)
-    expect(byId.c!.netMinor).toBe(-2100)
+    expect(byId.a!.netMinor).toBe(210000)
+    expect(byId.c!.netMinor).toBe(-210000)
   })
 
   it('ignores soft-deleted expenses and transfers', () => {

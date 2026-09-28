@@ -23,18 +23,18 @@ describe('storedMethodIds (task#115)', () => {
 
 describe('storedBalances (task#115)', () => {
   it('adds top-ups and takes away payments made with the card', () => {
-    expect(storedBalances(trip, [topUp, ride1, ride2])).toEqual({ suica: { currency: 'JPY', minor: 4500 } })
+    expect(storedBalances(trip, [topUp, ride1, ride2])).toEqual({ suica: { currency: 'JPY', minor: 450000 } })
   })
 
   it('starts at zero before the first top-up, and can go below it', () => {
     expect(storedBalances(trip, [])).toEqual({ suica: { currency: 'JPY', minor: 0 } })
-    expect(storedBalances(trip, [ride1]).suica?.minor).toBe(-200)
+    expect(storedBalances(trip, [ride1]).suica?.minor).toBe(-20000)
   })
 
   // 刪掉的與草稿都不算：草稿還沒成立，刪掉的已經不在
   it('ignores deleted records and drafts', () => {
     const gone = { ...ride1, deletedAt: '2026-03-16T00:00:00.000Z' }
     const pending = { ...ride2, draft: true }
-    expect(storedBalances(trip, [topUp, gone, pending]).suica?.minor).toBe(5000)
+    expect(storedBalances(trip, [topUp, gone, pending]).suica?.minor).toBe(500000)
   })
 })

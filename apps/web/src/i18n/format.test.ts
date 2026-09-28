@@ -3,36 +3,43 @@ import { setLocale } from './index'
 import { parseDate, formatBytes, formatCompact, formatDate, formatDateRange, formatMoney, formatWeekday } from './format'
 
 describe('formatMoney', () => {
-  it('formats a zero-decimal currency without decimals', () => {
+  // task#136：TWD 也有兩位小數（最小單位 0.01 元），但整數金額不補 .00
+  it('writes a whole amount of an everyday whole-unit currency without decimals', () => {
     setLocale('zh-TW')
-    // 798 個最小單位的 TWD 就是 798 元
-    expect(formatMoney(798, 'TWD')).toMatch(/798/)
-    expect(formatMoney(798, 'TWD')).not.toMatch(/\.00/)
+    expect(formatMoney(79800, 'TWD')).toMatch(/798/)
+    expect(formatMoney(79800, 'TWD')).not.toMatch(/\./)
+  })
+
+  it('writes the decimals only when there are some', () => {
+    setLocale('zh-TW')
+    expect(formatMoney(1250, 'TWD')).toBe('NT$12.5')
+    expect(formatMoney(1225, 'TWD')).toBe('NT$12.25')
   })
 
   it('formats a two-decimal currency with decimals', () => {
     setLocale('en-US')
     expect(formatMoney(1234, 'USD')).toMatch(/12\.34/)
+    expect(formatMoney(1200, 'USD')).toMatch(/12\.00/)
   })
 
   // task#98：zh-TW 的新台幣是「$」、en-US 的美元是「$」，同一個符號在兩個語系指不同的錢
   it('always spells out NT$ and US$ so the currency is never ambiguous', () => {
     for (const locale of ['zh-TW', 'en-US'] as const) {
       setLocale(locale)
-      expect(formatMoney(1500, 'TWD'), locale).toMatch(/^NT\$1,500$/)
+      expect(formatMoney(150000, 'TWD'), locale).toMatch(/^NT\$1,500$/)
       expect(formatMoney(1234, 'USD'), locale).toMatch(/^US\$12\.34$/)
-      expect(formatMoney(-400, 'TWD'), locale).toMatch(/^-NT\$400$/)
+      expect(formatMoney(-40000, 'TWD'), locale).toMatch(/^-NT\$400$/)
     }
   })
 
   it('keeps the platform symbol for other currencies', () => {
     setLocale('zh-TW')
-    expect(formatMoney(3000, 'JPY')).toBe(new Intl.NumberFormat('zh-TW', { style: 'currency', currency: 'JPY', maximumFractionDigits: 0 }).format(3000))
+    expect(formatMoney(300000, 'JPY')).toBe(new Intl.NumberFormat('zh-TW', { style: 'currency', currency: 'JPY', maximumFractionDigits: 0 }).format(3000))
   })
 
   it('handles negatives', () => {
     setLocale('zh-TW')
-    expect(formatMoney(-500, 'TWD')).toMatch(/-|−|\(/)
+    expect(formatMoney(-50000, 'TWD')).toMatch(/-|−|\(/)
   })
 })
 
@@ -98,11 +105,11 @@ describe('formatCompact', () => {
   // 圖表刻度的寬度有限：不寫幣別符號，大數字縮寫（Plan 9 走查）
   it('drops the currency and shortens large numbers', () => {
     setLocale('en-US')
-    expect(formatCompact(2000, 'TWD')).toBe('2K')
+    expect(formatCompact(200000, 'TWD')).toBe('2K')
     expect(formatCompact(150000, 'USD')).toBe('1.5K')
     setLocale('zh-TW')
-    expect(formatCompact(500, 'TWD')).toBe('500')
-    expect(formatCompact(15000, 'TWD')).toBe('1.5萬')
+    expect(formatCompact(50000, 'TWD')).toBe('500')
+    expect(formatCompact(1500000, 'TWD')).toBe('1.5萬')
   })
 })
 

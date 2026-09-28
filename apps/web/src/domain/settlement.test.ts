@@ -29,7 +29,7 @@ describe('settlementView: the hand-worked ledger (spec §10 stage 7 acceptance)'
   const view = settlementView(trip, expenses, [loan])
 
   it('matches the hand-worked balances', () => {
-    expect(net(view)).toEqual({ a: 1500, b: -400, c: -1100 })
+    expect(net(view)).toEqual({ a: 150000, b: -40000, c: -110000 })
   })
 
   it('adds up to exactly zero', () => {
@@ -47,8 +47,8 @@ describe('settlementView: the hand-worked ledger (spec §10 stage 7 acceptance)'
   // 規格 3.4：貪婪法，不超過 n−1 筆
   it('suggests the fewest transfers that settle everything', () => {
     expect(view.pending.map((p) => [p.fromName, p.toName, p.amountMinor])).toEqual([
-      ['大熊', '阿明', 1100],
-      ['小美', '阿明', 400],
+      ['大熊', '阿明', 110000],
+      ['小美', '阿明', 40000],
     ])
   })
 })
@@ -68,10 +68,10 @@ describe('settlementView: settling up', () => {
   it('carries a rounded-up payment back into the balances', () => {
     const rounded = makeTransfer({ id: 's2', from: 'b', to: 'a', amount: 500, exchangeRate: 1, kind: 'settlement' })
     const view = settlementView(trip, expenses, [loan, rounded])
-    expect(net(view)).toEqual({ a: 1000, b: 100, c: -1100 })
+    expect(net(view)).toEqual({ a: 100000, b: 10000, c: -110000 })
     expect(view.pending.map((p) => [p.from, p.to, p.amountMinor])).toEqual([
-      ['c', 'a', 1000],
-      ['c', 'b', 100],
+      ['c', 'a', 100000],
+      ['c', 'b', 10000],
     ])
   })
 
@@ -85,7 +85,7 @@ describe('settlementView: settling up', () => {
       loan,
       makeTransfer({ id: 'gone', from: 'a', to: 'c', amount: 9000, exchangeRate: 1, deletedAt: 'x' }),
     ])
-    expect(net(view)).toEqual({ a: 1500, b: -400, c: -1100 })
+    expect(net(view)).toEqual({ a: 150000, b: -40000, c: -110000 })
   })
 })
 
@@ -99,13 +99,13 @@ describe('shareText (Plan 8 S6)', () => {
       [
         '東京五日 結算',
         '',
-        `阿明 +${money(1500, 'TWD')} 待收`,
-        `小美 ${money(-400, 'TWD')} 待付`,
-        `大熊 ${money(-1100, 'TWD')} 待付`,
+        `阿明 +${money(150000, 'TWD')} 待收`,
+        `小美 ${money(-40000, 'TWD')} 待付`,
+        `大熊 ${money(-110000, 'TWD')} 待付`,
         '',
         '尚待結清',
-        `大熊 付給 阿明 ${money(1100, 'TWD')}`,
-        `小美 付給 阿明 ${money(400, 'TWD')}`,
+        `大熊 付給 阿明 ${money(110000, 'TWD')}`,
+        `小美 付給 阿明 ${money(40000, 'TWD')}`,
       ].join('\n'),
     )
   })
@@ -119,7 +119,7 @@ describe('shareText (Plan 8 S6)', () => {
   })
 
   it('signs positive balances and leaves zero unsigned', () => {
-    expect(signedMoney(100, 'TWD', formatMoney)).toBe(`+${formatMoney(100, 'TWD')}`)
+    expect(signedMoney(10000, 'TWD', formatMoney)).toBe(`+${formatMoney(10000, 'TWD')}`)
     expect(signedMoney(0, 'TWD', formatMoney)).toBe(formatMoney(0, 'TWD'))
   })
 })

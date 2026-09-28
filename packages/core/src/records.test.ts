@@ -8,16 +8,16 @@ describe('countsInTotals (task#96)', () => {
   it('counts a record explicitly marked not a draft', () => expect(countsInTotals({ draft: false })).toBe(true))
 })
 
-describe('stored-value payments (task#115)', () => {
-  // 儲值那一筆才是支出；之後用卡付的只是從餘額扣，再算一次就重複了
-  it('leaves out a payment drawn from a stored-value balance', () => expect(countsInTotals({ fromBalance: true })).toBe(false))
-  it('still counts a top-up, which is the real expense', () => expect(countsInTotals({ topUpFor: 'suica' })).toBe(true))
+describe('stored-value payments (task#115, task#137)', () => {
+  // task#137：儲值只是把錢放進卡裡，用卡付的才是花費
+  it('leaves out a top-up, which only moves money onto a card', () => expect(countsInTotals({ topUpFor: 'suica' })).toBe(false))
+  it('counts a payment drawn from a stored-value balance, which is the real expense', () => expect(countsInTotals({ fromBalance: true })).toBe(true))
 })
 
 describe('isLive (task#115)', () => {
-  // 餘額要算進用卡付的：它們不算合計，但確實扣了餘額
-  it('keeps live, finished records, balance payments included', () => {
-    expect(isLive({ fromBalance: true })).toBe(true)
+  // 餘額要算進儲值：它不算合計，但確實加了餘額
+  it('keeps live, finished records, top-ups included', () => {
+    expect(isLive({ topUpFor: 'suica' })).toBe(true)
     expect(isLive({})).toBe(true)
   })
   it('leaves out deleted records and drafts', () => {

@@ -38,7 +38,8 @@ describe('SplitSection: even', () => {
     // 預設只有付款人（task#121）：先全選三個人
     await user.click(header())
     await user.click(within(panel().getByRole('group', { name: t('split.quick') })).getByRole('button', { name: t('split.everyone') }))
-    expect(header()).toHaveTextContent(plain(t('split.summaryEven', { count: 3, amount: formatMoney(334, 'TWD') })))
+    // 1000 ÷ 3 = 333.33…，每人要付的往上進到分（task#136 起台幣也有小數）
+    expect(header()).toHaveTextContent(plain(t('split.summaryEven', { count: 3, amount: formatMoney(33334, 'TWD') })))
   })
 
   // task#105：最後一個人也能取消。沒人分攤時表單照 task#96 存成草稿
@@ -85,7 +86,7 @@ describe('SplitSection: exact', () => {
     await user.click(panel().getByRole('button', { name: /^阿明/ }))
     for (const d of ['2', '0', '0', '0']) await user.click(key(d))
     await user.click(key(t('keypad.done')))
-    expect(panel().getByRole('status')).toHaveTextContent(plain(t('split.remaining', { amount: formatMoney(1000, 'TWD') })))
+    expect(panel().getByRole('status')).toHaveTextContent(plain(t('split.remaining', { amount: formatMoney(100000, 'TWD') })))
     expect(screen.getByRole('button', { name: t('form.saveDraft') })).toBeEnabled()
     await user.click(panel().getByRole('button', { name: /^小美/ }))
     for (const d of ['1', '0', '0', '0']) await user.click(key(d))
@@ -101,7 +102,7 @@ describe('SplitSection: exact', () => {
     await user.click(panel().getByRole('button', { name: /^阿明/ }))
     for (const d of ['1', '5', '0']) await user.click(key(d))
     await user.click(key(t('keypad.done')))
-    expect(panel().getByRole('status')).toHaveTextContent(plain(t('split.over', { amount: formatMoney(50, 'TWD') })))
+    expect(panel().getByRole('status')).toHaveTextContent(plain(t('split.over', { amount: formatMoney(5000, 'TWD') })))
   })
 })
 

@@ -1,17 +1,29 @@
 /**
- * 實務用的小數位數。
- * 注意 TWD 刻意設為 0——ISO 4217 定義為 2，但台灣日常不用角分，
- * 顯示 NT$ 798 比 NT$ 798.00 自然，餘數分配單位也變成使用者看得懂的 1 元。
+ * 金額的精度（小數位數），計算、分攤與結算都以此取整。
+ *
+ * 原本 TWD、JPY 等刻意設為 0：台灣、日本日常不用角分。task#136 起它們也可以有小數
+ * （例如單價 12.5），所以一律兩位；只是顯示時沒有小數就不寫，見 minDisplayDecimalsOf。
+ * 金額存的是十進位的原始值（不是最小單位），改精度不會改變已存資料的意思。
  */
-// 唯讀：執行期改掉它等於改變已存資料的最小單位語意（task#64）
+// 唯讀：執行期改掉它會讓同一筆資料算出不同的分攤與結算（task#64）
 export const CURRENCY_DECIMALS: Readonly<Record<string, number>> = {
-  TWD: 0, JPY: 0, KRW: 0, VND: 0, IDR: 0,
+  TWD: 2, JPY: 2, KRW: 2, VND: 2, IDR: 2,
   USD: 2, EUR: 2, GBP: 2, CNY: 2, HKD: 2,
   SGD: 2, THB: 2, MYR: 2, PHP: 2, AUD: 2, CAD: 2,
 }
 
 export function decimalsOf(currency: string): number {
   return CURRENCY_DECIMALS[currency] ?? 2
+}
+
+/**
+ * 日常以整數計價的幣別（task#136）。可以有小數，但整數金額顯示 NT$798 而不是 NT$798.00。
+ */
+export const WHOLE_UNIT_CURRENCIES: ReadonlySet<string> = new Set(['TWD', 'JPY', 'KRW', 'VND', 'IDR'])
+
+/** 顯示時至少寫幾位小數：日常整數計價的幣別有小數才寫，其餘照精度補零（USD 12.50） */
+export function minDisplayDecimalsOf(currency: string): number {
+  return WHOLE_UNIT_CURRENCIES.has(currency) ? 0 : decimalsOf(currency)
 }
 
 /**

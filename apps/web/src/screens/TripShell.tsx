@@ -28,7 +28,8 @@ export function TripShell() {
   return (
     <div className="flex h-dvh flex-col">
       <AppBar title={trip.name} onBack={() => navigate('/')} backLabel={t('common.back')} />
-      <main ref={scroller} className="min-h-0 flex-1 overflow-y-auto">
+      {/* 與其他畫面同一個捲動區樣式：裡面的隱藏標籤才不會把整頁撐高（task#131，同 task#122） */}
+      <main ref={scroller} className="app-scroll">
         <Outlet />
       </main>
       <TabBar

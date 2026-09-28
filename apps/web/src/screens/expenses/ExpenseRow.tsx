@@ -1,7 +1,8 @@
 import { convertToBaseMinor, decimalsOf, toMinor, type Expense, type Trip } from '@billing/core'
-import { CATEGORY_ICONS, Chip, Icon, SwipeAction } from '@billing/ui'
-import { IconDots, IconPaperclip, IconTrash } from '@tabler/icons-react'
+import { Chip, Icon, SwipeAction } from '@billing/ui'
+import { IconPaperclip, IconTrash } from '@tabler/icons-react'
 import type { Category } from '../../data/types'
+import { categoryGlyph } from '../../domain/categories'
 import { useI18n } from '../../i18n/useI18n'
 import { DraftTag } from '../forms/DraftTag'
 import { tripMethodName } from '../../domain/paymentMethods'
@@ -34,7 +35,8 @@ export function ExpenseRow({ expense, trip, category, onOpen, onDelete, showBase
   const original = money(toMinor(expense.amount, decimalsOf(expense.currency)), expense.currency)
   // 草稿可能還沒有匯率（存成 0）：那時換算不出本位幣，只顯示原幣
   const base = expense.exchangeRate > 0 ? money(convertToBaseMinor(expense.amount, expense.exchangeRate, trip.baseCurrency), trip.baseCurrency) : undefined
-  const glyph = category ? CATEGORY_ICONS[category.icon] : IconDots
+  // 沒選類別的是問號（task#127）
+  const glyph = categoryGlyph(category, expense.categoryId)
   const color = category?.colorKey
 
   return (

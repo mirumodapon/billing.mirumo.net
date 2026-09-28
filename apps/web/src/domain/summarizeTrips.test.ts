@@ -9,12 +9,12 @@ describe('summarizeTrip', () => {
       makeExpense({ id: 'e1', amount: 1000, currency: 'JPY', exchangeRate: 0.21 }),
       makeExpense({ id: 'e2', amount: 500, currency: 'TWD', exchangeRate: 1 }),
     ]
-    expect(summarizeTrip(makeTrip(), expenses).spentMinor).toBe(210 + 500)
+    expect(summarizeTrip(makeTrip(), expenses).spentMinor).toBe(21000 + 50000)
   })
 
   it('leaves out deleted expenses', () => {
     const expenses = [makeExpense({ id: 'e1', amount: 100, exchangeRate: 1 }), makeExpense({ id: 'e2', amount: 900, exchangeRate: 1, deletedAt: 'x' })]
-    expect(summarizeTrip(makeTrip(), expenses).spentMinor).toBe(100)
+    expect(summarizeTrip(makeTrip(), expenses).spentMinor).toBe(10000)
   })
 
   // 規格 3.6：預算為 undefined 時所有進度條與警示一律不渲染
@@ -26,9 +26,9 @@ describe('summarizeTrip', () => {
   it('measures the budget in the trip’s own scope', () => {
     const expense = makeExpense({ amount: 1000, currency: 'TWD', exchangeRate: 1, paidBy: 'a', split: { mode: 'even', participants: ['a', 'b'] } })
     const self = summarizeTrip(makeTrip({ budget: { total: 800, scope: 'self' } }), [expense]).budget!
-    expect([self.usedMinor, self.level]).toEqual([500, 'normal'])
+    expect([self.usedMinor, self.level]).toEqual([50000, 'normal'])
     const group = summarizeTrip(makeTrip({ budget: { total: 800, scope: 'group' } }), [expense]).budget!
-    expect([group.usedMinor, group.level]).toEqual([1000, 'over'])
+    expect([group.usedMinor, group.level]).toEqual([100000, 'over'])
   })
 
   it('compares against the budget in minor units of the home currency', () => {
@@ -49,6 +49,6 @@ describe('summarizeTrips', () => {
     const b = await repo.saveTrip(makeTrip({ id: 'b1' }))
     await repo.saveExpense(makeExpense({ tripId: 'a1', amount: 100, currency: 'TWD', exchangeRate: 1 }))
     const summaries = await summarizeTrips(repo, [a, b])
-    expect(summaries).toEqual({ a1: { spentMinor: 100 }, b1: { spentMinor: 0 } })
+    expect(summaries).toEqual({ a1: { spentMinor: 10000 }, b1: { spentMinor: 0 } })
   })
 })

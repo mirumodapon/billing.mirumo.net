@@ -1,6 +1,6 @@
 import 'fake-indexeddb/auto'
 import '@testing-library/jest-dom/vitest'
-import { cleanup } from '@testing-library/react'
+import { cleanup, configure } from '@testing-library/react'
 import { afterEach } from 'vitest'
 
 // vitest.config.ts doesn't set test.globals, so @testing-library/react's own
@@ -25,3 +25,10 @@ Object.defineProperty(HTMLElement.prototype, 'offsetParent', {
     return this.parentElement
   },
 })
+
+// findBy* / waitFor give up after 1 s by default. Most tests here mount the
+// whole app on fake-indexeddb, and when the monorepo's suites run in parallel a
+// screen can take longer than that to appear (task#128: NewTripSheet's first
+// test timed out waiting for the setup tab). Same reasoning as testTimeout in
+// vitest.config.ts. A passing wait still returns as soon as the element shows.
+configure({ asyncUtilTimeout: 5000 })

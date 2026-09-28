@@ -4,4 +4,4 @@
 
 // 建置時由 appDefines() 寫死的版本與日期（設定頁「關於」）
 declare const __APP_VERSION__: string
-declare const __BUILD_DATE__: string
+declare const __APP_COMMIT__: string

@@ -1,5 +1,5 @@
 import type { AttachmentMeta } from '@billing/core'
-import { Button, Icon } from '@billing/ui'
+import { Icon } from '@billing/ui'
 import { IconPhotoOff, IconX } from '@tabler/icons-react'
 import { useEffect, useState } from 'react'
 import { useI18n } from '../../i18n/useI18n'
@@ -53,11 +53,12 @@ export function ReceiptThumbnail({ meta, label, onRemove }: ReceiptThumbnailProp
         <div className="app-card h-20 w-20" aria-hidden="true" />
       )}
       {onRemove ? (
-        <span className="absolute -right-2 -top-2">
-          <Button variant="ghost" aria-label={t('receipt.remove')} onClick={onRemove}>
-            <Icon glyph={IconX} />
-          </Button>
-        </span>
+        // 實心圓點，疊在任何照片上都看得見（task#130）
+        <button type="button" className="app-thumb-remove" aria-label={t('receipt.remove')} onClick={onRemove}>
+          <span className="app-thumb-remove__dot">
+            <Icon glyph={IconX} size="sm" />
+          </span>
+        </button>
       ) : null}
       {viewing && url ? <PhotoViewer src={url} label={label} onClose={() => setViewing(false)} /> : null}
     </figure>

@@ -1,8 +1,29 @@
 import type { Trip, TripCategory } from '@billing/core'
 import { CATEGORY_ICONS, type CategoryIconName } from '@billing/ui'
+import { IconDots, IconQuestionMark, type TablerIcon } from '@tabler/icons-react'
 import type { Category } from '../data/types'
+import { t } from '../i18n'
+import { displayName } from './names'
 
 const isIconName = (name: string): name is CategoryIconName => name in CATEGORY_ICONS
+
+/** 沒選類別（task#127）：類別可以留空，存成空字串 */
+export const NO_CATEGORY = ''
+
+/**
+ * 一筆支出的類別圖示：沒選類別的是問號（task#127）；
+ * 引用的類別已經不在清單裡（例如刪掉了）的沿用「其他」的點點
+ */
+export function categoryGlyph(category: Category | undefined, categoryId: string): TablerIcon {
+  if (category) return CATEGORY_ICONS[category.icon]
+  return categoryId === NO_CATEGORY ? IconQuestionMark : IconDots
+}
+
+/** 一筆支出的類別名稱：沒選的叫「未分類」，找不到的顯示原本的 id */
+export function categoryLabel(category: Category | undefined, categoryId: string): string {
+  if (category) return displayName(category)
+  return categoryId === NO_CATEGORY ? t('cat.none') : categoryId
+}
 
 /** 旅程清單裡的一個類別轉成 app 的 Category。備份或舊版本帶來的圖示名稱可能已經不在清單裡：畫不出來就用「其他」的圖示 */
 export function asCategory(c: TripCategory): Category {

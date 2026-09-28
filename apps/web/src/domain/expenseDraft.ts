@@ -69,7 +69,6 @@ export interface DraftContext {
 export type DraftProblem =
   | 'amountRequired'
   | 'descriptionRequired'
-  | 'categoryRequired'
   | 'rateRequired'
   | 'noParticipants'
   | 'exactUnbalanced'
@@ -102,7 +101,7 @@ export function newDraft({ trip, expenses, settings, today }: DraftContext): Exp
     rateTouched: false,
     description: '',
     date: today >= trip.startDate && today <= trip.endDate ? today : trip.startDate,
-    // 類別不帶入：每一筆都自己選（使用者要求）。沒選之前算沒填完，存下去是草稿
+    // 類別不帶入：每一筆都自己選（使用者要求）。也可以一直不選，就是「未分類」（task#127）
     categoryId: '',
     paymentMethodId,
     paidBy: trip.selfMemberId,
@@ -172,22 +171,21 @@ export function itemsTotals(d: ExpenseDraft): { itemsTotal: number; overflow: nu
   return { itemsTotal: fromMinor(itemsMinor, decimals), overflow: fromMinor(minor(d.amount, d.currency) - itemsMinor, decimals) }
 }
 
-/** 用預存卡付款（不是儲值）：只扣餘額、不算進任何合計（task#115） */
+/** 用預存卡付款（不是儲值）：扣卡片餘額，照常算進合計（task#115、task#137） */
 function isCardPayment(d: ExpenseDraft, storedMethods: ReadonlySet<string>): boolean {
   return !d.topUpFor && storedMethods.has(d.paymentMethodId)
 }
 
 /**
- * 還沒填完的欄位。storedMethods 是這趟旅程的預存卡：用卡付的不算進合計，
- * 換成本位幣沒有意義，所以不要求匯率（task#119）
+ * 還沒填完的欄位。儲值不算進合計，換成本位幣沒有意義，所以不要求匯率；
+ * 用預存卡付的是真的花費，跟其他支出一樣要有匯率（task#137，取代 task#119）
  */
-export function problemsOf(d: ExpenseDraft, storedMethods: ReadonlySet<string> = new Set()): DraftProblem[] {
+export function problemsOf(d: ExpenseDraft): DraftProblem[] {
   const problems: DraftProblem[] = []
   if (minor(d.amount, d.currency) <= 0) problems.push('amountRequired')
   if (!d.description.trim()) problems.push('descriptionRequired')
-  if (!d.categoryId) problems.push('categoryRequired')
   const hasRate = d.exchangeRate !== undefined && d.exchangeRate > 0
-  if (!hasRate && !isCardPayment(d, storedMethods)) problems.push('rateRequired')
+  if (!hasRate && !d.topUpFor) problems.push('rateRequired')
   const split = d.split
   if (split.mode === 'even' && split.participants.length === 0) problems.push('noParticipants')
   if (split.mode === 'exact' && exactAllocation(d).remaining !== 0) problems.push('exactUnbalanced')
@@ -216,19 +214,19 @@ function toSplit(split: SplitDraft, currency: string): Split {
 }
 
 /** 使用者標了草稿，或還有欄位沒填完：存下去會是一筆草稿（task#96） */
-export function willSaveAsDraft(d: ExpenseDraft, storedMethods: ReadonlySet<string> = new Set()): boolean {
-  return d.isDraft === true || problemsOf(d, storedMethods).length > 0
+export function willSaveAsDraft(d: ExpenseDraft): boolean {
+  return d.isDraft === true || problemsOf(d).length > 0
 }
 
 /**
  * 轉成要存的紀錄。欄位不完整也可以：那時存成草稿，缺的金額與匯率記 0（task#96）。
- * 用預存卡付的蓋上 fromBalance：只扣餘額、不算進合計；儲值那一筆記下替哪張卡加值（task#115）。
+ * 用預存卡付的蓋上 fromBalance：扣卡片餘額；儲值那一筆記下替哪張卡加值、不算進合計（task#115、task#137）。
  * storedMethods 是這趟旅程的預存卡 id，由呼叫端提供。
  * 時間戳留空：由 Repository 蓋（規格 7.1）
  */
 export function toExpense(d: ExpenseDraft, tripId: string, storedMethods: ReadonlySet<string> = new Set()): Expense {
   return {
-    ...(willSaveAsDraft(d, storedMethods) ? { draft: true } : {}),
+    ...(willSaveAsDraft(d) ? { draft: true } : {}),
     ...(d.topUpFor ? { topUpFor: d.topUpFor } : isCardPayment(d, storedMethods) ? { fromBalance: true } : {}),
     id: d.id ?? crypto.randomUUID(),
     tripId,

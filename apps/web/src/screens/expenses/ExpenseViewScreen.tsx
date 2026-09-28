@@ -1,17 +1,16 @@
 import { convertToBaseMinor, decimalsOf, sharesOf, toMinor } from '@billing/core'
-import { Avatar, CATEGORY_ICONS, Icon } from '@billing/ui'
-import { IconDots } from '@tabler/icons-react'
+import { Avatar, Icon } from '@billing/ui'
 import { Navigate, useParams } from 'react-router'
 import { BootSkeleton } from '../../app/BootSkeleton'
 import { displayName } from '../../domain/names'
-import { paymentMethodsFor } from '../../domain/paymentMethods'
+import { paymentMethodsFor, tripMethodName } from '../../domain/paymentMethods'
 import { formatWeekday } from '../../i18n/format'
 import { useI18n } from '../../i18n/useI18n'
 import { useSettings, useStores, useTrips } from '../../stores/StoresProvider'
 import { ReceiptThumbnail } from '../forms/ReceiptThumbnail'
 import { DraftNote, Fact, ViewShell } from '../forms/ViewShell'
 import { useOpenTrip } from '../useOpenTrip'
-import { categoriesFor } from '../../domain/categories'
+import { categoriesFor, categoryGlyph, categoryLabel } from '../../domain/categories'
 
 /** 支出的唯讀檢視（task#101）：金額、明細、各人分攤、收據 */
 export function ExpenseViewScreen() {
@@ -30,6 +29,7 @@ export function ExpenseViewScreen() {
 
   const category = categoriesFor(globalCategories, trip).find((c) => c.id === expense.categoryId)
   const method = paymentMethodsFor(globalMethods, trip).find((m) => m.id === expense.paymentMethodId)
+  const topUpCard = expense.topUpFor ? trip.paymentMethods?.find((m) => m.id === expense.topUpFor) : undefined
   const name = (id: string) => trip.members.find((m) => m.id === id)?.name ?? id
   const foreign = expense.currency !== trip.baseCurrency
   const base = money(convertToBaseMinor(expense.amount, expense.exchangeRate, trip.baseCurrency), trip.baseCurrency)
@@ -51,10 +51,10 @@ export function ExpenseViewScreen() {
       onDelete={() => void trips.getState().deleteExpense(expense.id)}
     >
       {expense.draft ? <DraftNote /> : null}
-      {/* 用預存卡付的：在這裡說明它不算進花費，免得以為漏算（task#115） */}
-      {expense.fromBalance ? (
-        <p role="note" className="app-field-label m-0" data-testid="from-balance-note">
-          {t('stored.notCounted', { name: method ? displayName(method) : expense.paymentMethodId })}
+      {/* 儲值：在這裡說明它不算進花費，免得以為漏算；之後用卡付的才算（task#137） */}
+      {expense.topUpFor ? (
+        <p role="note" className="app-field-label m-0" data-testid="top-up-note">
+          {t('stored.notCounted', { name: topUpCard ? tripMethodName(topUpCard) : expense.topUpFor })}
         </p>
       ) : null}
       {/* task#107：先看到「什麼、多少、哪天」，其餘細節收在下面的卡片裡 */}
@@ -63,9 +63,9 @@ export function ExpenseViewScreen() {
           className="app-view-hero__icon"
           style={category ? { background: `var(--bi-${category.colorKey})`, color: `var(--bi-${category.colorKey}-fg)` } : { background: 'var(--bi-bg)' }}
         >
-          <Icon glyph={category ? CATEGORY_ICONS[category.icon] : IconDots} size="lg" />
+          <Icon glyph={categoryGlyph(category, expense.categoryId)} size="lg" />
         </span>
-        <span className="app-view-hero__meta">{category ? displayName(category) : expense.categoryId}</span>
+        <span className="app-view-hero__meta">{categoryLabel(category, expense.categoryId)}</span>
         <p className="app-view-hero__amount app-money">{money(toMinor(expense.amount, decimalsOf(expense.currency)), expense.currency)}</p>
         {foreign && expense.exchangeRate > 0 ? (
           <p className="app-view-hero__meta app-money">

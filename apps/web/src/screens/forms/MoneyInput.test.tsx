@@ -1,5 +1,5 @@
 import { convertToBaseMinor } from '@billing/core'
-import { screen, within } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { defaultSettings } from '../../data/defaults'
 import { clearSession } from '../../data/session'
@@ -52,13 +52,21 @@ describe('AmountSection', () => {
     expect(screen.getByRole('button', { name: t('form.save') })).toBeEnabled()
   })
 
-  it('disables the decimal point for currencies without minor units', async () => {
+  // task#136：日圓、台幣這類日常以整數計價的幣別也可以輸入小數，結果照常取到兩位
+  it('takes a decimal point in an everyday whole-unit currency', async () => {
     const { user } = await openNew()
-    expect(key('.')).toBeDisabled()
-    await user.click(screen.getByRole('button', { name: new RegExp(`^${t('expense.pickCurrency', { currency: '' }).trim()}`) }))
-    await user.click(within(screen.getByRole('dialog', { name: t('expense.currency') })).getByRole('radio', { name: /^USD/ }))
-    await user.click(amountField())
     expect(key('.')).toBeEnabled()
+    for (const k of ['1', '2', '.', '5']) await user.click(key(k))
+    expect(screen.getByTestId('calc-result')).toHaveTextContent('= 12.5')
+    await user.click(key(t('keypad.done')))
+    expect(amountField()).toHaveValue('12.5')
+  })
+
+  // 整數結果不補 .00：¥1,200 就寫 1,200
+  it('shows a whole result without decimals', async () => {
+    const { user } = await openNew()
+    for (const k of ['1', '2', '0', '0']) await user.click(key(k))
+    expect(screen.getByTestId('calc-result')).toHaveTextContent(/^= 1,200$/)
   })
 
   it('lets the rate be set by hand', async () => {
@@ -69,7 +77,7 @@ describe('AmountSection', () => {
     await user.click(key(t('keypad.clear')))
     for (const k of ['0', '.', '2']) await user.click(key(k))
     await user.click(key(t('keypad.done')))
-    expect(screen.getByText(/^≈/)).toHaveTextContent(plain(t('expense.converted', { amount: formatMoney(200, 'TWD') })))
+    expect(screen.getByText(/^≈/)).toHaveTextContent(plain(t('expense.converted', { amount: formatMoney(20000, 'TWD') })))
   })
 
   it('asks for a rate when the trip has none for the currency, and saves only as a draft', async () => {

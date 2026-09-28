@@ -5,7 +5,7 @@ import { displayName } from '../../domain/names'
 import { paymentMethodsFor } from '../../domain/paymentMethods'
 import { useI18n } from '../../i18n/useI18n'
 import { useSettings } from '../../stores/StoresProvider'
-import { categoriesFor } from '../../domain/categories'
+import { categoriesFor, NO_CATEGORY } from '../../domain/categories'
 
 export interface ExpenseFilterSheetProps {
   open: boolean
@@ -34,9 +34,11 @@ export function ExpenseFilterSheet({ open, onClose, trip, expenses, filter, onCh
   const usedCategories = usedIds(expenses, (e) => e.categoryId, filter.categoryIds)
   const usedMethods = usedIds(expenses, (e) => e.paymentMethodId, filter.paymentMethodIds)
 
-  const categoryOptions: Option[] = categories
-    .filter((c) => usedCategories.has(c.id))
-    .map((c) => ({ value: c.id, label: displayName(c), colorKey: c.colorKey }))
+  // 有沒選類別的支出時，另外列一個「未分類」（task#127）
+  const categoryOptions: Option[] = [
+    ...(usedCategories.has(NO_CATEGORY) ? [{ value: NO_CATEGORY, label: t('cat.none') }] : []),
+    ...categories.filter((c) => usedCategories.has(c.id)).map((c) => ({ value: c.id, label: displayName(c), colorKey: c.colorKey })),
+  ]
   const payerOptions: Option[] = trip.members.map((m) => ({ value: m.id, label: m.name, colorKey: m.colorKey }))
   const methodOptions: Option[] = paymentMethodsFor(globalMethods, trip)
     .filter((m) => usedMethods.has(m.id))

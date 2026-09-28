@@ -316,3 +316,20 @@ describe('validating the backup on its own before merging', () => {
     expect(await repo.listExpenses('t1')).toEqual([])
   })
 })
+
+// task#133：設定裡的「清除所有資料」
+describe('clearing everything', () => {
+  it('empties every store, and the repository still works afterwards', async () => {
+    await repo.saveTrip(makeTrip({ id: 't1' }))
+    await repo.saveExpense(makeExpense({ id: 'e1', tripId: 't1' }))
+    await repo.saveTransfer(makeTransfer({ id: 'x1', tripId: 't1' }))
+    await repo.saveSettings({ ...(await repo.getSettings()), locale: 'en-US' })
+    await repo.clearAll()
+    expect(await repo.listTrips()).toEqual([])
+    expect(await repo.listExpenses('t1')).toEqual([])
+    expect(await repo.listTransfers('t1')).toEqual([])
+    expect((await repo.getSettings()).locale).not.toBe('en-US')
+    await repo.saveTrip(makeTrip({ id: 't2' }))
+    expect((await repo.listTrips()).map((t) => t.id)).toEqual(['t2'])
+  })
+})

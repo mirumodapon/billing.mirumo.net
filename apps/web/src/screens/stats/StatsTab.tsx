@@ -7,6 +7,8 @@ import { useI18n } from '../../i18n/useI18n'
 import { useSettings, useTrips } from '../../stores/StoresProvider'
 import { useCollapsedStats, useStatsViewpoint } from './useStatsViewpoint'
 import { categoriesFor } from '../../domain/categories'
+import { tripMethodName } from '../../domain/paymentMethods'
+import { storedBalances } from '../../domain/storedValue'
 
 /** 視角選單裡「全團」的值。成員 id 是 UUID，不會撞到 */
 const GROUP = 'group'
@@ -31,6 +33,8 @@ function Stats({ trip, expenses }: { trip: Trip; expenses: Expense[] }) {
   const format = (minor: number) => money(minor, trip.baseCurrency)
   const budget = view.budget
   const viewed = trip.members.find((m) => m.id === memberId)
+  const cards = (trip.paymentMethods ?? []).filter((m) => m.storedValue)
+  const balances = storedBalances(trip, expenses)
 
   return (
     <div className="flex flex-col gap-2 p-4 pb-24">
@@ -72,6 +76,22 @@ function Stats({ trip, expenses }: { trip: Trip; expenses: Expense[] }) {
           ) : null}
         </div>
       </Accordion>
+      {/* 預存卡的餘額（task#137）：儲值不算花費，錢還在卡裡，這裡看得到還剩多少 */}
+      {cards.length > 0 ? (
+        <Accordion title={t('stats.balances')} open={isOpen('balances')} onToggle={() => toggle('balances')} data-testid="stats-balances">
+          <ul className="m-0 list-none p-0">
+            {cards.map((card) => {
+              const balance = balances[card.id]
+              return (
+                <li key={card.id} className="app-item-row" data-testid={`stats-balance-${card.id}`}>
+                  <span>{tripMethodName(card)}</span>
+                  <span className="app-money">{balance ? money(balance.minor, balance.currency) : null}</span>
+                </li>
+              )
+            })}
+          </ul>
+        </Accordion>
+      ) : null}
       <Accordion title={t('stats.categories')} open={isOpen('categories')} onToggle={() => toggle('categories')} data-testid="stats-categories">
         <Donut segments={view.categories} ariaLabel={t('stats.categories')} formatValue={format} emptyLabel={t('stats.empty')} totalLabel={t('stats.totalLabel')} />
       </Accordion>
@@ -129,17 +149,17 @@ function MyItems({ items, format }: { items: NonNullable<StatsView['items']>; fo
   return (
     <ul className="m-0 list-none p-0">
       {items.rows.map((row) => (
-        <li key={`${row.expenseId}-${row.itemId ?? ''}`} className="app-fact" data-testid="stats-item">
+        <li key={`${row.expenseId}-${row.itemId ?? ''}`} className="app-item-row" data-testid="stats-item">
           <span>
             {row.name.trim() || t('expense.untitled')}
             {/* 明細品項加上是哪一筆（task#112） */}
-            <span className="app-field-label m-0 block">{row.expenseName ? `${row.expenseName}・${date(row.date)}` : date(row.date)}</span>
+            <span className="app-item-row__meta">{row.expenseName ? `${row.expenseName}・${date(row.date)}` : date(row.date)}</span>
           </span>
           <span className="app-money">{format(row.shareMinor)}</span>
         </li>
       ))}
       {items.overflowMinor !== 0 ? (
-        <li className="app-fact" data-testid="stats-overflow">
+        <li className="app-item-row" data-testid="stats-overflow">
           <span>{t('stats.overflow')}</span>
           <span className="app-money">{format(items.overflowMinor)}</span>
         </li>

@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { defaultSettings } from '../data/defaults'
 import { makeTrip } from '../data/testing/fixtures'
-import { categoriesFor } from './categories'
+import { IconDots, IconQuestionMark } from '@tabler/icons-react'
+import { t } from '../i18n'
+import { categoriesFor, categoryGlyph, categoryLabel, NO_CATEGORY } from './categories'
 
 const global = defaultSettings().categories
 
@@ -21,5 +23,24 @@ describe('categoriesFor (task#114)', () => {
   it('falls back to a known icon when the saved one is unknown', () => {
     const trip = makeTrip({ categories: [{ id: 'x', name: '謎', icon: 'IconNope', colorKey: 'accent3' }] })
     expect(categoriesFor(global, trip).at(-1)?.icon).toBe('IconDots')
+  })
+})
+
+// task#127：類別可以留空
+describe('an expense without a category', () => {
+  const food = global.find((c) => c.id === 'cat.food')!
+  it('shows a question mark and is called uncategorised', () => {
+    expect(categoryGlyph(undefined, NO_CATEGORY)).toBe(IconQuestionMark)
+    expect(categoryLabel(undefined, NO_CATEGORY)).toBe(t('cat.none'))
+  })
+
+  it('keeps the dots and the raw id for a category that is no longer in the list', () => {
+    expect(categoryGlyph(undefined, 'cat.gone')).toBe(IconDots)
+    expect(categoryLabel(undefined, 'cat.gone')).toBe('cat.gone')
+  })
+
+  it('uses the category’s own icon and name when there is one', () => {
+    expect(categoryGlyph(food, food.id)).not.toBe(IconQuestionMark)
+    expect(categoryLabel(food, food.id)).toBe(t('cat.food'))
   })
 })
