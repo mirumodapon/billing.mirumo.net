@@ -11,6 +11,7 @@ import {
   type Trip,
 } from '@billing/core'
 import type { AppSettings } from '../data/types'
+import { categoriesFor } from './categories'
 import { paymentMethodsFor } from './paymentMethods'
 
 /**
@@ -90,7 +91,7 @@ export function newDraft({ trip, expenses, settings, today }: DraftContext): Exp
   const currency = latest?.currency ?? settings.lastUsed.currency ?? trip.baseCurrency
   // 上一筆用的項目後來被刪了，就退回第一個：不能帶入一個不存在的 id
   const pick = (id: string | undefined, list: { id: string }[]) => (id && list.some((x) => x.id === id) ? id : (list[0]?.id ?? ''))
-  const categoryId = pick(settings.lastUsed.categoryId, settings.categories)
+  const categoryId = pick(settings.lastUsed.categoryId, categoriesFor(settings.categories, trip))
   // 旅程專用的付款方式也算（task#92）：上一筆用的是它的話照樣帶入
   const paymentMethodId = pick(settings.lastUsed.paymentMethodId, paymentMethodsFor(settings.paymentMethods, trip))
   return {

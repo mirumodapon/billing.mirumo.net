@@ -10,11 +10,14 @@ export interface BlobStore {
 }
 
 export class IdbBlobStore implements BlobStore {
-  private constructor(private readonly db: TravelDatabase) {}
+  private constructor(
+    private readonly db: TravelDatabase,
+    private readonly now: () => string,
+  ) {}
 
-  static async open(name?: string): Promise<IdbBlobStore> {
+  static async open(name?: string, now: () => string = () => new Date().toISOString()): Promise<IdbBlobStore> {
     try {
-      return new IdbBlobStore(await openTravelDb(name))
+      return new IdbBlobStore(await openTravelDb(name), now)
     } catch (error) {
       throw new StorageError('read', 'database', error)
     }
@@ -39,7 +42,7 @@ export class IdbBlobStore implements BlobStore {
     try {
       // 存位元組而不是 Blob：舊版 iOS Safari 的 IndexedDB 存 Blob 會失敗
       const bytes = await blob.arrayBuffer()
-      await this.db.put('blobs', { id, type: blob.type, bytes })
+      await this.db.put('blobs', { id, type: blob.type, bytes, savedAt: this.now() })
     } catch (error) {
       throw new StorageError('write', 'blob', error)
     }

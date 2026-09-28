@@ -6,6 +6,7 @@ import { useI18n } from '../../i18n/useI18n'
 import { useSettings } from '../../stores/StoresProvider'
 import { DateField } from '../forms/DateField'
 import type { FormSectionProps } from './ExpenseFormScreen'
+import { categoriesFor } from '../../domain/categories'
 
 /**
  * 類別、付款方式、付款人、日期（規格 4.4 的「明細」區塊）。預設值夠準，
@@ -13,7 +14,8 @@ import type { FormSectionProps } from './ExpenseFormScreen'
  */
 export function DetailsSection({ trip, draft, change, open, onToggle }: FormSectionProps & { open: boolean; onToggle: () => void }) {
   const { t, date } = useI18n()
-  const categories = useSettings((s) => s.settings.categories)
+  // 全域類別加上這趟旅程專用的（task#114）
+  const categories = categoriesFor(useSettings((s) => s.settings.categories), trip)
   const globalMethods = useSettings((s) => s.settings.paymentMethods)
   const methods = paymentMethodsFor(globalMethods, trip)
   const category = categories.find((c) => c.id === draft.categoryId)

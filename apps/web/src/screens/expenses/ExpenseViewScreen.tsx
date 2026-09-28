@@ -11,6 +11,7 @@ import { useSettings, useStores, useTrips } from '../../stores/StoresProvider'
 import { ReceiptThumbnail } from '../forms/ReceiptThumbnail'
 import { DraftNote, Fact, ViewShell } from '../forms/ViewShell'
 import { useOpenTrip } from '../useOpenTrip'
+import { categoriesFor } from '../../domain/categories'
 
 /** 支出的唯讀檢視（task#101）：金額、明細、各人分攤、收據 */
 export function ExpenseViewScreen() {
@@ -20,14 +21,14 @@ export function ExpenseViewScreen() {
   const { trips } = useStores()
   const trip = useTrips((s) => s.trips.find((x) => x.id === tripId))
   const expense = useTrips((s) => s.current?.expenses.find((e) => e.id === expenseId))
-  const categories = useSettings((s) => s.settings.categories)
+  const globalCategories = useSettings((s) => s.settings.categories)
   const globalMethods = useSettings((s) => s.settings.paymentMethods)
 
   if (!trip) return <Navigate to="/" replace />
   if (!ready) return <BootSkeleton />
   if (!expense) return <Navigate to={`/trip/${tripId}/expenses`} replace />
 
-  const category = categories.find((c) => c.id === expense.categoryId)
+  const category = categoriesFor(globalCategories, trip).find((c) => c.id === expense.categoryId)
   const method = paymentMethodsFor(globalMethods, trip).find((m) => m.id === expense.paymentMethodId)
   const name = (id: string) => trip.members.find((m) => m.id === id)?.name ?? id
   const foreign = expense.currency !== trip.baseCurrency

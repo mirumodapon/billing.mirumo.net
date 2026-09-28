@@ -6,6 +6,7 @@ import { formatCompact } from '../../i18n/format'
 import { useI18n } from '../../i18n/useI18n'
 import { useSettings, useTrips } from '../../stores/StoresProvider'
 import { useCollapsedStats, useStatsViewpoint } from './useStatsViewpoint'
+import { categoriesFor } from '../../domain/categories'
 
 /** 視角選單裡「全團」的值。成員 id 是 UUID，不會撞到 */
 const GROUP = 'group'
@@ -21,7 +22,8 @@ export function StatsTab() {
 
 function Stats({ trip, expenses }: { trip: Trip; expenses: Expense[] }) {
   const { t, money, date } = useI18n()
-  const categories = useSettings((s) => s.settings.categories)
+  // 全域類別加上這趟旅程專用的（task#114）
+  const categories = categoriesFor(useSettings((s) => s.settings.categories), trip)
   const [viewpoint, setViewpoint] = useStatsViewpoint(trip)
   const [isOpen, toggle] = useCollapsedStats()
   const memberId = viewpoint.scope === 'self' ? viewpoint.memberId : trip.selfMemberId
@@ -130,7 +132,8 @@ function MyItems({ items, format }: { items: NonNullable<StatsView['items']>; fo
         <li key={`${row.expenseId}-${row.itemId ?? ''}`} className="app-fact" data-testid="stats-item">
           <span>
             {row.name.trim() || t('expense.untitled')}
-            <span className="app-field-label m-0 block">{date(row.date)}</span>
+            {/* 明細品項加上是哪一筆（task#112） */}
+            <span className="app-field-label m-0 block">{row.expenseName ? `${row.expenseName}・${date(row.date)}` : date(row.date)}</span>
           </span>
           <span className="app-money">{format(row.shareMinor)}</span>
         </li>

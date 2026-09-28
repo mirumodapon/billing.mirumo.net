@@ -1,8 +1,9 @@
 import { convertToBaseMinor, decimalsOf, toMinor, type Expense, type Trip } from '@billing/core'
-import { CATEGORY_ICONS, Chip, Icon, SwipeAction } from '@billing/ui'
+import { CATEGORY_ICONS, Icon, SwipeAction } from '@billing/ui'
 import { IconDots, IconPaperclip, IconTrash } from '@tabler/icons-react'
 import type { Category } from '../../data/types'
 import { useI18n } from '../../i18n/useI18n'
+import { DraftTag } from '../forms/DraftTag'
 
 export interface ExpenseRowProps {
   expense: Expense
@@ -34,7 +35,7 @@ export function ExpenseRow({ expense, trip, category, onOpen, onDelete, showBase
 
   return (
     <SwipeAction glyph={IconTrash} actionLabel={t('common.delete')} onAction={onDelete}>
-      <button type="button" className="app-expense" onClick={onOpen}>
+      <button type="button" className="app-expense" data-draft={expense.draft || undefined} onClick={onOpen}>
         <span
           className="app-expense__icon"
           style={color ? { background: `var(--bi-${color})`, color: `var(--bi-${color}-fg)` } : { background: 'var(--bi-surface)' }}
@@ -47,7 +48,7 @@ export function ExpenseRow({ expense, trip, category, onOpen, onDelete, showBase
             {expense.draft ? (
               <>
                 {' '}
-                <Chip label={t('record.draft')} />
+                <DraftTag />
               </>
             ) : null}
             {expense.attachments.length > 0 ? (

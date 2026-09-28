@@ -42,6 +42,9 @@ describe('TripListScreen', () => {
     await withTrips()
     expect(within(card('東京')).getByRole('progressbar', { name: t('tripList.budget', { percent: 25 }) })).toBeInTheDocument()
     expect(within(card('首爾')).queryByRole('progressbar')).not.toBeInTheDocument()
+    // task#116：沒有預算的卡片留出同樣高度的空位，列表裡的卡片才會一樣高
+    expect(card('首爾').querySelector('.app-card__bar-slot')).not.toBeNull()
+    expect(card('東京').querySelector('.app-card__bar-slot')).toBeNull()
   })
 
   it('opens a trip on its expenses tab', async () => {

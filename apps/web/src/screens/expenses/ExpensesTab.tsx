@@ -10,6 +10,7 @@ import { useSettings, useStores, useTrips, useUi } from '../../stores/StoresProv
 import { ExpenseFilterSheet } from './ExpenseFilterSheet'
 import { useConfirmDelete } from '../forms/useConfirmDelete'
 import { ExpenseRow } from './ExpenseRow'
+import { categoriesFor } from '../../domain/categories'
 
 /** 依日期分組，保留 store 裡新到舊的順序（規格 4.3） */
 function byDay(expenses: Expense[]): [string, Expense[]][] {
@@ -27,7 +28,7 @@ export function ExpensesTab() {
   const trip = useTrips((s) => s.trips.find((x) => x.id === tripId))
   const expenses = useTrips((s) => (s.current?.tripId === tripId ? s.current.expenses : undefined))
   const summary = useTrips((s) => s.summaries[tripId])
-  const categories = useSettings((s) => s.settings.categories)
+  const globalCategories = useSettings((s) => s.settings.categories)
   // 沒設定過就是顯示（task#99）
   const showBase = useSettings((s) => s.settings.showBaseAmounts ?? true)
   const filter = useUi((s) => s.expenseFilters[tripId]) ?? EMPTY_FILTER
@@ -38,6 +39,7 @@ export function ExpensesTab() {
   const setFilter = (next: ExpenseFilter) => ui.getState().setExpenseFilter(tripId, next)
   const active = isFilterActive(filter)
   const shown = active ? filterExpenses(expenses, filter) : expenses
+  const categories = categoriesFor(globalCategories, trip)
   const baseTotal = (list: Expense[]) => list.reduce((sum, e) => sum + convertToBaseMinor(e.amount, e.exchangeRate, trip.baseCurrency), 0)
 
   const budget = summary?.budget

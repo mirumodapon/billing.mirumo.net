@@ -32,7 +32,7 @@ export interface StatsView {
   /** 僅全團：各成員該負擔的總額（規格 3.5） */
   members?: { id: string; name: string; colorKey: AccentSlot; owedMinor: number }[]
   /** 僅「我」：我分攤到的品項依金額降冪，攤回的服務費另計（規格 4.5） */
-  items?: { rows: ItemShare[]; overflowMinor: number }
+  items?: { rows: (ItemShare & { expenseName: string })[]; overflowMinor: number }
 }
 
 /** 併入「其他」的門檻（規格 3.5） */
@@ -83,7 +83,10 @@ export function statsView(trip: Trip, expenses: Expense[], scope: Scope, categor
     view.members = trip.members.map((m) => ({ id: m.id, name: m.name, colorKey: m.colorKey, owedMinor: owed[m.id] ?? 0 }))
   } else {
     const { items, overflowMinor } = itemBreakdown(live, { selfMemberId: memberId, baseCurrency: trip.baseCurrency, memberOrder: order })
-    view.items = { rows: [...items].sort((x, y) => y.shareMinor - x.shareMinor), overflowMinor }
+    // 明細品項另外帶上那一筆的說明（task#112）：只寫「生啤」看不出是哪一次；整筆的列名字本來就是說明
+    const nameOf = (id: string) => live.find((e) => e.id === id)?.description.trim() ?? ''
+    const rows = items.map((row) => ({ ...row, expenseName: row.itemId === null ? '' : nameOf(row.expenseId) }))
+    view.items = { rows: rows.sort((x, y) => y.shareMinor - x.shareMinor), overflowMinor }
   }
   return view
 }

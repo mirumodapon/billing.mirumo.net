@@ -127,3 +127,20 @@ describe('statsView: from another member (per-member stats)', () => {
     expect(statsView(mine, expenses, 'self', categories, 'a').dailyBudgetMinor).toBe(2000)
   })
 })
+
+describe('statsView: items name their expense (task#112)', () => {
+  it('gives each item row the description of the expense it came from', () => {
+    const izakaya = makeExpense({
+      id: 'iz',
+      description: '居酒屋',
+      paidBy: 'b',
+      amount: 1000,
+      currency: 'TWD',
+      exchangeRate: 1,
+      split: { mode: 'items', overflowRule: 'even', items: [{ id: 'i1', name: '生啤', amount: 1000, participants: ['a', 'b'] }] },
+    })
+    const rows = statsView(trip, [...expenses, izakaya], 'self', categories).items!.rows
+    expect(rows.find((r) => r.itemId === 'i1')).toMatchObject({ name: '生啤', expenseName: '居酒屋' })
+    expect(rows.find((r) => r.expenseId === 'e1')).toMatchObject({ itemId: null, expenseName: '' })
+  })
+})
