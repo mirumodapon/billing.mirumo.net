@@ -18,12 +18,19 @@ beforeEach(() => {
 })
 afterEach(() => vi.unstubAllGlobals())
 
+/**
+ * 區塊的標題列。英文下「Receipts」與縮圖的「Receipt photo 1」開頭相同，縮圖又是非同步載入後才出現：
+ * 只認帶 aria-expanded 的那顆，才不會時好時壞
+ */
+const receiptHeader = () =>
+  screen.getAllByRole('button', { name: new RegExp(`^${t('receipt.title')}`) }).find((b) => b.hasAttribute('aria-expanded'))!
+
 async function open(attachments: AttachmentMeta[] = []) {
   const stores = await makeStores()
   await stores.repo.saveTrip(makeTrip({ id: 't1' }))
   await stores.repo.saveExpense(makeExpense({ id: 'e1', tripId: 't1', attachments }))
   const app = await renderApp('/trip/t1/expense/e1/edit', stores)
-  const header = () => screen.getByRole('button', { name: new RegExp(`^${t('receipt.title')}`) })
+  const header = receiptHeader
   await app.user.click(header())
   return { ...app, header, panel: () => within(screen.getByTestId('section-receipt-panel')) }
 }
@@ -69,7 +76,7 @@ describe('ReceiptSection', () => {
     await stores.repo.saveTrip(makeTrip({ id: 't1' }))
     await stores.repo.saveExpense(makeExpense({ id: 'e1', tripId: 't1', attachments: [{ id, mimeType: 'image/webp', byteSize: 1, width: 1, height: 1 }] }))
     const { user } = await renderApp('/trip/t1/expense/e1/edit', stores)
-    const header = () => screen.getByRole('button', { name: new RegExp(`^${t('receipt.title')}`) })
+    const header = receiptHeader
     await user.click(header())
     const spy = vi.spyOn(stores.blobs, 'delete')
     await user.click(within(screen.getByTestId('section-receipt-panel')).getByRole('button', { name: t('receipt.remove') }))
