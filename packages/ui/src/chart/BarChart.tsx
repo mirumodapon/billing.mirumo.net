@@ -28,6 +28,8 @@ const SLOT = 32
 const BAR = 20
 /** 左側刻度標籤的寬度 */
 const AXIS = 44
+/** 繪圖區至少這麼寬：只有一兩天時，預算線的標籤才不會壓到左邊的刻度。柱子仍靠左排 */
+const MIN_PLOT = 160
 /** 繪圖區上方留給數值標籤的空間 */
 const TOP = 20
 /** 繪圖區下方留給日期標籤的空間 */
@@ -50,7 +52,7 @@ export function BarChart({
 
   const values = bars.map((bar) => Math.max(0, bar.value))
   const scale = niceScale(Math.max(...values, budget ?? 0))
-  const width = AXIS + bars.length * SLOT
+  const width = AXIS + Math.max(bars.length * SLOT, MIN_PLOT)
   const height = TOP + plotHeight + BOTTOM
   const base = TOP + plotHeight
   const y = (value: number) => base - (value / scale.max) * plotHeight
