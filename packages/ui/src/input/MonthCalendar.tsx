@@ -18,6 +18,11 @@ export interface MonthCalendarProps {
   locale: string
   weekStart?: 0 | 1
   labels: MonthCalendarLabels
+  /**
+   * 選一段日期時（task#126）：頭尾兩天標成選中，中間的天數畫上底色。
+   * 給了就取代 value 的選中標記；value 仍決定一開始鍵盤焦點落在哪一天
+   */
+  range?: { start: string; end: string }
 }
 
 /** 已知是星期日的一天，用來依序產生星期標題 */
@@ -31,7 +36,10 @@ export function MonthCalendar({
   locale,
   weekStart = 0,
   labels,
+  range,
 }: MonthCalendarProps) {
+  const chosen = (day: string) => (range ? day === range.start || day === range.end : day === value)
+  const between = (day: string) => range !== undefined && day > range.start && day < range.end
   const weeks = monthGrid(month, weekStart)
   const days = weeks.flat().filter((day): day is string => day !== null)
   const fallback = days.includes(value) ? value : days[0]!
@@ -91,7 +99,8 @@ export function MonthCalendar({
                       className="bi-calendar__day"
                       data-day={day}
                       aria-label={full.format(parseIso(day))}
-                      aria-pressed={day === value}
+                      aria-pressed={chosen(day)}
+                      data-in-range={between(day) || undefined}
                       onClick={() => onSelect(day)}
                       {...itemProps(day)}
                     >

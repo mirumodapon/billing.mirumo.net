@@ -3,7 +3,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { clearSession } from '../data/session'
 import { makeTrip } from '../data/testing/fixtures'
 import { t } from '../i18n'
+import { todayIso } from '../domain/dates'
 import { currentRoute, makeStores, renderApp } from '../test/renderApp'
+import { pickDateRange } from '../test/pickDate'
 
 beforeEach(() => clearSession())
 
@@ -26,6 +28,18 @@ describe('NewTripSheet', () => {
     expect(currentRoute()).toBe(`/trip/${trip!.id}/setup`)
     // 剛建立的旅程還沒載入帳目：設定頁要照樣畫得出來，不能卡在無限重繪
     expect(await screen.findByRole('button', { name: new RegExp(`^${t('tripMethods.title')}`) })).toBeInTheDocument()
+  })
+
+  // task#126：旅行時間是一個月曆點兩下
+  it('sets the trip dates with two taps on one calendar', async () => {
+    const { user, sheet, stores } = await openSheet()
+    const month = todayIso().slice(0, 7)
+    await user.type(within(sheet).getByLabelText(t('newTrip.name')), '京都')
+    await user.type(within(sheet).getByLabelText(t('newTrip.selfName')), '阿明')
+    await pickDateRange(user, t('newTrip.dates'), `${month}-12`, `${month}-10`, within(sheet))
+    await user.click(within(sheet).getByRole('button', { name: t('newTrip.create') }))
+    await waitFor(() => expect(currentRoute()).toMatch(/^\/trip\/.+\/setup$/))
+    expect((await stores.repo.listTrips())[0]).toMatchObject({ startDate: `${month}-10`, endDate: `${month}-12` })
   })
 
   it('shows what is missing instead of creating', async () => {

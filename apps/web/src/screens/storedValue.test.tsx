@@ -32,10 +32,24 @@ describe('stored-value cards in trip setup (task#115)', () => {
   it('turns a trip payment method into a stored-value card with a currency', async () => {
     const { user, stores } = await setup('/trip/t1/setup', { paymentMethods: [{ id: 'suica', name: 'Suica' }] })
     const panel = await openMethods(user)
-    await user.click(panel.getByRole('button', { name: t('stored.toggle', { name: 'Suica' }) }))
+    // task#125：一顆圖示鍵開關；還沒開的時候沒有多出來的那一行
+    const toggle = panel.getByRole('button', { name: t('stored.toggle', { name: 'Suica' }) })
+    expect(toggle).toHaveAttribute('aria-pressed', 'false')
+    expect(panel.queryByTestId('stored-suica')).not.toBeInTheDocument()
+    await user.click(toggle)
     await user.click(within(screen.getByRole('dialog', { name: t('stored.currency') })).getByRole('radio', { name: /^JPY/ }))
     await waitFor(async () => expect((await stores.repo.getTrip('t1'))?.paymentMethods?.find((m) => m.id === 'suica')?.storedValue).toEqual({ currency: 'JPY' }))
+    expect(panel.getByRole('button', { name: t('stored.toggle', { name: 'Suica' }) })).toHaveAttribute('aria-pressed', 'true')
+    expect(panel.getByTestId('stored-suica')).toHaveTextContent(t('stored.label', { currency: 'JPY' }))
     expect(panel.getByTestId('balance-suica')).toHaveTextContent(plain(t('stored.balance', { amount: formatMoney(0, 'JPY') })))
+  })
+
+  it('turns stored-value mode off again with the same button', async () => {
+    const { user, stores } = await setup('/trip/t1/setup', { paymentMethods: [suica] })
+    const panel = await openMethods(user)
+    await user.click(panel.getByRole('button', { name: t('stored.toggle', { name: 'Suica' }) }))
+    await waitFor(async () => expect((await stores.repo.getTrip('t1'))?.paymentMethods?.find((m) => m.id === 'suica')?.storedValue).toBeUndefined())
+    expect(panel.queryByTestId('stored-suica')).not.toBeInTheDocument()
   })
 
   // 有紀錄之後改不了：已經蓋好的「從餘額扣」會與設定對不起來

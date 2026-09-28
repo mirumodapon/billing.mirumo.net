@@ -44,6 +44,19 @@ describe('MonthCalendar', () => {
     )
   })
 
+  // task#126：選一段日期時，頭尾是選中的，中間的另外標出來，範圍外的都不是
+  it('marks both ends of a range and shades the days between', () => {
+    setup({ range: { start: '2026-03-10', end: '2026-03-13' } })
+    const day = (name: string) => screen.getByRole('button', { name })
+    expect(day('Tuesday, March 10, 2026')).toHaveAttribute('aria-pressed', 'true')
+    expect(day('Friday, March 13, 2026')).toHaveAttribute('aria-pressed', 'true')
+    expect(day('Wednesday, March 11, 2026')).toHaveAttribute('data-in-range', 'true')
+    expect(day('Wednesday, March 11, 2026')).toHaveAttribute('aria-pressed', 'false')
+    expect(day('Sunday, March 15, 2026')).toHaveAttribute('aria-pressed', 'false')
+    expect(day('Monday, March 9, 2026')).not.toHaveAttribute('data-in-range')
+    expect(day('Friday, March 13, 2026')).not.toHaveAttribute('data-in-range')
+  })
+
   it('reports a day when it is pressed', async () => {
     const props = setup()
     await userEvent.click(screen.getByRole('button', { name: 'Friday, March 20, 2026' }))

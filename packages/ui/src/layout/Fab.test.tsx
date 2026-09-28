@@ -44,6 +44,21 @@ describe('Fab', () => {
     expect(bottom, 'the fab does not clear the tab bar').toContain('--bi-tabbar-height')
   })
 
+  // task#123：沒有分頁列的畫面，底部間距與右邊一樣，只留 safe area 加一格
+  it('keeps the same gap below as on the right where there is no tab bar', () => {
+    render(<Fab glyph={IconPlus} ariaLabel="新增旅程" onPress={vi.fn()} overTabBar={false} />)
+    expect(screen.getByRole('button')).toHaveClass('bi-fab', 'bi-fab--no-tabbar')
+    const css = readFileSync(join(import.meta.dirname, 'Fab.css'), 'utf8')
+    const right = css.match(/\.bi-fab\s*{[^}]*right:([^;]+);/)?.[1]?.trim()
+    const bottom = css.match(/\.bi-fab--no-tabbar\s*{[^}]*bottom:([^;]+);/)?.[1]?.trim()
+    expect(bottom).toBe(right?.replace('--bi-safe-right', '--bi-safe-bottom'))
+  })
+
+  it('clears the tab bar by default', () => {
+    render(<Fab glyph={IconPlus} ariaLabel="新增支出" onPress={vi.fn()} />)
+    expect(screen.getByRole('button')).not.toHaveClass('bi-fab--no-tabbar')
+  })
+
   it('sits on the fab layer with a raised shadow', () => {
     const css = readFileSync(join(import.meta.dirname, 'Fab.css'), 'utf8')
     expect(css).toMatch(/z-index:\s*var\(--bi-z-fab\)/)

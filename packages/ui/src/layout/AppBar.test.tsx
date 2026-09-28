@@ -51,4 +51,13 @@ describe('AppBar', () => {
     expect(css).toMatch(/z-index:\s*var\(--bi-z-appbar\)/)
     expect(css).toMatch(/\.bi-appbar__slot\s*{[^}]*min-width:\s*var\(--bi-tap-min\)/)
   })
+
+  // task#124：頂部列的高度來自自己的 token，比觸控下限高一點
+  it('takes its height from the app bar token, taller than the tap minimum', () => {
+    const css = readFileSync(join(import.meta.dirname, 'AppBar.css'), 'utf8')
+    expect(css).toMatch(/\.bi-appbar\s*{[^}]*min-height:\s*var\(--bi-appbar-height\)/)
+    const tokens = readFileSync(join(import.meta.dirname, '../styles/tokens.css'), 'utf8')
+    const px = (name: string) => Number(tokens.match(new RegExp(`--bi-${name}:\\s*(\\d+)px`))?.[1])
+    expect(px('appbar-height')).toBeGreaterThan(px('tap-min'))
+  })
 })

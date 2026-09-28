@@ -8,7 +8,7 @@ import { withOwnLists } from '../domain/tripLists'
 import { createTrip, validateTripDraft, type TripDraft, type TripDraftError } from '../domain/newTrip'
 import { useI18n } from '../i18n/useI18n'
 import { useSettings, useStores } from '../stores/StoresProvider'
-import { DateField } from './forms/DateField'
+import { DateRangeField } from './forms/DateRangeField'
 
 function blankDraft(currency: string): TripDraft {
   const today = todayIso()
@@ -60,9 +60,14 @@ export function NewTripSheet({ open, onClose }: { open: boolean; onClose: () => 
       <div className="app-form">
         <TextField label={t('newTrip.name')} value={draft.name} onChange={(v) => set('name', v)} error={error('nameRequired')} />
         <TextField label={t('newTrip.destination')} value={draft.destination} onChange={(v) => set('destination', v)} />
-        <DateField label={t('newTrip.startDate')} value={draft.startDate} onChange={(v) => set('startDate', v)} />
+        {/* 一個月曆點兩下設好出發與回程（task#126） */}
         <div>
-          <DateField label={t('newTrip.endDate')} value={draft.endDate} onChange={(v) => set('endDate', v)} />
+          <DateRangeField
+            label={t('newTrip.dates')}
+            start={draft.startDate}
+            end={draft.endDate}
+            onChange={(startDate, endDate) => setDraft((d) => ({ ...d, startDate, endDate }))}
+          />
           {error('dateOrder') ? <p className="app-error">{error('dateOrder')}</p> : null}
         </div>
         <button type="button" className="app-row" aria-haspopup="dialog" onClick={() => setPickingCurrency(true)}>

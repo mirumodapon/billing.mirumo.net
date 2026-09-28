@@ -58,6 +58,11 @@
 }
 
 /* 選中用外框環而非 accent 填色：後者在淺色主題對比不合格（task#71） */
+/* 一段日期中間的天數（task#126）：淡淡的主色底，頭尾兩天另有選中的框 */
+.bi-calendar__day[data-in-range] {
+  background: var(--bi-accent-soft);
+}
+
 .bi-calendar__day[aria-pressed='true'] {
   box-shadow: inset 0 0 0 2px var(--bi-accent);
   font-weight: 600;
