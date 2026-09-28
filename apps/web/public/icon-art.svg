@@ -1,0 +1,10 @@
+<!-- App 圖示的原稿（task#88）：深色底、收據與一枚硬幣。PNG 由這份產生，見 Plan 10 P9 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#1e1e2e"/>
+  <path d="M150 96h212v292l-26.5 18-26.5-18-26.5 18-26.5-18-26.5 18-26.5-18-26.5 18-26.5-18z" fill="#cdd6f4"/>
+  <rect x="186" y="150" width="140" height="22" rx="11" fill="#1e1e2e"/>
+  <rect x="186" y="198" width="100" height="22" rx="11" fill="#1e1e2e"/>
+  <rect x="186" y="246" width="120" height="22" rx="11" fill="#1e1e2e"/>
+  <circle cx="340" cy="356" r="84" fill="#f9e2af" stroke="#1e1e2e" stroke-width="16"/>
+  <path d="M300 356h80" stroke="#1e1e2e" stroke-width="16" stroke-linecap="round"/><circle cx="340" cy="318" r="12" fill="#1e1e2e"/><circle cx="340" cy="394" r="12" fill="#1e1e2e"/>
+</svg>

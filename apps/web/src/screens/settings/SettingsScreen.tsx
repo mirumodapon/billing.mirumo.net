@@ -1,6 +1,7 @@
 import { AppBar } from '@billing/ui'
 import { useNavigate } from 'react-router'
 import { useI18n } from '../../i18n/useI18n'
+import { AboutSection } from './AboutSection'
 import { BackupSection } from './BackupSection'
 import { CategoriesSection } from './CategoriesSection'
 import { ErrorLogSection } from './ErrorLogSection'
@@ -26,6 +27,7 @@ export function SettingsScreen() {
         <BackupSection />
         <StorageSection />
         <ErrorLogSection />
+        <AboutSection />
       </div>
     </div>
   )
