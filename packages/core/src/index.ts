@@ -15,7 +15,7 @@ export type * from './types'
 
 export { CURRENCY_DECIMALS, convertToBaseMinor, decimalsOf, fromMinor, toMinor } from './money'
 
-export { countsInTotals } from './records'
+export { countsInTotals, isLive } from './records'
 
 export { sharesOf } from './split'
 

@@ -26,6 +26,8 @@ export interface ExchangeRateTable {
 export interface TripPaymentMethod {
   id: string
   name: string
+  /** 預存卡（task#115），例如 Suica：可以儲值、用它付款只扣餘額。餘額以這個幣別計 */
+  storedValue?: { currency: string }
 }
 
 /**
@@ -118,6 +120,13 @@ export interface Expense {
   attachments: AttachmentMeta[]
   /** 草稿：看得到、改得了，但不算進任何合計（task#96）。選填，舊資料沒有這個欄位 */
   draft?: boolean
+  /**
+   * 用預存卡付的：只扣那張卡的餘額，不算進任何合計——錢在儲值時就算過了（task#115）。
+   * 存檔時依付款方式蓋上，不在讀取時推算，改了卡的設定也不會回頭改舊帳
+   */
+  fromBalance?: boolean
+  /** 儲值：替這趟旅程的哪一張預存卡加值。它本身是一筆照常計算的支出（task#115） */
+  topUpFor?: string
 
   /** ISO 8601 UTC，如 `2026-03-15T08:30:00.000Z`。儲存層與匯出格式都依賴這個形狀 */
   createdAt: string

@@ -60,6 +60,40 @@ function withReadableText(slots: Record<string, string>): Record<string, string>
   throw new Error(`text ${slots.text} cannot reach ${JSON.stringify(BODY_TEXT_CONTRAST)} by darkening`)
 }
 
+/** 次要文字（muted 說明、subtle placeholder）對頁面底與卡片／欄位底的對比（WCAG AA） */
+const SECONDARY_TEXT_CONTRAST = { bg: 4.5, surface1: 4.5 }
+
+/** 兩色之間取 t（0–1）的位置，逐通道線性內插 */
+function lerp(from: string, to: string, t: number): string {
+  const parse = (hex: string) => [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16))
+  const a = parse(from)
+  const b = parse(to)
+  return `#${a.map((v, i) => Math.round(v + (b[i]! - v) * t).toString(16).padStart(2, '0')).join('')}`
+}
+
+/**
+ * 次要文字不夠清楚時，往內文色靠攏，直到頁面底與卡片底都達標（task#85）。
+ *
+ * Tokyo Night 的 comment 色拿來當 placeholder 只有 2.35–3.11，Day 的 muted 3.57。
+ * 往內文色靠而不是往黑白壓：色調留著，而且最多就是變成內文色，主次關係不會倒過來。
+ * 已經達標的一個值都不動。
+ */
+function withReadableSecondary(slots: Record<string, string>): Record<string, string> {
+  const out = { ...slots }
+  const reads = (color: string) =>
+    Object.entries(SECONDARY_TEXT_CONTRAST).every(([slot, floor]) => contrast(color, slots[slot]!) >= floor)
+  for (const slot of ['text-muted', 'text-subtle']) {
+    for (let step = 0; step <= 100; step += 1) {
+      const color = lerp(slots[slot]!, slots.text!, step / 100)
+      if (reads(color)) {
+        out[slot] = color
+        break
+      }
+    }
+  }
+  return out
+}
+
 const OUT =join(import.meta.dirname, '../src/styles/themes')
 
 interface ThemeSpec {
@@ -79,14 +113,14 @@ const specs: ThemeSpec[] = [
     label: `Catppuccin ${f[0]!.toUpperCase()}${f.slice(1)}`,
     scheme: (flavors[f].dark ? 'dark' : 'light') as 'light' | 'dark',
     source: 'https://catppuccin.com/ （MIT）',
-    slots: withAccentForegrounds(withReadableText(catppuccinToSlots(flavors[f]))),
+    slots: withAccentForegrounds(withReadableSecondary(withReadableText(catppuccinToSlots(flavors[f])))),
   })),
   ...(['day', 'night', 'storm', 'moon'] as const).map((v) => ({
     id: v === 'night' ? 'tokyo-night' : `tokyo-night-${v}`,
     label: v === 'night' ? 'Tokyo Night' : `Tokyo Night ${v[0]!.toUpperCase()}${v.slice(1)}`,
     scheme: TOKYO_SCHEMES[v],
     source: 'https://github.com/folke/tokyonight.nvim （MIT）',
-    slots: withAccentForegrounds(withReadableText(tokyoNightToSlots(TOKYO_NIGHT[v]))),
+    slots: withAccentForegrounds(withReadableSecondary(withReadableText(tokyoNightToSlots(TOKYO_NIGHT[v])))),
   })),
 ]
 

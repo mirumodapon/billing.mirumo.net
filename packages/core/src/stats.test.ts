@@ -102,6 +102,22 @@ describe('byCategory', () => {
     expect(result[1]!.totalMinor).toBe(200)
   })
 
+  // task#64：「其他」的 id 是 app 的類別設定決定的，core 不該寫死
+  it('merges into whichever category id the caller names as other', () => {
+    const result = byCategory(
+      [
+        expense({ id: '1', categoryId: 'cat.food', amount: 9800 }),
+        expense({ id: '2', categoryId: 'misc', amount: 100 }),
+        expense({ id: '3', categoryId: 'cat.shopping', amount: 100 }),
+      ],
+      { ...opts, mergeThreshold: 0.03, otherCategoryId: 'misc' },
+    )
+    expect(result.map((r) => [r.categoryId, r.totalMinor])).toEqual([
+      ['cat.food', 9800],
+      ['misc', 200],
+    ])
+  })
+
   // 退款類別的佔比是負的，所以「ratio < threshold」對它恆成立，會被無條件併走；
   // 而併出來的金額為負時 `mergedMinor > 0` 又不成立，cat.other 那列不會產生——
   // 那筆錢就從結果裡消失，各列加總超過真實總額，圓餅圖會畫出大於 100% 的扇形。

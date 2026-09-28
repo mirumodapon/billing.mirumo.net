@@ -356,3 +356,25 @@ describe('drafts (task#96)', () => {
     expect(toExpense({ ...d, isDraft: false }, 't1')).not.toHaveProperty('draft')
   })
 })
+
+describe('stored-value cards (task#115)', () => {
+  const stored = new Set(['suica'])
+
+  it('marks a payment made with a stored-value card as drawn from its balance', () => {
+    expect(toExpense(filled({ paymentMethodId: 'suica' }), 't1', stored).fromBalance).toBe(true)
+    expect(toExpense(filled({ paymentMethodId: 'pay.cash' }), 't1', stored)).not.toHaveProperty('fromBalance')
+  })
+
+  it('keeps which card a top-up is for, and a top-up is a real expense', () => {
+    const e = toExpense(filled({ paymentMethodId: 'pay.credit', topUpFor: 'suica' }), 't1', stored)
+    expect(e.topUpFor).toBe('suica')
+    expect(e).not.toHaveProperty('fromBalance')
+  })
+
+  it('round-trips the top-up target through the form', () => {
+    const d = draftFromExpense(makeExpense({ topUpFor: 'suica' }))
+    expect(d.topUpFor).toBe('suica')
+    expect(isExpenseDraft(d)).toBe(true)
+    expect(isExpenseDraft({ ...d, topUpFor: 3 })).toBe(false)
+  })
+})

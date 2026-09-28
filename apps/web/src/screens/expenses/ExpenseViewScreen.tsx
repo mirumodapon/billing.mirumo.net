@@ -51,6 +51,12 @@ export function ExpenseViewScreen() {
       onDelete={() => void trips.getState().deleteExpense(expense.id)}
     >
       {expense.draft ? <DraftNote /> : null}
+      {/* 用預存卡付的：在這裡說明它不算進花費，免得以為漏算（task#115） */}
+      {expense.fromBalance ? (
+        <p role="note" className="app-field-label m-0" data-testid="from-balance-note">
+          {t('stored.notCounted', { name: method ? displayName(method) : expense.paymentMethodId })}
+        </p>
+      ) : null}
       {/* task#107：先看到「什麼、多少、哪天」，其餘細節收在下面的卡片裡 */}
       <section className="app-view-hero" aria-label={t('view.summary')}>
         <span

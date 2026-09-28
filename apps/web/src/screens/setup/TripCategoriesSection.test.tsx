@@ -27,7 +27,7 @@ describe('TripCategoriesSection (task#114)', () => {
     await user.click(panel.getByRole('button', { name: t('settings.addCategory') }))
     const sheet = within(screen.getByRole('dialog', { name: t('settings.addCategory') }))
     await user.type(sheet.getByLabelText(t('settings.categoryName')), '滑雪')
-    await user.click(sheet.getByRole('radio', { name: 'Gift' }))
+    await user.click(sheet.getByRole('radio', { name: t('icon.Gift') }))
     await user.click(sheet.getByRole('button', { name: t('settings.save') }))
     await waitFor(async () => expect((await own(stores))?.map((c) => c.name)).toEqual(['溫泉', '滑雪']))
     expect((await own(stores))?.at(-1)).toMatchObject({ icon: 'IconGift' })

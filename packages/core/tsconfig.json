@@ -7,6 +7,8 @@
     // 這層保護只是 pnpm 隔離佈局的副作用，現在是明示的宣告。
     "types": [],
     "outDir": "./dist",
+    // buildinfo 放進 dist：清掉 dist 時它也一起消失，tsc -b 才不會以為型別檔還在而跳過（task#78）
+    "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo",
     "rootDir": "./src"
   },
   "include": ["src/**/*"],

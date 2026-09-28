@@ -54,6 +54,8 @@ export interface ExpenseDraft {
    * 欄位還沒填完時不論這裡怎麼設，一律存成草稿——見 willSaveAsDraft
    */
   isDraft?: boolean
+  /** 這一筆是替哪一張預存卡儲值（task#115）。選填：一般支出沒有 */
+  topUpFor?: string
 }
 
 export interface DraftContext {
@@ -134,6 +136,7 @@ export function draftFromExpense(e: Expense): ExpenseDraft {
     split,
     attachments: [...e.attachments],
     isDraft: e.draft === true,
+    ...(e.topUpFor ? { topUpFor: e.topUpFor } : {}),
   }
 }
 
@@ -198,11 +201,14 @@ export function willSaveAsDraft(d: ExpenseDraft): boolean {
 
 /**
  * 轉成要存的紀錄。欄位不完整也可以：那時存成草稿，缺的金額與匯率記 0（task#96）。
+ * 用預存卡付的蓋上 fromBalance：只扣餘額、不算進合計；儲值那一筆記下替哪張卡加值（task#115）。
+ * storedMethods 是這趟旅程的預存卡 id，由呼叫端提供。
  * 時間戳留空：由 Repository 蓋（規格 7.1）
  */
-export function toExpense(d: ExpenseDraft, tripId: string): Expense {
+export function toExpense(d: ExpenseDraft, tripId: string, storedMethods: ReadonlySet<string> = new Set()): Expense {
   return {
     ...(willSaveAsDraft(d) ? { draft: true } : {}),
+    ...(d.topUpFor ? { topUpFor: d.topUpFor } : storedMethods.has(d.paymentMethodId) ? { fromBalance: true } : {}),
     id: d.id ?? crypto.randomUUID(),
     tripId,
     date: d.date,
@@ -260,6 +266,7 @@ export function isExpenseDraft(value: unknown): value is ExpenseDraft {
   if (!isOptionalNumber(d.amount) || !isOptionalNumber(d.exchangeRate)) return false
   if (typeof d.rateTouched !== 'boolean' || !Array.isArray(d.attachments)) return false
   if (d.isDraft !== undefined && typeof d.isDraft !== 'boolean') return false
+  if (d.topUpFor !== undefined && typeof d.topUpFor !== 'string') return false
   const split = d.split as Record<string, unknown> | null
   if (typeof split !== 'object' || split === null) return false
   if (split.mode === 'even') return isStringArray(split.participants)

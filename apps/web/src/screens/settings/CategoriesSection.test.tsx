@@ -39,7 +39,7 @@ describe('CategoriesSection', () => {
     await user.click(section.getByRole('button', { name: t('settings.addCategory') }))
     const sheet = within(screen.getByRole('dialog', { name: t('settings.addCategory') }))
     await user.type(sheet.getByLabelText(t('settings.categoryName')), '伴手禮')
-    await user.click(sheet.getByRole('radio', { name: 'Gift' }))
+    await user.click(sheet.getByRole('radio', { name: t('icon.Gift') }))
     await user.click(sheet.getByRole('radio', { name: t('settings.colorN', { n: 3 }) }))
     await user.click(sheet.getByRole('button', { name: t('settings.save') }))
     await waitFor(async () => expect((await savedCategories(stores)).at(-1)).toMatchObject({ name: '伴手禮', icon: 'IconGift', colorKey: 'accent7', builtin: false }))
@@ -72,7 +72,7 @@ describe('CategoriesSection', () => {
     await user.click(section.getByRole('button', { name: new RegExp(`^${t('cat.food')}`) }))
     const sheet = within(screen.getByRole('dialog', { name: t('settings.editCategory') }))
     expect(sheet.queryByLabelText(t('settings.categoryName'))).not.toBeInTheDocument()
-    await user.click(sheet.getByRole('radio', { name: 'Coffee' }))
+    await user.click(sheet.getByRole('radio', { name: t('icon.Coffee') }))
     await user.click(sheet.getByRole('button', { name: t('settings.save') }))
     await waitFor(async () => expect((await savedCategories(stores))[0]).toEqual({ ...defaultSettings().categories[0], icon: 'IconCoffee' }))
   })
@@ -117,5 +117,16 @@ describe('CategoriesSection layout (task#113)', () => {
     const row = remove.closest('li')!
     expect(row).toHaveClass('app-row')
     expect(within(row).getByRole('button', { name: /^雜支/ })).toHaveClass('app-row__main')
+  })
+})
+
+describe('icon names (task#87)', () => {
+  // 中文使用者的螢幕閱讀器念中文名稱，不是 Gift、Beach 這種識別字
+  it('names the icons in the current language', async () => {
+    const { user, section } = await setup({ locale: 'zh-TW' })
+    await user.click(section.getByRole('button', { name: t('settings.addCategory') }))
+    const sheet = within(screen.getByRole('dialog', { name: t('settings.addCategory') }))
+    expect(sheet.getByRole('radio', { name: '禮物' })).toBeInTheDocument()
+    expect(sheet.queryByRole('radio', { name: 'Gift' })).not.toBeInTheDocument()
   })
 })

@@ -25,5 +25,14 @@
     // specifier，所以型別檢查這份腳本也要開這個選項。
     "allowImportingTsExtensions": true
   },
-  "include": ["packages/*/src/**/*", "apps/*/src/**/*", "packages/*/scripts/**/*", "packages/*/.storybook/**/*"]
+  "include": [
+    "packages/*/src/**/*",
+    "apps/*/src/**/*",
+    "packages/*/scripts/**/*",
+    "packages/*/.storybook/**/*",
+    // 各套件的建置與測試設定檔原本不在任何 program 裡，完全沒有型別檢查（task#64）
+    "packages/*/*.config.ts",
+    "apps/*/*.config.ts",
+    "apps/web/appDefines.ts"
+  ]
 }
