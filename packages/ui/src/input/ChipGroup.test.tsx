@@ -54,3 +54,15 @@ describe('ChipGroup', () => {
     expect(screen.getByRole('radio', { name: '信用卡' })).toBeChecked()
   })
 })
+
+describe('ChipGroup with nothing chosen yet', () => {
+  // 還沒選任何一個（例如新支出的類別）：第一個仍要能用 Tab 進來，否則鍵盤使用者進不了這一組
+  it('keeps the first chip reachable with Tab, and none checked', async () => {
+    render(<ChipGroup options={options} value="" onChange={vi.fn()} ariaLabel="付款方式" />)
+    const radios = screen.getAllByRole('radio')
+    expect(radios.map((r) => r.getAttribute('tabindex'))).toEqual(['0', ...radios.slice(1).map(() => '-1')])
+    expect(radios.every((r) => r.getAttribute('aria-checked') === 'false')).toBe(true)
+    await userEvent.tab()
+    expect(radios[0]).toHaveFocus()
+  })
+})
