@@ -202,6 +202,19 @@ describe('stored-value balances in the stats (task#137)', () => {
     expect(screen.getByTestId('stats-balance-suica')).toHaveTextContent(plain(formatMoney(480000, 'JPY')))
   })
 
+  // task#138：叫「預存模式餘額」，放在消費明細的正上方
+  it('sits right above my spending details', async () => {
+    const { user } = await setup('/trip/t1/stats', { paymentMethods: [suica] }, [
+      { id: 'top', amount: 5000, currency: 'JPY', exchangeRate: 0.2, paymentMethodId: 'pay.credit', topUpFor: 'suica' },
+      { id: 'ride', amount: 200, currency: 'JPY', exchangeRate: 0.2, paymentMethodId: 'suica', fromBalance: true },
+    ])
+    await user.click(await screen.findByRole('radio', { name: t('stats.memberSelf', { name: '阿明' }) }))
+    const headers = screen.getAllByRole('button', { expanded: true }).map((b) => b.textContent ?? '')
+    const balances = headers.findIndex((h) => h.startsWith(t('stats.balances')))
+    expect(balances).toBeGreaterThan(-1)
+    expect(headers[balances + 1]).toMatch(new RegExp(`^${t('stats.myItems')}`))
+  })
+
   it('has no balances section on a trip without stored-value cards', async () => {
     await setup('/trip/t1/stats')
     expect(await screen.findByRole('button', { name: new RegExp(`^${t('stats.overview')}`) })).toBeInTheDocument()

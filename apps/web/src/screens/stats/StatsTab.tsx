@@ -1,6 +1,6 @@
 import type { Expense, Trip } from '@billing/core'
 import { Accordion, Avatar, BarChart, ChipGroup, Donut, ProgressBar } from '@billing/ui'
-import { useParams } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 import { statsView, type StatsView } from '../../domain/statsView'
 import { formatCompact } from '../../i18n/format'
 import { useI18n } from '../../i18n/useI18n'
@@ -24,6 +24,7 @@ export function StatsTab() {
 
 function Stats({ trip, expenses }: { trip: Trip; expenses: Expense[] }) {
   const { t, money, date } = useI18n()
+  const navigate = useNavigate()
   // 全域類別加上這趟旅程專用的（task#114）
   const categories = categoriesFor(useSettings((s) => s.settings.categories), trip)
   const [viewpoint, setViewpoint] = useStatsViewpoint(trip)
@@ -76,22 +77,6 @@ function Stats({ trip, expenses }: { trip: Trip; expenses: Expense[] }) {
           ) : null}
         </div>
       </Accordion>
-      {/* 預存卡的餘額（task#137）：儲值不算花費，錢還在卡裡，這裡看得到還剩多少 */}
-      {cards.length > 0 ? (
-        <Accordion title={t('stats.balances')} open={isOpen('balances')} onToggle={() => toggle('balances')} data-testid="stats-balances">
-          <ul className="m-0 list-none p-0">
-            {cards.map((card) => {
-              const balance = balances[card.id]
-              return (
-                <li key={card.id} className="app-item-row" data-testid={`stats-balance-${card.id}`}>
-                  <span>{tripMethodName(card)}</span>
-                  <span className="app-money">{balance ? money(balance.minor, balance.currency) : null}</span>
-                </li>
-              )
-            })}
-          </ul>
-        </Accordion>
-      ) : null}
       <Accordion title={t('stats.categories')} open={isOpen('categories')} onToggle={() => toggle('categories')} data-testid="stats-categories">
         <Donut segments={view.categories} ariaLabel={t('stats.categories')} formatValue={format} emptyLabel={t('stats.empty')} totalLabel={t('stats.totalLabel')} />
       </Accordion>
@@ -112,9 +97,25 @@ function Stats({ trip, expenses }: { trip: Trip; expenses: Expense[] }) {
           <MemberBars members={view.members} format={format} />
         </Accordion>
       ) : null}
+      {/* 預存模式的餘額（task#137）：儲值不算花費，錢還在卡裡，這裡看得到還剩多少。放在消費明細上方（task#138） */}
+      {cards.length > 0 ? (
+        <Accordion title={t('stats.balances')} open={isOpen('balances')} onToggle={() => toggle('balances')} data-testid="stats-balances">
+          <ul className="m-0 list-none p-0">
+            {cards.map((card) => {
+              const balance = balances[card.id]
+              return (
+                <li key={card.id} className="app-item-row" data-testid={`stats-balance-${card.id}`}>
+                  <span>{tripMethodName(card)}</span>
+                  <span className="app-money">{balance ? money(balance.minor, balance.currency) : null}</span>
+                </li>
+              )
+            })}
+          </ul>
+        </Accordion>
+      ) : null}
       {view.items ? (
         <Accordion title={memberId === trip.selfMemberId ? t('stats.myItems') : t('stats.memberItems', { name: viewed?.name ?? '' })} open={isOpen('items')} onToggle={() => toggle('items')} data-testid="stats-items">
-          <MyItems items={view.items} format={format} />
+          <MyItems items={view.items} format={format} onOpen={(id) => navigate(`/trip/${trip.id}/expense/${id}`)} />
         </Accordion>
       ) : null}
     </div>
@@ -142,20 +143,25 @@ function MemberBars({ members, format }: { members: NonNullable<StatsView['membe
   )
 }
 
-/** 我的消費明細（僅「我」）：我分攤到的每一項，攤回的服務費另一列（規格 4.5） */
-function MyItems({ items, format }: { items: NonNullable<StatsView['items']>; format: (minor: number) => string }) {
+/**
+ * 我的消費明細（僅「我」）：我分攤到的每一項，攤回的服務費另一列（規格 4.5）。
+ * 點一列就打開那一筆紀錄（task#140）
+ */
+function MyItems({ items, format, onOpen }: { items: NonNullable<StatsView['items']>; format: (minor: number) => string; onOpen: (expenseId: string) => void }) {
   const { t, date } = useI18n()
   if (items.rows.length === 0) return <p className="app-field-label m-0">{t('stats.empty')}</p>
   return (
     <ul className="m-0 list-none p-0">
       {items.rows.map((row) => (
-        <li key={`${row.expenseId}-${row.itemId ?? ''}`} className="app-item-row" data-testid="stats-item">
-          <span>
-            {row.name.trim() || t('expense.untitled')}
-            {/* 明細品項加上是哪一筆（task#112） */}
-            <span className="app-item-row__meta">{row.expenseName ? `${row.expenseName}・${date(row.date)}` : date(row.date)}</span>
-          </span>
-          <span className="app-money">{format(row.shareMinor)}</span>
+        <li key={`${row.expenseId}-${row.itemId ?? ''}`}>
+          <button type="button" className="app-item-row app-item-row--button" data-testid="stats-item" onClick={() => onOpen(row.expenseId)}>
+            <span>
+              {row.name.trim() || t('expense.untitled')}
+              {/* 明細品項加上是哪一筆（task#112） */}
+              <span className="app-item-row__meta">{row.expenseName ? `${row.expenseName}・${date(row.date)}` : date(row.date)}</span>
+            </span>
+            <span className="app-money">{format(row.shareMinor)}</span>
+          </button>
         </li>
       ))}
       {items.overflowMinor !== 0 ? (

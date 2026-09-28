@@ -38,7 +38,7 @@ export const enUS: Record<TranslationKey, string> = {
   'stats.empty': 'No expenses yet',
   'stats.totalLabel': 'Total',
   'stats.members': 'By member',
-  'stats.balances': 'Stored-value balances',
+  'stats.balances': 'Stored-value mode balances',
   'stats.myItems': 'What I shared in',
   'stats.memberItems': 'What {name} shared in',
   'stats.memberSelf': '{name} (me)',

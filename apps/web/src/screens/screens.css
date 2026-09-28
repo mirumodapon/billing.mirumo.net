@@ -535,6 +535,26 @@
     padding-block: var(--bi-space-2);
   }
 
+  /* 可以點開那一筆紀錄的列（task#140）：外觀與一般列相同，只是整列是按鈕 */
+  .app-item-row--button {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: var(--bi-tap-min);
+    padding-inline: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+  }
+
+  .app-item-row--button:focus-visible {
+    outline: 2px solid var(--bi-accent);
+    outline-offset: 2px;
+    border-radius: var(--bi-radius-md);
+  }
+
   .app-item-row__meta {
     display: block;
     color: var(--bi-text-muted);

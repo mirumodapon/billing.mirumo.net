@@ -38,7 +38,7 @@ export const zhTW = {
   'stats.empty': '還沒有支出',
   'stats.totalLabel': '總計',
   'stats.members': '成員比較',
-  'stats.balances': '預存卡餘額',
+  'stats.balances': '預存模式餘額',
   'stats.myItems': '我的消費明細',
   'stats.memberItems': '{name}的消費明細',
   'stats.memberSelf': '{name}（我）',
