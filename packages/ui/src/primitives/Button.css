@@ -45,6 +45,12 @@
   color: var(--bi-text);
 }
 
+/* 開關用的圖示鍵（aria-pressed）：按下時與選中的 chip 同一個樣子 */
+.bi-button[data-variant='ghost'][aria-pressed='true'] {
+  background: var(--bi-accent);
+  color: var(--bi-accent-fg);
+}
+
 .bi-button[data-variant='danger'] {
   background: var(--bi-danger);
   color: var(--bi-accent-fg);

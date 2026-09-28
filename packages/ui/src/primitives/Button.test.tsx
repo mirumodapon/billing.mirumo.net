@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
@@ -50,5 +52,17 @@ describe('Button', () => {
     const ref = { current: null as HTMLButtonElement | null }
     render(<Button ref={ref}>儲存</Button>)
     expect(ref.current).toBeInstanceOf(HTMLButtonElement)
+  })
+
+  // task#125：當開關用的圖示鍵，按下時與選中的 chip 同一個樣子，看得出現在是開的
+  it('shows a pressed ghost button in the accent colours', () => {
+    render(
+      <Button variant="ghost" aria-pressed>
+        開關
+      </Button>,
+    )
+    expect(screen.getByRole('button', { pressed: true })).toBeInTheDocument()
+    const css = readFileSync(join(import.meta.dirname, 'Button.css'), 'utf8')
+    expect(css).toMatch(/\[data-variant='ghost'\]\[aria-pressed='true'\]\s*{[^}]*background:\s*var\(--bi-accent\)/)
   })
 })

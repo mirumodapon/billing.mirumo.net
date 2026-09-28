@@ -1,6 +1,6 @@
 import type { Expense, Trip, TripPaymentMethod } from '@billing/core'
-import { Accordion, Button, Chip, Icon, SheetPicker, TextField } from '@billing/ui'
-import { IconTrash } from '@tabler/icons-react'
+import { Accordion, Button, Icon, SheetPicker, TextField } from '@billing/ui'
+import { IconTrash, IconWallet } from '@tabler/icons-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { CURRENCIES, currencyName } from '../../domain/currencies'
@@ -24,8 +24,8 @@ const NO_EXPENSES: Expense[] = []
 /**
  * 只用於這趟旅程的付款方式（task#92）。版面與全域設定的付款方式相同（task#93）：
  * 框加固定寬的尾端欄，名稱欄的標籤只給輔助技術。這趟旅程還有支出在用的不能刪。
- * 也可以設成預存卡（task#115）：顯示餘額、可以儲值。有紀錄之後預存設定就鎖住，
- * 否則已經蓋好的「從餘額扣」會與設定對不起來。
+ * 也可以開預存模式（task#115，task#125 起用一顆圖示鍵開關）：顯示餘額、可以儲值。
+ * 有紀錄之後預存設定就鎖住，否則已經蓋好的「從餘額扣」會與設定對不起來。
  */
 export function TripPaymentMethodsSection({ trip, open, onToggle, save }: TripPaymentMethodsSectionProps) {
   const { t, tPlural, locale } = useI18n()
@@ -141,46 +141,55 @@ function MethodRow({ method, used, balance, onRename, onRemove, onStoredToggle, 
     if (!trimmed) setDraft(name)
     else if (trimmed !== name) onRename(trimmed)
   }
-  // 使用筆數或刪除鍵在框內右側（task#104）
-  const trailing =
-    used > 0 ? (
-      usedLabel(used)
-    ) : (
-      <Button variant="ghost" aria-label={t('settings.removeItem', { name })} onClick={onRemove}>
-        <Icon glyph={IconTrash} />
+  /*
+   * 框內右側（task#104）：預存模式的開關（task#125，一顆圖示鍵），再來是使用筆數或刪除鍵。
+   * 預存模式在有紀錄之後就鎖住：已經蓋好的「從餘額扣」會與設定對不起來
+   */
+  const trailing = (
+    <span className="flex items-center gap-1">
+      <Button
+        variant="ghost"
+        aria-label={t('stored.toggle', { name })}
+        aria-pressed={method.storedValue !== undefined}
+        disabled={used > 0}
+        onClick={onStoredToggle}
+      >
+        <Icon glyph={IconWallet} />
       </Button>
-    )
+      {used > 0 ? (
+        <span className="px-2">{usedLabel(used)}</span>
+      ) : (
+        <Button variant="ghost" aria-label={t('settings.removeItem', { name })} onClick={onRemove}>
+          <Icon glyph={IconTrash} />
+        </Button>
+      )}
+    </span>
+  )
   return (
     <li className="flex flex-col gap-2">
       {method.builtin ? (
         // 從全域複製來的內建項目（task#120）：名稱來自語言檔不能改，但這趟用不到可以刪
         <div className="app-row app-row--split" data-testid={`method-${method.id}`}>
           <span className="app-row__main">{name}</span>
-          {used > 0 ? <span className="app-row__value px-3">{trailing}</span> : trailing}
+          <span className="app-row__value">{trailing}</span>
         </div>
       ) : (
         <TextField label={t('settings.paymentMethodName', { name })} hideLabel value={draft} onChange={setDraft} onBlur={commit} trailing={trailing} />
       )}
-      <div className="flex flex-wrap items-center gap-2" data-testid={`stored-${method.id}`}>
-        {/* 有紀錄之後不能改：已經蓋好的「從餘額扣」會與設定對不起來 */}
-        <Chip
-          label={method.storedValue ? t('stored.label', { currency: method.storedValue.currency }) : t('stored.make')}
-          selected={method.storedValue !== undefined}
-          disabled={used > 0}
-          onSelect={onStoredToggle}
-          aria-label={t('stored.toggle', { name })}
-        />
-        {method.storedValue && balance ? (
-          <>
+      {/* 只有開了預存模式才多一行：幣別、餘額與儲值 */}
+      {method.storedValue ? (
+        <div className="flex flex-wrap items-center gap-2 ps-3" data-testid={`stored-${method.id}`}>
+          <span className="app-field-label">{t('stored.label', { currency: method.storedValue.currency })}</span>
+          {balance ? (
             <span className="app-money" data-testid={`balance-${method.id}`}>
               {t('stored.balance', { amount: money(balance.minor, balance.currency) })}
             </span>
-            <Button variant="secondary" onClick={onTopUp}>
-              {t('stored.topUp')}
-            </Button>
-          </>
-        ) : null}
-      </div>
+          ) : null}
+          <Button variant="secondary" onClick={onTopUp}>
+            {t('stored.topUp')}
+          </Button>
+        </div>
+      ) : null}
     </li>
   )
 }
