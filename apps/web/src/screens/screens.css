@@ -329,6 +329,97 @@
     color: var(--bi-text-muted);
   }
 
+  /* 檢視頁（task#107）：頂端的摘要卡，下面是一張張的細節卡 */
+  .app-view-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--bi-space-1);
+    padding: var(--bi-space-6) var(--bi-space-4);
+    border-radius: var(--bi-radius-lg);
+    background: var(--bi-surface);
+    text-align: center;
+  }
+
+  .app-view-hero__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    margin-bottom: var(--bi-space-1);
+    border-radius: var(--bi-radius-lg);
+  }
+
+  .app-view-hero__amount {
+    margin: var(--bi-space-1) 0 0;
+    font-size: var(--bi-text-2xl);
+    font-weight: 600;
+  }
+
+  .app-view-hero__meta {
+    margin: 0;
+    color: var(--bi-text-muted);
+    font-size: var(--bi-text-sm);
+  }
+
+  .app-view-hero__people {
+    display: flex;
+    align-items: center;
+    gap: var(--bi-space-4);
+    color: var(--bi-text-muted);
+  }
+
+  /* 箭頭對齊頭像中線，而不是「頭像＋名字」那一整欄的中線 */
+  .app-view-hero__arrow {
+    display: inline-flex;
+    margin-bottom: calc(1lh + var(--bi-space-1));
+  }
+
+  .app-view-hero__person {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--bi-space-1);
+    color: var(--bi-text);
+  }
+
+  .app-view-card {
+    gap: 0;
+    padding-block: var(--bi-space-2);
+  }
+
+  .app-view-card > .app-card__title {
+    padding-block: var(--bi-space-2);
+  }
+
+  .app-view-card > .app-fact:last-child {
+    border-bottom: 0;
+  }
+
+  /* 各人分攤：頭像、名字、金額，下面一條占比 */
+  .app-share {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: var(--bi-space-1) var(--bi-space-3);
+    padding: var(--bi-space-2) 0;
+  }
+
+  .app-share__bar {
+    grid-column: 2 / 4;
+    height: 4px;
+    overflow: hidden;
+    border-radius: var(--bi-radius-full);
+    background: var(--bi-border);
+  }
+
+  .app-share__bar > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+  }
+
   .app-converted {
     display: flex;
     align-items: center;

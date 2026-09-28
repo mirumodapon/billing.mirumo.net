@@ -1,4 +1,6 @@
 import { convertToBaseMinor, decimalsOf, sharesOf, toMinor } from '@billing/core'
+import { Avatar, CATEGORY_ICONS, Icon } from '@billing/ui'
+import { IconDots } from '@tabler/icons-react'
 import { Navigate, useParams } from 'react-router'
 import { BootSkeleton } from '../../app/BootSkeleton'
 import { displayName } from '../../domain/names'
@@ -30,6 +32,8 @@ export function ExpenseViewScreen() {
   const foreign = expense.currency !== trip.baseCurrency
   const base = money(convertToBaseMinor(expense.amount, expense.exchangeRate, trip.baseCurrency), trip.baseCurrency)
   const shares = sharesOf(expense, trip.baseCurrency, trip.members.map((m) => m.id))
+  const sharers = trip.members.filter((m) => shares[m.id] !== undefined)
+  const sharedTotal = sharers.reduce((sum, m) => sum + shares[m.id]!, 0)
   const split =
     expense.split.mode === 'even'
       ? t('split.summaryEvenNoAmount', { count: expense.split.participants.length })
@@ -44,36 +48,51 @@ export function ExpenseViewScreen() {
       fallback={`/trip/${tripId}/expenses`}
     >
       {expense.draft ? <DraftNote /> : null}
-      <p className="app-money m-0 text-end text-2xl">{money(toMinor(expense.amount, decimalsOf(expense.currency)), expense.currency)}</p>
-      {foreign && expense.exchangeRate > 0 ? (
-        <p className="app-field-label app-money m-0 text-end">
-          {t('expense.converted', { amount: base })} ・{t('expense.rateInline', { rate: String(expense.exchangeRate) })}
-        </p>
-      ) : null}
-      <div>
-        <Fact label={t('expense.category')}>{category ? displayName(category) : expense.categoryId}</Fact>
-        <Fact label={t('expense.paymentMethod')}>{method ? displayName(method) : expense.paymentMethodId}</Fact>
-        <Fact label={t('expense.paidBy')}>{name(expense.paidBy)}</Fact>
-        <Fact label={t('expense.date')}>
+      {/* task#107：先看到「什麼、多少、哪天」，其餘細節收在下面的卡片裡 */}
+      <section className="app-view-hero" aria-label={t('view.summary')}>
+        <span
+          className="app-view-hero__icon"
+          style={category ? { background: `var(--bi-${category.colorKey})`, color: `var(--bi-${category.colorKey}-fg)` } : { background: 'var(--bi-bg)' }}
+        >
+          <Icon glyph={category ? CATEGORY_ICONS[category.icon] : IconDots} size="lg" />
+        </span>
+        <span className="app-view-hero__meta">{category ? displayName(category) : expense.categoryId}</span>
+        <p className="app-view-hero__amount app-money">{money(toMinor(expense.amount, decimalsOf(expense.currency)), expense.currency)}</p>
+        {foreign && expense.exchangeRate > 0 ? (
+          <p className="app-view-hero__meta app-money">
+            {t('expense.converted', { amount: base })} ・{t('expense.rateInline', { rate: String(expense.exchangeRate) })}
+          </p>
+        ) : null}
+        <p className="app-view-hero__meta">
           {date(expense.date)} ({formatWeekday(expense.date)})
-        </Fact>
+        </p>
+      </section>
+      <div className="app-card app-view-card">
+        <Fact label={t('expense.paidBy')}>{name(expense.paidBy)}</Fact>
+        <Fact label={t('expense.paymentMethod')}>{method ? displayName(method) : expense.paymentMethodId}</Fact>
         <Fact label={t('split.title')}>{split}</Fact>
       </div>
-      <section aria-labelledby="view-shares">
-        <h2 id="view-shares" className="app-field-label">
+      <section aria-labelledby="view-shares" className="app-card app-view-card">
+        <h2 id="view-shares" className="app-card__title">
           {t('view.shares')}
         </h2>
-        {trip.members
-          .filter((m) => shares[m.id] !== undefined)
-          .map((m) => (
-            <Fact key={m.id} label={m.name}>
-              <span className="app-money">{money(shares[m.id]!, trip.baseCurrency)}</span>
-            </Fact>
-          ))}
+        {sharers.map((m) => (
+          <div key={m.id} className="app-share">
+            <Avatar name={m.name} colorKey={m.colorKey} size="sm" />
+            <span>{m.name}</span>
+            <span className="app-money">{money(shares[m.id]!, trip.baseCurrency)}</span>
+            {/* 各人占這筆的比例；還沒有金額的草稿就不畫 */}
+            {sharedTotal > 0 ? (
+              <span className="app-share__bar" aria-hidden="true">
+                <span style={{ width: `${(shares[m.id]! / sharedTotal) * 100}%`, background: `var(--bi-${m.colorKey})` }} />
+              </span>
+            ) : null}
+          </div>
+        ))}
       </section>
       {expense.attachments.length > 0 ? (
-        <section aria-labelledby="view-receipts">
-          <h2 id="view-receipts" className="app-field-label">
+        <section aria-labelledby="view-receipts" className="app-card app-view-card">
+          <h2 id="view-receipts" className="app-card__title">
             {t('view.receipts')}
           </h2>
           <div className="flex flex-wrap gap-3">

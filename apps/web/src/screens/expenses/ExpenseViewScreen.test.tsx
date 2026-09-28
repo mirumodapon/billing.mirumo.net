@@ -110,3 +110,32 @@ describe('TransferViewScreen (task#101)', () => {
     expect(await screen.findByRole('heading', { name: t('transfer.edit') })).toBeInTheDocument()
   })
 })
+
+describe('view layout (task#107)', () => {
+  it('leads with what, how much and when', async () => {
+    await setup('/trip/t1/expense/e1')
+    const hero = within(screen.getByRole('region', { name: t('view.summary') }))
+    expect(hero.getByText(t('cat.food'))).toBeInTheDocument()
+    expect(hero.getByText(plain(formatMoney(3000, 'TWD')))).toBeInTheDocument()
+    expect(hero.getByText(/3\/15/)).toBeInTheDocument()
+  })
+
+  // 占比條讓人不用心算就看出誰分得多
+  it('draws each share as a part of the whole', async () => {
+    const stores = await makeStores()
+    await stores.repo.saveSettings({ ...defaultSettings(), locale: 'zh-TW' })
+    await stores.repo.saveTrip(makeTrip({ id: 't1', baseCurrency: 'TWD' }))
+    await stores.repo.saveExpense(makeExpense({ id: 'e1', tripId: 't1', amount: 1000, currency: 'TWD', exchangeRate: 1, split: { mode: 'exact', amounts: { a: 750, b: 250 } } }))
+    await renderApp('/trip/t1/expense/e1', stores)
+    const shares = screen.getByRole('region', { name: t('view.shares') })
+    const widths = [...shares.querySelectorAll<HTMLElement>('.app-share__bar > span')].map((s) => s.style.width)
+    expect(widths).toEqual(['75%', '25%'])
+  })
+
+  it('shows who gave money to whom on a transfer', async () => {
+    await setup('/trip/t1/transfer/x1')
+    const hero = within(screen.getByRole('region', { name: t('view.summary') }))
+    expect(hero.getAllByText(/^(大熊|阿明)$/).map((n) => n.textContent)).toEqual(['大熊', '阿明'])
+    expect(hero.getByText(plain(formatMoney(500, 'TWD')))).toBeInTheDocument()
+  })
+})
