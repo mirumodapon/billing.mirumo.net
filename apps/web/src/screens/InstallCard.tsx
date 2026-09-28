@@ -25,12 +25,19 @@ export function InstallCard({ hasTrips }: { hasTrips: boolean }) {
       {prompt ? (
         <Button onClick={() => void prompt()}>{t('install.now')}</Button>
       ) : (
-        <ol className="app-field-label m-0 flex flex-col gap-1 pl-4">
+        // 圖示跟在文字後面同一行，使用者才對得上 Safari 工具列上的那顆鍵
+        <ol className="app-field-label m-0 flex list-decimal flex-col gap-1 pl-5">
           <li>
-            {t('install.iosShare')} <Icon glyph={IconShare2} size="sm" ariaLabel={t('install.shareIcon')} />
+            <span className="inline-flex items-center gap-1">
+              {t('install.iosShare')}
+              <Icon glyph={IconShare2} size="sm" ariaLabel={t('install.shareIcon')} />
+            </span>
           </li>
           <li>
-            {t('install.iosAdd')} <Icon glyph={IconSquarePlus} size="sm" ariaLabel={t('install.addIcon')} />
+            <span className="inline-flex items-center gap-1">
+              {t('install.iosAdd')}
+              <Icon glyph={IconSquarePlus} size="sm" ariaLabel={t('install.addIcon')} />
+            </span>
           </li>
         </ol>
       )}
