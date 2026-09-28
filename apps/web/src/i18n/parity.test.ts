@@ -1,3 +1,4 @@
+import { CATEGORY_ICONS } from '@billing/ui'
 import { describe, expect, it } from 'vitest'
 import { enUS, enUSPlurals } from './en-US'
 import { zhTW, zhTWPlurals } from './zh-TW'
@@ -51,6 +52,17 @@ describe('translation parity', () => {
     for (const key of Object.keys(zhTWPlurals) as (keyof typeof zhTWPlurals)[]) {
       expect(placeholders(zhTWPlurals[key])).toContain('count')
       expect(placeholders(enUSPlurals[key].other)).toContain('count')
+    }
+  })
+})
+
+describe('category icon names (task#87)', () => {
+  // 圖示選擇器的無障礙名稱查這張表：新增圖示時忘了寫名稱，螢幕閱讀器就會念出 key
+  it('names every category icon in both languages', () => {
+    for (const name of Object.keys(CATEGORY_ICONS)) {
+      const key = `icon.${name.replace(/^Icon/, '')}`
+      expect(zhTW[key as keyof typeof zhTW], key).toBeTruthy()
+      expect(enUS[key as keyof typeof enUS], key).toBeTruthy()
     }
   })
 })

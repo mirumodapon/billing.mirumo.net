@@ -1,6 +1,7 @@
 import { ACCENT_ORDER, Button, CATEGORY_ICONS, ColorSwatches, IconGrid, pickAccent, Sheet, TextField, type AccentSlot, type CategoryIconName } from '@billing/ui'
 import { useState } from 'react'
 import type { Category } from '../../data/types'
+import type { TranslationKey } from '../../i18n'
 import { useI18n } from '../../i18n/useI18n'
 
 export interface CategoryEditSheetProps {
@@ -69,7 +70,8 @@ export function CategoryEditSheet({ open, category, usedColors, onSave, onClose 
             onChange={(icon) => setDraft((d) => ({ ...d, icon }))}
             ariaLabel={t('settings.categoryIcon')}
             // 已知的妥協：圖示名稱用英文識別字，沒有翻成兩種語言（task 另記）
-            labelFor={(name) => name.replace(/^Icon/, '')}
+            // task#87：螢幕閱讀器念的是在地化的名稱，不是英文識別字
+            labelFor={(name) => t(`icon.${name.replace(/^Icon/, '')}` as TranslationKey)}
           />
         </div>
         <div>
