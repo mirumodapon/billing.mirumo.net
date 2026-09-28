@@ -330,3 +330,44 @@ describe('switching themes at runtime (task#80)', () => {
     }
   })
 })
+
+describe('secondary text (task#85)', () => {
+  const hex = (css: string, slot: string) => css.match(new RegExp(`--bi-p-${slot}:\\s*(#[0-9a-fA-F]{6});`))![1]!
+
+  /*
+   * muted 是次要說明文字（標籤、提示、日期），出現在頁面底與卡片／欄位底上；
+   * subtle 是欄位的 placeholder，也是字。兩者都至少要 AA 的 4.5:1。
+   * Tokyo Night 原本 subtle 只有 2.35–3.11、Day 的 muted 只有 3.57。
+   * （subtle 另外用在停用鍵與 sheet 把手：前者 WCAG 豁免，後者是裝飾，不另設門檻）
+   */
+  it('reads at 4.5:1 on the page and on cards and fields', () => {
+    const failures: string[] = []
+    for (const file of themeFiles()) {
+      const css = readFileSync(join(THEME_DIR, file), 'utf8')
+      for (const text of ['text-muted', 'text-subtle']) {
+        for (const ground of ['bg', 'surface1']) {
+          const ratio = contrast(hex(css, text), hex(css, ground))
+          if (ratio < 4.5) failures.push(`${file} ${text} on ${ground}: ${ratio.toFixed(2)}`)
+        }
+      }
+    }
+    expect(failures).toEqual([])
+  })
+
+  // 本來就夠清楚的不動：換掉等於改了那個主題原本的樣子
+  it('keeps each theme’s own secondary colours wherever they already read', () => {
+    const css = readFileSync(join(THEME_DIR, 'catppuccin-mocha.css'), 'utf8')
+    expect(hex(css, 'text-muted').toLowerCase()).toBe(flavors.mocha.colors.subtext1.hex.toLowerCase())
+    expect(hex(css, 'text-subtle').toLowerCase()).toBe(flavors.mocha.colors.subtext0.hex.toLowerCase())
+  })
+
+  // 變深以後仍要比內文淡：主次關係不能倒過來
+  it('stays lighter in weight than body text', () => {
+    for (const file of themeFiles()) {
+      const css = readFileSync(join(THEME_DIR, file), 'utf8')
+      const body = contrast(hex(css, 'text'), hex(css, 'bg'))
+      expect(contrast(hex(css, 'text-muted'), hex(css, 'bg')), file).toBeLessThan(body)
+      expect(contrast(hex(css, 'text-subtle'), hex(css, 'bg')), file).toBeLessThan(body)
+    }
+  })
+})
