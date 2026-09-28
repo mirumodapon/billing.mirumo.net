@@ -16,6 +16,8 @@ export interface BlobRow {
   id: string
   type: string
   bytes: ArrayBuffer
+  /** 存進來的時間（task#89）。清理沒人引用的照片時留寬限期；舊版存的沒有這個欄位，視為很久以前 */
+  savedAt?: string
 }
 
 export interface SettingsRow {
