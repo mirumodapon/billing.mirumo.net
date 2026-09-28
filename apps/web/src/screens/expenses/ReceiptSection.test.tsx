@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import type { AttachmentMeta } from '@billing/core'
 import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -85,6 +87,21 @@ describe('ReceiptSection', () => {
     expect(header()).toHaveTextContent(t('receipt.none'))
     expect(spy).not.toHaveBeenCalled()
     expect(await stores.blobs.get(id)).toBeDefined()
+  })
+
+  // task#130：移除鍵是實心的圓點，疊在照片上也看得見；不是透明底的圖示鍵
+  it('shows the remove button as a solid dot over the photo', async () => {
+    const stores = await makeStores()
+    const id = await stores.blobs.put(new Blob(['x']))
+    await stores.repo.saveTrip(makeTrip({ id: 't1' }))
+    await stores.repo.saveExpense(makeExpense({ id: 'e1', tripId: 't1', attachments: [{ id, mimeType: 'image/webp', byteSize: 1, width: 1, height: 1 }] }))
+    const { user } = await renderApp('/trip/t1/expense/e1/edit', stores)
+    await user.click(receiptHeader())
+    const remove = within(screen.getByTestId('section-receipt-panel')).getByRole('button', { name: t('receipt.remove') })
+    expect(remove).toHaveClass('app-thumb-remove')
+    expect(remove.querySelector('.app-thumb-remove__dot')).not.toBeNull()
+    const css = readFileSync(join(import.meta.dirname, '../screens.css'), 'utf8')
+    expect(css).toMatch(/\.app-thumb-remove__dot\s*{[^}]*background:\s*var\(--bi-text\)/)
   })
 
   it('says so when a photo cannot be read', async () => {
