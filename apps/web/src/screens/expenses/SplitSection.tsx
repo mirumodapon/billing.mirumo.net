@@ -1,5 +1,5 @@
 import { decimalsOf, toMinor } from '@billing/core'
-import { Accordion, AvatarToggleGroup, SegmentedControl } from '@billing/ui'
+import { Accordion, AvatarToggleGroup, Button, SegmentedControl } from '@billing/ui'
 import { useState } from 'react'
 import { exactAllocation, previewShares, type SplitDraft } from '../../domain/expenseDraft'
 import { useI18n } from '../../i18n/useI18n'
@@ -59,19 +59,42 @@ export function SplitSection({ trip, draft, change, open, onToggle }: FormSectio
           ]}
           onChange={switchTo}
         />
-        {split.mode === 'even' ? (
-          <AvatarToggleGroup
-            ariaLabel={t('split.participants')}
-            items={trip.members.map((m) => ({ value: m.id, name: m.name, colorKey: m.colorKey }))}
-            selected={split.participants}
-            minSelected={1}
-            onChange={(participants) => change((d) => ({ ...d, split: { mode: 'even', participants } }))}
-          />
-        ) : null}
+        {split.mode === 'even' ? <EvenSplit {...{ trip, draft, change }} /> : null}
         {split.mode === 'exact' ? <ExactSplit {...{ trip, draft, change, format }} /> : null}
         {split.mode === 'items' ? <ItemsSplit {...{ trip, draft, change, format }} /> : null}
       </div>
     </Accordion>
+  )
+}
+
+/**
+ * 均分的參與者，附「僅付款人／全選／全不選」（task#105）。可以一個人都不選：
+ * 那時表單會把這筆存成草稿（task#96），不必硬留一個人。
+ */
+function EvenSplit({ trip, draft, change }: FormSectionProps) {
+  const { t } = useI18n()
+  if (draft.split.mode !== 'even') return null
+  const set = (participants: string[]) => change((d) => ({ ...d, split: { mode: 'even', participants } }))
+  return (
+    <>
+      <div role="group" aria-label={t('split.quick')} className="flex flex-wrap gap-2">
+        <Button variant="secondary" onClick={() => set([draft.paidBy])}>
+          {t('split.onlyPayer')}
+        </Button>
+        <Button variant="secondary" onClick={() => set(trip.members.map((m) => m.id))}>
+          {t('split.everyone')}
+        </Button>
+        <Button variant="secondary" onClick={() => set([])}>
+          {t('split.none')}
+        </Button>
+      </div>
+      <AvatarToggleGroup
+        ariaLabel={t('split.participants')}
+        items={trip.members.map((m) => ({ value: m.id, name: m.name, colorKey: m.colorKey }))}
+        selected={draft.split.participants}
+        onChange={set}
+      />
+    </>
   )
 }
 
