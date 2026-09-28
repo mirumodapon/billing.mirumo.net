@@ -26,9 +26,11 @@ export interface MoneyInputProps {
   /** 換幣別。匯率要不要跟著重新帶入由呼叫端決定（手動改過的不覆寫） */
   onCurrency: (currency: string) => void
   onManualRate: (rate: number | undefined) => void
+  /** 沒有匯率也可以（用預存卡付款，task#119）：不顯示「請輸入匯率」，改說明為什麼不需要 */
+  rateOptional?: boolean
 }
 
-export function MoneyInput({ baseCurrency, currency, amount, exchangeRate, autoFocus, onAmount, onCurrency, onManualRate }: MoneyInputProps) {
+export function MoneyInput({ baseCurrency, currency, amount, exchangeRate, autoFocus, onAmount, onCurrency, onManualRate, rateOptional = false }: MoneyInputProps) {
   const { t, locale, money } = useI18n()
   const id = useId()
   const [keypad, setKeypad] = useState<'amount' | 'rate' | null>(null)
@@ -86,7 +88,9 @@ export function MoneyInput({ baseCurrency, currency, amount, exchangeRate, autoF
           <span aria-live="polite">
             {/* 「沒有匯率」只看匯率本身：還沒輸入金額時也算不出換算，但那不是沒有匯率 */}
             {rateText === undefined
-              ? t('expense.noRate', { currency: currency })
+              ? rateOptional
+                ? t('expense.rateNotNeeded')
+                : t('expense.noRate', { currency: currency })
               : [converted && t('expense.converted', { amount: converted }), t('expense.rateInline', { rate: rateText })].filter(Boolean).join(' ・')}
           </span>
           <Button

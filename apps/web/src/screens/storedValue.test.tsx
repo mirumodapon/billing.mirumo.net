@@ -117,3 +117,20 @@ describe('paying with the card (task#115)', () => {
     expect(screen.getByTestId('from-balance-note')).toHaveTextContent(t('stored.notCounted', { name: 'Suica' }))
   })
 })
+
+describe('paying with the card without a rate (task#119)', () => {
+  it('needs no exchange rate, so the payment saves as a finished record', async () => {
+    const { user, stores } = await setup('/trip/t1/expense/new', { paymentMethods: [suica], rates: { default: {}, byMethod: {} } })
+    await user.click(screen.getByRole('button', { name: new RegExp(`^${t('expense.details')}`) }))
+    await user.click(within(screen.getByRole('radiogroup', { name: t('expense.paymentMethod') })).getByRole('radio', { name: 'Suica' }))
+    await pickCategory(user)
+    await user.click(screen.getByLabelText(t('expense.amount')))
+    for (const k of ['2', '0', '0']) await user.click(screen.getByRole('button', { name: k }))
+    await user.click(screen.getByLabelText(t('expense.description')))
+    expect(screen.getByText(t('expense.rateNotNeeded'))).toBeInTheDocument()
+    await user.type(screen.getByLabelText(t('expense.description')), '地鐵')
+    await user.click(screen.getByRole('button', { name: t('form.save') }))
+    await waitFor(async () => expect((await stores.repo.listExpenses('t1'))[0]).toMatchObject({ fromBalance: true, exchangeRate: 0 }))
+    expect((await stores.repo.listExpenses('t1'))[0]).not.toHaveProperty('draft')
+  })
+})

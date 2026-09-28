@@ -253,3 +253,12 @@ describe('validateSnapshot: drafts without a category', () => {
     expect(problemsOf(snapshot({ expenses: [makeExpense({ categoryId: '' })] }))).toContain('expense e1: category  does not exist')
   })
 })
+
+describe('validateSnapshot: card payments without a rate (task#119)', () => {
+  it('accepts a card payment with no rate, but not an ordinary expense', () => {
+    const trip = makeTrip({ paymentMethods: [{ id: 'suica', name: 'Suica', storedValue: { currency: 'JPY' } }] })
+    const ride = makeExpense({ id: 'ride', paymentMethodId: 'suica', fromBalance: true, exchangeRate: 0 })
+    expect(validateSnapshot(snapshot({ trips: [trip], expenses: [ride] }))).toMatchObject({ ok: true })
+    expect(problemsOf(snapshot({ expenses: [makeExpense({ exchangeRate: 0 })] }))).toContain('expense e1: exchange rate must be a positive number')
+  })
+})

@@ -133,6 +133,7 @@ export const zhTW = {
   'expense.converted': '≈ {amount}',
   'expense.rate': '匯率',
   'expense.noRate': '沒有 {currency} 的匯率，請輸入',
+  'expense.rateNotNeeded': '用預存卡付款只扣餘額，不需要匯率',
   'expense.rateInline': '匯率 {rate}',
   'expense.editRate': '修改匯率',
   'expense.pickCurrency': '幣別 {currency}',

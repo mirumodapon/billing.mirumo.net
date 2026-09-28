@@ -396,3 +396,21 @@ describe('stored-value cards (task#115)', () => {
     expect(isExpenseDraft({ ...d, topUpFor: 3 })).toBe(false)
   })
 })
+
+describe('card payments without a rate (task#119)', () => {
+  const stored = new Set(['suica'])
+
+  // 用預存卡付的不算進任何合計，換成本位幣沒有意義：沒有匯率也算填完
+  it('does not ask for a rate when paying with a stored-value card', () => {
+    const d = filled({ paymentMethodId: 'suica', exchangeRate: undefined })
+    expect(problemsOf(d, stored)).not.toContain('rateRequired')
+    expect(willSaveAsDraft(d, stored)).toBe(false)
+    expect(toExpense(d, 't1', stored)).toMatchObject({ fromBalance: true, exchangeRate: 0 })
+    expect(toExpense(d, 't1', stored)).not.toHaveProperty('draft')
+  })
+
+  it('still asks for a rate for a top-up and for any other payment', () => {
+    expect(problemsOf(filled({ paymentMethodId: 'pay.cash', exchangeRate: undefined }), stored)).toContain('rateRequired')
+    expect(problemsOf(filled({ paymentMethodId: 'pay.credit', topUpFor: 'suica', exchangeRate: undefined }), stored)).toContain('rateRequired')
+  })
+})

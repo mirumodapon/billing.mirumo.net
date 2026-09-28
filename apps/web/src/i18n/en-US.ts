@@ -133,6 +133,7 @@ export const enUS: Record<TranslationKey, string> = {
   'expense.converted': '≈ {amount}',
   'expense.rate': 'Rate',
   'expense.noRate': 'No rate for {currency} yet. Enter one.',
+  'expense.rateNotNeeded': 'Paid from a stored-value balance, so no rate is needed',
   'expense.rateInline': 'Rate {rate}',
   'expense.editRate': 'Edit rate',
   'expense.pickCurrency': 'Currency {currency}',

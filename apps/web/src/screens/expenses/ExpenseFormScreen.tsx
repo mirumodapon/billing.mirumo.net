@@ -92,7 +92,7 @@ function ExpenseForm({ trip, existing }: { trip: Trip; existing?: Expense }) {
   return (
     <FormShell
       title={card ? t('topUp.title', { name: card.name }) : existing ? t('expense.edit') : t('expense.new')}
-      incomplete={problemsOf(draft).length > 0}
+      incomplete={problemsOf(draft, storedMethodIds(trip)).length > 0}
       isDraft={draft.isDraft === true}
       onDraftChange={(isDraft) => change((d) => ({ ...d, isDraft }))}
       onSave={save}
@@ -116,6 +116,8 @@ function ExpenseForm({ trip, existing }: { trip: Trip; existing?: Expense }) {
             onAmount={(amount) => change((d) => ({ ...d, amount }))}
             onCurrency={(currency) => change((d) => withAutoRate({ ...d, currency }, trip))}
             onManualRate={(rate) => change((d) => withManualRate(d, rate))}
+            // 用預存卡付的不算進合計，不需要匯率（task#119）
+            rateOptional={!draft.topUpFor && storedMethodIds(trip).has(draft.paymentMethodId)}
           />
           <TextField label={t('expense.description')} value={draft.description} onChange={(description) => change((d) => ({ ...d, description }))} />
           <DetailsSection trip={trip} draft={draft} change={change} open={sections.open === 'details'} onToggle={() => sections.toggle('details')} />

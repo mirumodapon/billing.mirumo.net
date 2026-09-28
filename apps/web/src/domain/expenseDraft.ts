@@ -172,12 +172,22 @@ export function itemsTotals(d: ExpenseDraft): { itemsTotal: number; overflow: nu
   return { itemsTotal: fromMinor(itemsMinor, decimals), overflow: fromMinor(minor(d.amount, d.currency) - itemsMinor, decimals) }
 }
 
-export function problemsOf(d: ExpenseDraft): DraftProblem[] {
+/** 用預存卡付款（不是儲值）：只扣餘額、不算進任何合計（task#115） */
+function isCardPayment(d: ExpenseDraft, storedMethods: ReadonlySet<string>): boolean {
+  return !d.topUpFor && storedMethods.has(d.paymentMethodId)
+}
+
+/**
+ * 還沒填完的欄位。storedMethods 是這趟旅程的預存卡：用卡付的不算進合計，
+ * 換成本位幣沒有意義，所以不要求匯率（task#119）
+ */
+export function problemsOf(d: ExpenseDraft, storedMethods: ReadonlySet<string> = new Set()): DraftProblem[] {
   const problems: DraftProblem[] = []
   if (minor(d.amount, d.currency) <= 0) problems.push('amountRequired')
   if (!d.description.trim()) problems.push('descriptionRequired')
   if (!d.categoryId) problems.push('categoryRequired')
-  if (d.exchangeRate === undefined || !(d.exchangeRate > 0)) problems.push('rateRequired')
+  const hasRate = d.exchangeRate !== undefined && d.exchangeRate > 0
+  if (!hasRate && !isCardPayment(d, storedMethods)) problems.push('rateRequired')
   const split = d.split
   if (split.mode === 'even' && split.participants.length === 0) problems.push('noParticipants')
   if (split.mode === 'exact' && exactAllocation(d).remaining !== 0) problems.push('exactUnbalanced')
@@ -206,8 +216,8 @@ function toSplit(split: SplitDraft, currency: string): Split {
 }
 
 /** 使用者標了草稿，或還有欄位沒填完：存下去會是一筆草稿（task#96） */
-export function willSaveAsDraft(d: ExpenseDraft): boolean {
-  return d.isDraft === true || problemsOf(d).length > 0
+export function willSaveAsDraft(d: ExpenseDraft, storedMethods: ReadonlySet<string> = new Set()): boolean {
+  return d.isDraft === true || problemsOf(d, storedMethods).length > 0
 }
 
 /**
@@ -218,8 +228,8 @@ export function willSaveAsDraft(d: ExpenseDraft): boolean {
  */
 export function toExpense(d: ExpenseDraft, tripId: string, storedMethods: ReadonlySet<string> = new Set()): Expense {
   return {
-    ...(willSaveAsDraft(d) ? { draft: true } : {}),
-    ...(d.topUpFor ? { topUpFor: d.topUpFor } : storedMethods.has(d.paymentMethodId) ? { fromBalance: true } : {}),
+    ...(willSaveAsDraft(d, storedMethods) ? { draft: true } : {}),
+    ...(d.topUpFor ? { topUpFor: d.topUpFor } : isCardPayment(d, storedMethods) ? { fromBalance: true } : {}),
     id: d.id ?? crypto.randomUUID(),
     tripId,
     date: d.date,
