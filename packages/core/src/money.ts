@@ -3,7 +3,8 @@
  * 注意 TWD 刻意設為 0——ISO 4217 定義為 2，但台灣日常不用角分，
  * 顯示 NT$ 798 比 NT$ 798.00 自然，餘數分配單位也變成使用者看得懂的 1 元。
  */
-export const CURRENCY_DECIMALS: Record<string, number> = {
+// 唯讀：執行期改掉它等於改變已存資料的最小單位語意（task#64）
+export const CURRENCY_DECIMALS: Readonly<Record<string, number>> = {
   TWD: 0, JPY: 0, KRW: 0, VND: 0, IDR: 0,
   USD: 2, EUR: 2, GBP: 2, CNY: 2, HKD: 2,
   SGD: 2, THB: 2, MYR: 2, PHP: 2, AUD: 2, CAD: 2,

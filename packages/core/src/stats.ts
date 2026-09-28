@@ -38,8 +38,10 @@ export interface CategoryStat {
 }
 
 export interface ByCategoryOptions extends StatsOptions {
-  /** 佔比低於此值的類別併入 cat.other，避免圓餅圖碎裂。預設不合併 */
+  /** 佔比低於此值的類別併入「其他」，避免圓餅圖碎裂。預設不合併 */
   mergeThreshold?: number
+  /** 「其他」的類別 id。類別是 app 的設定，core 不寫死；預設 'cat.other'（task#64） */
+  otherCategoryId?: string
 }
 
 export function byCategory(expenses: Expense[], opts: ByCategoryOptions): CategoryStat[] {
@@ -57,6 +59,7 @@ export function byCategory(expenses: Expense[], opts: ByCategoryOptions): Catego
   }
 
   const threshold = opts.mergeThreshold ?? 0
+  const other = opts.otherCategoryId ?? 'cat.other'
   const kept: CategoryStat[] = []
   let mergedMinor = 0
 
@@ -66,7 +69,7 @@ export function byCategory(expenses: Expense[], opts: ByCategoryOptions): Catego
 
   for (const [categoryId, totalMinor] of Object.entries(totals)) {
     const ratio = totalMinor / grand
-    if (threshold > 0 && Math.abs(ratio) < threshold && categoryId !== 'cat.other') {
+    if (threshold > 0 && Math.abs(ratio) < threshold && categoryId !== other) {
       mergedMinor += totalMinor
       merged = true
     } else {
@@ -78,12 +81,12 @@ export function byCategory(expenses: Expense[], opts: ByCategoryOptions): Catego
   // 的話，被併走的若是退款（或正負剛好抵銷），那筆錢就直接從結果裡消失，
   // 各列加總不再等於總額，圓餅圖會畫出超過 100% 的扇形。
   if (merged) {
-    const existing = kept.find((k) => k.categoryId === 'cat.other')
+    const existing = kept.find((k) => k.categoryId === other)
     if (existing) {
       existing.totalMinor += mergedMinor
       existing.ratio = existing.totalMinor / grand
     } else {
-      kept.push({ categoryId: 'cat.other', totalMinor: mergedMinor, ratio: mergedMinor / grand })
+      kept.push({ categoryId: other, totalMinor: mergedMinor, ratio: mergedMinor / grand })
     }
   }
 
