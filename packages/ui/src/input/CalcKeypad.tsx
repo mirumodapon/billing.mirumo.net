@@ -1,5 +1,5 @@
 import { IconBackspace } from '@tabler/icons-react'
-import type { PointerEvent, ReactNode } from 'react'
+import type { ReactNode, SyntheticEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { Icon } from '../icons/Icon'
 import { SafeArea } from '../layout/SafeArea'
@@ -39,8 +39,12 @@ const ROWS: (CalcKey | 'done' | 'equals')[][] = [
 /**
  * 按鍵不能搶走焦點：金額欄位失焦時 app 會把鍵盤收掉，所以一按就失焦
  * 等於一按就消失。系統鍵盤也是這樣，按鍵不會變成焦點。
+ *
+ * pointerdown 與 mousedown 都要擋：Chromium 擋了 pointerdown 就不再補發 mousedown，
+ * 但 WebKit（iOS Safari）對觸控照樣補發，而 mousedown 的預設動作就是移動焦點。
+ * 只擋 pointerdown 的話，iPhone 上快速連點時鍵盤會收起來。
  */
-function keepFocus(event: PointerEvent) {
+function keepFocus(event: SyntheticEvent) {
   event.preventDefault()
 }
 
@@ -71,7 +75,7 @@ export function CalcKeypad({
   return createPortal(
     <SafeArea edges={['bottom', 'left', 'right']} data-testid="keypad-safe">
       {/* 整個鍵盤的按下都擋焦點，不只按鍵本身：連點時常落在縫或顯示區上（task#135） */}
-      <div className="bi-keypad" onPointerDown={keepFocus}>
+      <div className="bi-keypad" onPointerDown={keepFocus} onMouseDown={keepFocus}>
         {header ? <div className="bi-keypad__header">{header}</div> : null}
         <div className="bi-keypad__display">
           <div className="bi-keypad__expression" data-testid="calc-expression">
