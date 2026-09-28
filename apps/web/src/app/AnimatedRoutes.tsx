@@ -12,6 +12,7 @@ import { TripListScreen } from '../screens/TripListScreen'
 import { TripShell } from '../screens/TripShell'
 import { TransferFormScreen } from '../screens/transfers/TransferFormScreen'
 import { TransferViewScreen } from '../screens/transfers/TransferViewScreen'
+import { RouteErrorBoundary } from './RouteErrorBoundary'
 
 export type PageDirection = 'forward' | 'back' | 'up' | 'down'
 
@@ -47,25 +48,28 @@ export function AnimatedRoutes() {
 
   return (
     <PageTransition routeKey={key} direction={page.direction}>
-      <Routes location={location}>
-        <Route path="/" element={<TripListScreen />} />
-        <Route path="/settings" element={<SettingsScreen />} />
-        {/* task#101：/new 直接是表單；既有的一筆先進檢視頁，/edit 才是表單 */}
-        <Route path="/trip/:tripId/expense/new" element={<ExpenseFormScreen />} />
-        <Route path="/trip/:tripId/expense/:expenseId" element={<ExpenseViewScreen />} />
-        <Route path="/trip/:tripId/expense/:expenseId/edit" element={<ExpenseFormScreen />} />
-        <Route path="/trip/:tripId/transfer/new" element={<TransferFormScreen />} />
-        <Route path="/trip/:tripId/transfer/:transferId" element={<TransferViewScreen />} />
-        <Route path="/trip/:tripId/transfer/:transferId/edit" element={<TransferFormScreen />} />
-        <Route path="/trip/:tripId" element={<TripShell />}>
-          <Route path="expenses" element={<ExpensesTab />} />
-          <Route path="stats" element={<StatsTab />} />
-          <Route path="settle" element={<SettleTab />} />
-          <Route path="setup" element={<SetupTab />} />
-          <Route index element={<Navigate to="expenses" replace />} />
-        </Route>
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      {/* 規格 7.7：每一頁包一層錯誤邊界；以頁為 key（與換頁動畫同一個單位），換頁就重新開始，切 tab 不重掛 */}
+      <RouteErrorBoundary key={key}>
+        <Routes location={location}>
+          <Route path="/" element={<TripListScreen />} />
+          <Route path="/settings" element={<SettingsScreen />} />
+          {/* task#101：/new 直接是表單；既有的一筆先進檢視頁，/edit 才是表單 */}
+          <Route path="/trip/:tripId/expense/new" element={<ExpenseFormScreen />} />
+          <Route path="/trip/:tripId/expense/:expenseId" element={<ExpenseViewScreen />} />
+          <Route path="/trip/:tripId/expense/:expenseId/edit" element={<ExpenseFormScreen />} />
+          <Route path="/trip/:tripId/transfer/new" element={<TransferFormScreen />} />
+          <Route path="/trip/:tripId/transfer/:transferId" element={<TransferViewScreen />} />
+          <Route path="/trip/:tripId/transfer/:transferId/edit" element={<TransferFormScreen />} />
+          <Route path="/trip/:tripId" element={<TripShell />}>
+            <Route path="expenses" element={<ExpensesTab />} />
+            <Route path="stats" element={<StatsTab />} />
+            <Route path="settle" element={<SettleTab />} />
+            <Route path="setup" element={<SetupTab />} />
+            <Route index element={<Navigate to="expenses" replace />} />
+          </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </RouteErrorBoundary>
     </PageTransition>
   )
 }

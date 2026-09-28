@@ -1,5 +1,6 @@
 import { IdbBlobStore } from '../data/blobStore'
 import { DraftStore } from '../data/drafts'
+import { errorLog } from '../data/errorLog'
 import { housekeep } from '../data/housekeeping'
 import { IdbTripRepository } from '../data/tripRepository'
 import { createSettingsStore } from '../stores/settingsStore'
@@ -13,6 +14,6 @@ export async function createAppStores(): Promise<Stores> {
   const ui = createUiStore()
   // 刪除超過寬限期的資料與沒人引用的照片（task#89、#118）。在背景做，不擋住第一個畫面；
   // 失敗只是這次沒清到，下次啟動再來，所以不打擾使用者
-  void housekeep().catch((error: unknown) => console.error('housekeeping failed', error))
+  void housekeep().catch((error: unknown) => errorLog.record(error))
   return { repo, drafts, blobs, ui, settings: createSettingsStore({ repo, ui }), trips: createTripStore({ repo, ui }) }
 }

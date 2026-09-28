@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router'
 import { useI18n } from '../../i18n/useI18n'
 import { BackupSection } from './BackupSection'
 import { CategoriesSection } from './CategoriesSection'
+import { ErrorLogSection } from './ErrorLogSection'
 import { LanguageSection } from './LanguageSection'
 import { PaymentMethodsSection } from './PaymentMethodsSection'
 import { StorageSection } from './StorageSection'
@@ -24,6 +25,7 @@ export function SettingsScreen() {
         <PaymentMethodsSection usage={usage} />
         <BackupSection />
         <StorageSection />
+        <ErrorLogSection />
       </div>
     </div>
   )
