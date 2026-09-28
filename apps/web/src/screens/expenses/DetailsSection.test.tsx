@@ -50,7 +50,8 @@ describe('DetailsSection', () => {
     await user.type(screen.getByLabelText(t('expense.description')), '地鐵')
     await user.click(screen.getByRole('button', { name: t('form.save') }))
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
-    expect((await stores.repo.listExpenses('t1'))[0]).toMatchObject({ paidBy: 'b', date: '2026-03-16', categoryId: 'cat.transport' })
+    // task#121：分攤還是預設的「只有付款人」，換付款人就跟著換成小美
+    expect((await stores.repo.listExpenses('t1'))[0]).toMatchObject({ paidBy: 'b', date: '2026-03-16', categoryId: 'cat.transport', split: { mode: 'even', participants: ['b'] } })
   })
 
   it('opens one section at a time', async () => {

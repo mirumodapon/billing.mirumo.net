@@ -88,8 +88,8 @@ describe('ExpenseFormScreen: acceptance and memory', () => {
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
     expect(await screen.findByRole('button', { name: /^豚骨拉麵/ })).toBeInTheDocument()
     const created = (await stores.repo.listExpenses('t1')).find((e) => e.description === '豚骨拉麵')!
-    // 沒有上一筆的付款方式 → 第一個（現金）→ 匯率先取「日圓×現金」（規格 4.4 的帶入順序）
-    expect(created).toMatchObject({ amount: 3800, currency: 'JPY', exchangeRate: 0.215, paidBy: 'a', split: { mode: 'even', participants: ['a', 'b', 'c'] } })
+    // 沒有上一筆的付款方式 → 第一個（現金）→ 匯率先取「日圓×現金」（規格 4.4 的帶入順序）；分攤預設只有付款人（task#121）
+    expect(created).toMatchObject({ amount: 3800, currency: 'JPY', exchangeRate: 0.215, paidBy: 'a', split: { mode: 'even', participants: ['a'] } })
     for (const header of [t('expense.details'), t('split.title'), t('receipt.title')]) {
       expect(screen.queryByRole('button', { name: new RegExp(`^${header}`) })).not.toBeInTheDocument()
     }

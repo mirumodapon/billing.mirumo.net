@@ -106,7 +106,8 @@ export function newDraft({ trip, expenses, settings, today }: DraftContext): Exp
     categoryId: '',
     paymentMethodId,
     paidBy: trip.selfMemberId,
-    split: { mode: 'even', participants: memberOrder(trip) },
+    // task#121：預設只有付款人自己分攤；要分給別人再加（分攤區塊有「全選」）
+    split: { mode: 'even', participants: [trip.selfMemberId] },
     attachments: [],
     isDraft: false,
   }
@@ -138,6 +139,15 @@ export function draftFromExpense(e: Expense): ExpenseDraft {
     isDraft: e.draft === true,
     ...(e.topUpFor ? { topUpFor: e.topUpFor } : {}),
   }
+}
+
+/**
+ * 換付款人（task#121）。分攤還是預設的「只有原付款人」時跟著換成新的付款人；
+ * 使用者動過分攤（加了人、換了模式）就不碰，免得蓋掉他的選擇。
+ */
+export function withPayer(d: ExpenseDraft, paidBy: string): ExpenseDraft {
+  const untouched = d.split.mode === 'even' && d.split.participants.length === 1 && d.split.participants[0] === d.paidBy
+  return untouched ? { ...d, paidBy, split: { mode: 'even', participants: [paidBy] } } : { ...d, paidBy }
 }
 
 export function withAutoRate(d: ExpenseDraft, trip: Trip): ExpenseDraft {

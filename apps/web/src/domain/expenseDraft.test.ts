@@ -13,6 +13,7 @@ import {
   problemsOf,
   toExpense,
   withAutoRate,
+  withPayer,
   willSaveAsDraft,
   withManualRate,
   type DraftContext,
@@ -80,10 +81,21 @@ describe('newDraft: defaults (spec 4.4)', () => {
     expect(newDraft(ctx({ settings }))).toMatchObject({ paymentMethodId: 'pay.cash' })
   })
 
-  it('is paid by me and split evenly among everyone, in member order', () => {
+  // task#121：預設只有付款人自己分攤，要分給別人再加
+  it('is paid by me and shared by me alone', () => {
     const d = newDraft(ctx())
     expect(d.paidBy).toBe('a')
-    expect(d.split).toEqual({ mode: 'even', participants: ['a', 'b', 'c'] })
+    expect(d.split).toEqual({ mode: 'even', participants: ['a'] })
+  })
+
+  // 分攤還是預設的「只有付款人」時，換付款人就跟著換；動過分攤就不碰
+  it('moves the default split along with the payer, but leaves an edited split alone', () => {
+    const d = newDraft(ctx())
+    expect(withPayer(d, 'b')).toMatchObject({ paidBy: 'b', split: { mode: 'even', participants: ['b'] } })
+    const edited = { ...d, split: { mode: 'even' as const, participants: ['a', 'c'] } }
+    expect(withPayer(edited, 'b')).toMatchObject({ paidBy: 'b', split: { mode: 'even', participants: ['a', 'c'] } })
+    const exact = { ...d, split: { mode: 'exact' as const, amounts: { a: 100 } } }
+    expect(withPayer(exact, 'b').split).toEqual({ mode: 'exact', amounts: { a: 100 } })
   })
 
   it('starts empty, with no photos and an untouched rate', () => {

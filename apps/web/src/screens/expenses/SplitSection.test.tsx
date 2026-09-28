@@ -33,8 +33,11 @@ const plain = (s: string) => s.replace(/\s+/g, ' ')
 describe('SplitSection: even', () => {
   // 1000 ÷ 3：有一個人多付 1 元，摘要顯示多的那個
   it('summarises the share each person pays, rounding up when it does not divide', async () => {
-    const { header, amount } = await openNew()
+    const { user, header, panel, amount } = await openNew()
     await amount(['1', '0', '0', '0'])
+    // 預設只有付款人（task#121）：先全選三個人
+    await user.click(header())
+    await user.click(within(panel().getByRole('group', { name: t('split.quick') })).getByRole('button', { name: t('split.everyone') }))
     expect(header()).toHaveTextContent(plain(t('split.summaryEven', { count: 3, amount: formatMoney(334, 'TWD') })))
   })
 
@@ -44,7 +47,8 @@ describe('SplitSection: even', () => {
     await amount(['9', '0', '0'])
     await user.click(header())
     const group = within(panel().getByRole('group', { name: t('split.participants') }))
-    for (const name of ['小美', '大熊', '阿明']) await user.click(group.getByRole('button', { name }))
+    // 預設只有付款人阿明（task#121）：取消他就沒人分攤了
+    await user.click(group.getByRole('button', { name: '阿明' }))
     expect(group.getByRole('button', { name: '阿明' })).toHaveAttribute('aria-pressed', 'false')
     expect(header()).toHaveTextContent(t('split.summaryEvenNoAmount', { count: 0 }))
     expect(screen.getByRole('button', { name: t('form.saveDraft') })).toBeInTheDocument()
@@ -109,9 +113,10 @@ describe('SplitSection: switching modes', () => {
     await user.click(within(panel().getByRole('group', { name: t('split.participants') })).getByRole('button', { name: '大熊' }))
     await user.click(panel().getByRole('radio', { name: t('split.exact') }))
     await user.click(panel().getByRole('radio', { name: t('expense.splitEven') }))
+    // 預設只有付款人（task#121），大熊是剛加進來的：切到指定再切回來，他還在
     expect(within(panel().getByRole('group', { name: t('split.participants') })).getByRole('button', { name: '大熊' })).toHaveAttribute(
       'aria-pressed',
-      'false',
+      'true',
     )
   })
 })
