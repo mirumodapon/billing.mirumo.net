@@ -194,6 +194,8 @@ export const zhTW = {
   'tripMethods.none': '無',
   'tripMethods.newName': '新付款方式的名稱',
   'tripMethods.add': '新增',
+  'tripCategories.title': '旅程專用類別',
+  'tripCategories.hint': '只用於這趟旅程，例如滑雪、溫泉。其他類別在「設定」管理。',
   'setup.delete': '刪除旅程',
   'setup.deleteHint': '刪除後可以在底部的提示裡復原',
   'settle.balances': '成員收支',

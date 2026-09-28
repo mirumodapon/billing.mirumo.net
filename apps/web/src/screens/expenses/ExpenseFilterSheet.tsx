@@ -5,6 +5,7 @@ import { displayName } from '../../domain/names'
 import { paymentMethodsFor } from '../../domain/paymentMethods'
 import { useI18n } from '../../i18n/useI18n'
 import { useSettings } from '../../stores/StoresProvider'
+import { categoriesFor } from '../../domain/categories'
 
 export interface ExpenseFilterSheetProps {
   open: boolean
@@ -27,7 +28,8 @@ interface Option {
  */
 export function ExpenseFilterSheet({ open, onClose, trip, expenses, filter, onChange }: ExpenseFilterSheetProps) {
   const { t } = useI18n()
-  const categories = useSettings((s) => s.settings.categories)
+  // 全域類別加上這趟旅程專用的（task#114）
+  const categories = categoriesFor(useSettings((s) => s.settings.categories), trip)
   const globalMethods = useSettings((s) => s.settings.paymentMethods)
   const usedCategories = usedIds(expenses, (e) => e.categoryId, filter.categoryIds)
   const usedMethods = usedIds(expenses, (e) => e.paymentMethodId, filter.paymentMethodIds)

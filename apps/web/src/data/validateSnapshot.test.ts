@@ -193,3 +193,25 @@ describe('validateSnapshot: drafts (task#96)', () => {
     expect(problemsOf(snapshot({ transfers: [makeTransfer({ id: 'tr', from: 'a', to: 'a' })] }))).toContain('transfer tr: sends money to the same person')
   })
 })
+
+describe('validateSnapshot: trip categories (task#114)', () => {
+  const ski = { id: 'ski', name: '滑雪場', icon: 'IconBeach', colorKey: 'accent3' as const }
+
+  it('accepts a trip with its own categories, and an expense that uses one', () => {
+    const trip = makeTrip({ categories: [ski] })
+    expect(validateSnapshot(snapshot({ trips: [trip], expenses: [makeExpense({ categoryId: 'ski' })] }))).toMatchObject({ ok: true })
+  })
+
+  it('rejects malformed or duplicated trip categories', () => {
+    const malformed = makeTrip({ categories: [{ ...ski, name: 3 as unknown as string }] })
+    expect(problemsOf(snapshot({ trips: [malformed] }))).toContain('trip t1: malformed categories')
+    const twice = makeTrip({ categories: [ski, { ...ski, name: '另一個' }] })
+    expect(problemsOf(snapshot({ trips: [twice] }))).toContain('trip t1: category ski appears more than once')
+  })
+
+  // 別趟旅程的專用類別不算：類別只屬於它自己的旅程
+  it('rejects an expense using a category that belongs to another trip', () => {
+    const other = makeTrip({ id: 't2', categories: [ski] })
+    expect(problemsOf(snapshot({ trips: [makeTrip(), other], expenses: [makeExpense({ categoryId: 'ski' })] }))).toContain('expense e1: category ski does not exist')
+  })
+})

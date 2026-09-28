@@ -6,6 +6,7 @@ import { formatCompact } from '../../i18n/format'
 import { useI18n } from '../../i18n/useI18n'
 import { useSettings, useTrips } from '../../stores/StoresProvider'
 import { useCollapsedStats, useStatsViewpoint } from './useStatsViewpoint'
+import { categoriesFor } from '../../domain/categories'
 
 /** 視角選單裡「全團」的值。成員 id 是 UUID，不會撞到 */
 const GROUP = 'group'
@@ -21,7 +22,8 @@ export function StatsTab() {
 
 function Stats({ trip, expenses }: { trip: Trip; expenses: Expense[] }) {
   const { t, money, date } = useI18n()
-  const categories = useSettings((s) => s.settings.categories)
+  // 全域類別加上這趟旅程專用的（task#114）
+  const categories = categoriesFor(useSettings((s) => s.settings.categories), trip)
   const [viewpoint, setViewpoint] = useStatsViewpoint(trip)
   const [isOpen, toggle] = useCollapsedStats()
   const memberId = viewpoint.scope === 'self' ? viewpoint.memberId : trip.selfMemberId

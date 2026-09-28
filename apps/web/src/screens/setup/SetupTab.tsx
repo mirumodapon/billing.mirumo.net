@@ -3,6 +3,7 @@ import { BudgetSection } from './BudgetSection'
 import { DeleteTripSection } from './DeleteTripSection'
 import { MembersSection } from './MembersSection'
 import { RatesSection } from './RatesSection'
+import { TripCategoriesSection } from './TripCategoriesSection'
 import { TripPaymentMethodsSection } from './TripPaymentMethodsSection'
 import { useOpenSection } from './useOpenSection'
 import { useTripEditor } from './useTripEditor'
@@ -19,6 +20,7 @@ export function SetupTab() {
       <MembersSection trip={trip} open={open === 'members'} onToggle={() => toggle('members')} save={save} />
       <BudgetSection trip={trip} open={open === 'budget'} onToggle={() => toggle('budget')} save={save} />
       <TripPaymentMethodsSection trip={trip} open={open === 'methods'} onToggle={() => toggle('methods')} save={save} />
+      <TripCategoriesSection trip={trip} open={open === 'categories'} onToggle={() => toggle('categories')} save={save} />
       <RatesSection trip={trip} open={open === 'rates'} onToggle={() => toggle('rates')} save={save} />
       <DeleteTripSection trip={trip} open={open === 'delete'} onToggle={() => toggle('delete')} />
     </div>

@@ -194,6 +194,8 @@ export const enUS: Record<TranslationKey, string> = {
   'tripMethods.none': 'None',
   'tripMethods.newName': 'New payment method',
   'tripMethods.add': 'Add',
+  'tripCategories.title': 'Categories for this trip',
+  'tripCategories.hint': 'Only for this trip, like skiing or hot springs. Other categories are in Settings.',
   'setup.delete': 'Delete trip',
   'setup.deleteHint': 'You can undo this from the message at the bottom.',
   'settle.balances': 'Balances',

@@ -75,6 +75,17 @@ export function validateSnapshot(input: unknown): SnapshotCheck {
       }
       for (const id of duplicates(methods.map((m) => m?.id))) problems.push(`${at}: payment method ${id} appears more than once`)
     }
+    // task#114：旅程專用的類別，規則同上；圖示名稱畫面會自己退回預設，這裡只要求是字串
+    if (trip.categories !== undefined) {
+      const categories = Array.isArray(trip.categories) ? trip.categories : []
+      if (
+        !Array.isArray(trip.categories) ||
+        categories.some((c) => !isText(c?.id) || typeof c?.name !== 'string' || typeof c?.icon !== 'string' || typeof c?.colorKey !== 'string')
+      ) {
+        problems.push(`${at}: malformed categories`)
+      }
+      for (const id of duplicates(categories.map((c) => c?.id))) problems.push(`${at}: category ${id} appears more than once`)
+    }
     membersByTrip.set(trip.id, ids)
   }
 
@@ -105,7 +116,11 @@ export function validateSnapshot(input: unknown): SnapshotCheck {
       continue
     }
     checkRecord(at, expense, membersOfExpense(expense))
-    if (!categoryIds.has(expense.categoryId)) problems.push(`${at}: category ${expense.categoryId} does not exist`)
+    // 旅程專用的類別也算，但只限這筆支出自己的旅程（task#114）
+    const tripCategories = trips.find((trip) => trip.id === expense.tripId)?.categories ?? []
+    if (!categoryIds.has(expense.categoryId) && !tripCategories.some((c) => c?.id === expense.categoryId)) {
+      problems.push(`${at}: category ${expense.categoryId} does not exist`)
+    }
     // 旅程專用的付款方式也算（task#92）
     const tripMethods = trips.find((trip) => trip.id === expense.tripId)?.paymentMethods ?? []
     if (!methodIds.has(expense.paymentMethodId) && !tripMethods.some((m) => m?.id === expense.paymentMethodId)) {

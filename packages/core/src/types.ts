@@ -28,6 +28,17 @@ export interface TripPaymentMethod {
   name: string
 }
 
+/**
+ * 只用於這趟旅程的類別（task#114），例如「滑雪場」。與全域自訂類別同樣有名稱、圖示與顏色；
+ * 圖示名稱由 app 解讀（core 不認識 ui 的圖示清單），計算只認 categoryId。
+ */
+export interface TripCategory {
+  id: string
+  name: string
+  icon: string
+  colorKey: AccentKey
+}
+
 export interface TripBudget {
   /** 本位幣十進位金額。未設定為 undefined，不用 0 當預設 */
   total?: number
@@ -50,6 +61,8 @@ export interface Trip {
   rates: ExchangeRateTable
   /** 這趟旅程專用的付款方式；選填，舊資料沒有這個欄位 */
   paymentMethods?: TripPaymentMethod[]
+  /** 這趟旅程專用的類別；選填，舊資料沒有這個欄位（task#114） */
+  categories?: TripCategory[]
   /** ISO 8601 UTC，如 `2026-03-15T08:30:00.000Z`。儲存層與匯出格式都依賴這個形狀 */
   createdAt: string
   updatedAt: string
