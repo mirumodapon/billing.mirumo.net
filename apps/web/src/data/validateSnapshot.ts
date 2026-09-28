@@ -121,7 +121,9 @@ export function validateSnapshot(input: unknown): SnapshotCheck {
     checkRecord(at, expense, membersOfExpense(expense))
     // 旅程專用的類別也算，但只限這筆支出自己的旅程（task#114）
     const tripCategories = trips.find((trip) => trip.id === expense.tripId)?.categories ?? []
-    if (!categoryIds.has(expense.categoryId) && !tripCategories.some((c) => c?.id === expense.categoryId)) {
+    // 類別不帶入之後，還沒選類別的草稿類別是空字串；完成的紀錄一定要有
+    const unchosenDraft = expense.draft === true && expense.categoryId === ''
+    if (!unchosenDraft && !categoryIds.has(expense.categoryId) && !tripCategories.some((c) => c?.id === expense.categoryId)) {
       problems.push(`${at}: category ${expense.categoryId} does not exist`)
     }
     // task#115：用預存卡付的旗標；儲值的對象必須是這趟旅程的預存卡

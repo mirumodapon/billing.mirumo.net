@@ -7,6 +7,7 @@ import { makeExpense, makeTrip } from '../data/testing/fixtures'
 import { formatMoney } from '../i18n/format'
 import { t } from '../i18n'
 import { currentRoute, makeStores, renderApp } from '../test/renderApp'
+import { pickCategory } from '../test/pickCategory'
 
 beforeEach(() => clearSession())
 
@@ -70,6 +71,7 @@ describe('topping up (task#115)', () => {
     expect(methods.queryByRole('radio', { name: 'Suica' })).not.toBeInTheDocument()
     await user.click(screen.getByLabelText(t('expense.amount')))
     for (const k of ['5', '0', '0', '0']) await user.click(screen.getByRole('button', { name: k }))
+    await pickCategory(user)
     await user.click(screen.getByRole('button', { name: t('form.save') }))
     await waitFor(async () => expect((await stores.repo.listExpenses('t1'))[0]).toMatchObject({ topUpFor: 'suica', currency: 'JPY', amount: 5000 }))
     expect((await stores.repo.listExpenses('t1'))[0]).not.toHaveProperty('fromBalance')
@@ -91,6 +93,7 @@ describe('paying with the card (task#115)', () => {
     for (const k of ['2', '0', '0']) await user.click(screen.getByRole('button', { name: k }))
     await user.click(screen.getByLabelText(t('expense.description')))
     await user.type(screen.getByLabelText(t('expense.description')), '地鐵')
+    await pickCategory(user)
     await user.click(screen.getByRole('button', { name: t('form.save') }))
     await waitFor(async () => expect((await stores.repo.listExpenses('t1')).find((e) => e.description === '地鐵')).toMatchObject({ fromBalance: true, currency: 'JPY' }))
   })

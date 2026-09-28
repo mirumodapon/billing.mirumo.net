@@ -32,7 +32,7 @@ function ctx(overrides: Partial<DraftContext> = {}): DraftContext {
 
 /** 一張填好、可以存的草稿 */
 function filled(overrides: Partial<ExpenseDraft> = {}): ExpenseDraft {
-  return { ...newDraft(ctx()), amount: 3000, currency: 'JPY', exchangeRate: 0.21, description: '拉麵', ...overrides }
+  return { ...newDraft(ctx()), amount: 3000, currency: 'JPY', exchangeRate: 0.21, description: '拉麵', categoryId: 'cat.food', ...overrides }
 }
 
 describe('newDraft: defaults (spec 4.4)', () => {
@@ -63,15 +63,21 @@ describe('newDraft: defaults (spec 4.4)', () => {
     expect(newDraft(ctx({ today: '2026-03-01' })).date).toBe('2026-03-14')
   })
 
-  it('reuses the last category and payment method', () => {
+  // 類別不帶入（使用者要求）：每一筆都要自己選，上一筆的類別不代表這一筆
+  it('leaves the category unchosen but reuses the last payment method', () => {
     const settings = { ...defaultSettings(), lastUsed: { categoryId: 'cat.transport', paymentMethodId: 'pay.credit' } }
-    expect(newDraft(ctx({ settings }))).toMatchObject({ categoryId: 'cat.transport', paymentMethodId: 'pay.credit' })
+    expect(newDraft(ctx({ settings }))).toMatchObject({ categoryId: '', paymentMethodId: 'pay.credit' })
+  })
+
+  it('counts a missing category as unfinished, so the form saves a draft', () => {
+    expect(problemsOf(filled({ categoryId: '' }))).toContain('categoryRequired')
+    expect(problemsOf(filled())).not.toContain('categoryRequired')
   })
 
   // 上一筆用的自訂類別後來被刪了：不能帶入一個不存在的 id
   it('falls back to the first option when the last one no longer exists', () => {
-    const settings = { ...defaultSettings(), lastUsed: { categoryId: 'gone', paymentMethodId: 'gone' } }
-    expect(newDraft(ctx({ settings }))).toMatchObject({ categoryId: 'cat.food', paymentMethodId: 'pay.cash' })
+    const settings = { ...defaultSettings(), lastUsed: { paymentMethodId: 'gone' } }
+    expect(newDraft(ctx({ settings }))).toMatchObject({ paymentMethodId: 'pay.cash' })
   })
 
   it('is paid by me and split evenly among everyone, in member order', () => {

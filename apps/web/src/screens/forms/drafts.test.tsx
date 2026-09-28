@@ -8,6 +8,7 @@ import { makeExpense, makeTransfer, makeTrip } from '../../data/testing/fixtures
 import { formatMoney } from '../../i18n/format'
 import { t } from '../../i18n'
 import { currentRoute, makeStores, renderApp } from '../../test/renderApp'
+import { pickCategory } from '../../test/pickCategory'
 
 beforeEach(() => clearSession())
 
@@ -48,6 +49,7 @@ describe('drafts in the expense form (task#96)', () => {
     for (const k of ['1', '2', '0']) await user.click(key(k))
     await user.click(screen.getByLabelText(t('expense.description')))
     await user.type(screen.getByLabelText(t('expense.description')), '咖啡')
+    await pickCategory(user)
     expect(draftToggle()).toHaveAttribute('aria-pressed', 'false')
     expect(key(t('form.save'))).toBeEnabled()
     await user.click(draftToggle())

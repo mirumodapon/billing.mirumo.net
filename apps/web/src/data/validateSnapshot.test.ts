@@ -245,3 +245,11 @@ describe('validateSnapshot: stored-value cards (task#115)', () => {
     expect(problemsOf(snapshot({ expenses: [odd] }))).toContain('expense e1: fromBalance must be true or false')
   })
 })
+
+describe('validateSnapshot: drafts without a category', () => {
+  // 類別不再帶入：沒選類別就存下去的是草稿，匯出後要能匯回來；完成的紀錄仍要有類別
+  it('accepts a draft with no category yet, but not a finished expense', () => {
+    expect(validateSnapshot(snapshot({ expenses: [makeExpense({ draft: true, categoryId: '' })] }))).toMatchObject({ ok: true })
+    expect(problemsOf(snapshot({ expenses: [makeExpense({ categoryId: '' })] }))).toContain('expense e1: category  does not exist')
+  })
+})

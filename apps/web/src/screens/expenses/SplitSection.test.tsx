@@ -6,6 +6,7 @@ import { makeTrip } from '../../data/testing/fixtures'
 import { formatMoney } from '../../i18n/format'
 import { t } from '../../i18n'
 import { makeStores, renderApp } from '../../test/renderApp'
+import { pickCategory } from '../../test/pickCategory'
 
 beforeEach(() => clearSession())
 
@@ -74,6 +75,7 @@ describe('SplitSection: exact', () => {
     const { user, header, panel, amount, describe, key } = await openNew()
     await amount(['3', '0', '0', '0'])
     await describe('晚餐')
+    await pickCategory(user)
     await user.click(header())
     await user.click(panel().getByRole('radio', { name: t('split.exact') }))
     await user.click(panel().getByRole('button', { name: /^阿明/ }))

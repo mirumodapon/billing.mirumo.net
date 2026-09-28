@@ -11,7 +11,6 @@ import {
   type Trip,
 } from '@billing/core'
 import type { AppSettings } from '../data/types'
-import { categoriesFor } from './categories'
 import { paymentMethodsFor } from './paymentMethods'
 
 /**
@@ -70,6 +69,7 @@ export interface DraftContext {
 export type DraftProblem =
   | 'amountRequired'
   | 'descriptionRequired'
+  | 'categoryRequired'
   | 'rateRequired'
   | 'noParticipants'
   | 'exactUnbalanced'
@@ -93,7 +93,6 @@ export function newDraft({ trip, expenses, settings, today }: DraftContext): Exp
   const currency = latest?.currency ?? settings.lastUsed.currency ?? trip.baseCurrency
   // 上一筆用的項目後來被刪了，就退回第一個：不能帶入一個不存在的 id
   const pick = (id: string | undefined, list: { id: string }[]) => (id && list.some((x) => x.id === id) ? id : (list[0]?.id ?? ''))
-  const categoryId = pick(settings.lastUsed.categoryId, categoriesFor(settings.categories, trip))
   // 旅程專用的付款方式也算（task#92）：上一筆用的是它的話照樣帶入
   const paymentMethodId = pick(settings.lastUsed.paymentMethodId, paymentMethodsFor(settings.paymentMethods, trip))
   return {
@@ -103,7 +102,8 @@ export function newDraft({ trip, expenses, settings, today }: DraftContext): Exp
     rateTouched: false,
     description: '',
     date: today >= trip.startDate && today <= trip.endDate ? today : trip.startDate,
-    categoryId,
+    // 類別不帶入：每一筆都自己選（使用者要求）。沒選之前算沒填完，存下去是草稿
+    categoryId: '',
     paymentMethodId,
     paidBy: trip.selfMemberId,
     split: { mode: 'even', participants: memberOrder(trip) },
@@ -166,6 +166,7 @@ export function problemsOf(d: ExpenseDraft): DraftProblem[] {
   const problems: DraftProblem[] = []
   if (minor(d.amount, d.currency) <= 0) problems.push('amountRequired')
   if (!d.description.trim()) problems.push('descriptionRequired')
+  if (!d.categoryId) problems.push('categoryRequired')
   if (d.exchangeRate === undefined || !(d.exchangeRate > 0)) problems.push('rateRequired')
   const split = d.split
   if (split.mode === 'even' && split.participants.length === 0) problems.push('noParticipants')

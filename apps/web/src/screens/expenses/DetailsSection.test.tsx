@@ -22,9 +22,11 @@ async function openNew() {
 
 describe('DetailsSection', () => {
   // 預設值夠準才不必展開：收折時就要看得到帶入了什麼
-  it('summarises the category, payment method and payer while closed', async () => {
+  // 類別不帶入（每一筆自己選）：收折時的摘要只有帶入的付款方式與付款人
+  it('summarises the payment method and payer while closed, with no category chosen yet', async () => {
     const { header } = await openNew()
-    expect(header()).toHaveTextContent(`${t('cat.food')}・${t('pay.credit')}・阿明`)
+    expect(header()).toHaveTextContent(`${t('pay.credit')}・阿明`)
+    expect(header()).not.toHaveTextContent(t('cat.food'))
   })
 
   it('re-applies the rate for the chosen payment method', async () => {

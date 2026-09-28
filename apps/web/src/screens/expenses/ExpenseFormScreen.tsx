@@ -77,12 +77,13 @@ function ExpenseForm({ trip, existing }: { trip: Trip; existing?: Expense }) {
   const save = async () => {
     const saved = await trips.getState().saveExpense(toExpense(draft, trip.id, storedMethodIds(trip)))
     if (!saved) return false
-    // 規格 4.4 的「上一筆用的類別／付款方式」。只在新增時記：打開舊帳改個錯字不該改掉下一筆的預設值。
+    // 規格 4.4 的「上一筆用的幣別／付款方式」。只在新增時記：打開舊帳改個錯字不該改掉下一筆的預設值。
     // 失敗只影響下一筆的預設值，支出本身已經存好了
     if (!existing) {
       void settings.getState().update((s) => ({
         ...s,
-        lastUsed: { currency: saved.currency, categoryId: saved.categoryId, paymentMethodId: saved.paymentMethodId },
+        // 類別不再帶入（每一筆自己選），所以不記
+        lastUsed: { currency: saved.currency, paymentMethodId: saved.paymentMethodId },
       }))
     }
     return true

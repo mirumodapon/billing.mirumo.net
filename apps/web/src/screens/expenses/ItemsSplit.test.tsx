@@ -7,6 +7,7 @@ import { formatMoney } from '../../i18n/format'
 import { t, tPlural } from '../../i18n'
 import { currentRoute, makeStores, renderApp } from '../../test/renderApp'
 import { confirmDelete } from '../../test/confirmDelete'
+import { pickCategory } from '../../test/pickCategory'
 
 beforeEach(() => clearSession())
 
@@ -83,6 +84,7 @@ describe('ItemsSplit', () => {
     const { user, panel, addItem, stores } = await openItems(['3', '8', '0', '0'])
     await addItem(['3', '4', '0', '0'])
     await user.click(within(panel().getByRole('radiogroup', { name: t('split.overflowRule') })).getByRole('radio', { name: t('split.overflowEven') }))
+    await pickCategory(user)
     await user.type(screen.getByLabelText(t('expense.description')), '居酒屋')
     await user.click(screen.getByRole('button', { name: t('form.save') }))
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
