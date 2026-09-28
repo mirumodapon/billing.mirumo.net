@@ -45,3 +45,8 @@ export function formatDateRange(startIso: string, endIso: string): string {
     timeZone: 'UTC',
   }).formatRange(parseDate(startIso), parseDate(endIso))
 }
+
+/** 圖表刻度用的精簡寫法：不寫幣別、大數字縮寫（「2K」「1.5萬」）。完整金額另有表格與數值標籤 */
+export function formatCompact(minor: number, currency: string): string {
+  return new Intl.NumberFormat(getLocale(), { notation: 'compact', maximumFractionDigits: 1 }).format(fromMinor(minor, decimalsOf(currency)))
+}

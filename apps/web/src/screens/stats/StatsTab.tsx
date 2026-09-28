@@ -2,6 +2,7 @@ import type { Expense, Trip } from '@billing/core'
 import { Accordion, Avatar, BarChart, Donut, ProgressBar, SegmentedControl } from '@billing/ui'
 import { useParams } from 'react-router'
 import { statsView, type StatsView } from '../../domain/statsView'
+import { formatCompact } from '../../i18n/format'
 import { useI18n } from '../../i18n/useI18n'
 import { useSettings, useTrips } from '../../stores/StoresProvider'
 import { useCollapsedStats, useStatsScope } from './useStatsScope'
@@ -67,6 +68,7 @@ function Stats({ trip, expenses }: { trip: Trip; expenses: Expense[] }) {
           bars={view.days.map((d) => ({ key: d.key, label: date(d.key), value: d.value }))}
           ariaLabel={t('stats.daily')}
           formatValue={format}
+          formatTick={(minor) => formatCompact(minor, trip.baseCurrency)}
           budget={view.dailyBudgetMinor}
           budgetLabel={t('stats.dailyBudget')}
           overBudgetLabel={t('stats.overBudget')}

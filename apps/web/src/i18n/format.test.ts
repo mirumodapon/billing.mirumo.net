@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { setLocale } from './index'
-import { parseDate, formatDate, formatDateRange, formatMoney, formatWeekday } from './format'
+import { parseDate, formatCompact, formatDate, formatDateRange, formatMoney, formatWeekday } from './format'
 
 describe('formatMoney', () => {
   it('formats a zero-decimal currency without decimals', () => {
@@ -91,5 +91,17 @@ describe('formatDateRange', () => {
 describe('parseDate', () => {
   it('reads a plain date as UTC midnight, whatever the machine zone', () => {
     expect(parseDate('2026-03-15').toISOString()).toBe('2026-03-15T00:00:00.000Z')
+  })
+})
+
+describe('formatCompact', () => {
+  // 圖表刻度的寬度有限：不寫幣別符號，大數字縮寫（Plan 9 走查）
+  it('drops the currency and shortens large numbers', () => {
+    setLocale('en-US')
+    expect(formatCompact(2000, 'TWD')).toBe('2K')
+    expect(formatCompact(150000, 'USD')).toBe('1.5K')
+    setLocale('zh-TW')
+    expect(formatCompact(500, 'TWD')).toBe('500')
+    expect(formatCompact(15000, 'TWD')).toBe('1.5萬')
   })
 })

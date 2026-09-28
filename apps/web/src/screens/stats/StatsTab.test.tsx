@@ -76,6 +76,10 @@ describe('StatsTab: overview, categories, daily (Plan 9 Task 3)', () => {
     expect(daily.getAllByRole('row')).toHaveLength(3)
     expect(daily.getByTestId('budget-line')).toBeInTheDocument()
     expect(daily.getAllByText(t('stats.overBudget'))).toHaveLength(1)
+    // 刻度寫精簡數字，不帶幣別符號：44px 的刻度欄放不下「NT$2,000」
+    const ticks = [...document.querySelectorAll('.bi-bar__tick')].map((n) => n.textContent)
+    expect(ticks.length).toBeGreaterThan(0)
+    expect(ticks.some((tick) => tick?.includes('$'))).toBe(false)
   })
 
   // Plan 9 T3：拿「我」的花費比全團的每日預算是錯的警示
