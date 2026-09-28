@@ -139,6 +139,9 @@ describe('StatsTab: members and my items (Plan 9 Task 4)', () => {
     await user.click(within(screen.getByRole('radiogroup', { name: t('stats.scope') })).getByRole('radio', { name: t('stats.memberSelf', { name: '阿明' }) }))
     const items = within(screen.getByTestId('stats-items-panel'))
     expect(items.getAllByTestId('stats-item').map((r) => r.firstChild?.firstChild?.textContent)).toEqual(['晚餐', '生啤'])
+    // task#112：品項底下寫出是哪一筆
+    expect(items.getAllByTestId('stats-item')[1]).toHaveTextContent('居酒屋')
+    expect(items.getAllByTestId('stats-item')[0]).not.toHaveTextContent('・')
     expect(items.getByTestId('stats-overflow')).toHaveTextContent(plain(formatMoney(50, 'TWD')))
     expect(screen.queryByTestId('stats-members')).not.toBeInTheDocument()
   })

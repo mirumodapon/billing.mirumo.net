@@ -130,7 +130,8 @@ function MyItems({ items, format }: { items: NonNullable<StatsView['items']>; fo
         <li key={`${row.expenseId}-${row.itemId ?? ''}`} className="app-fact" data-testid="stats-item">
           <span>
             {row.name.trim() || t('expense.untitled')}
-            <span className="app-field-label m-0 block">{date(row.date)}</span>
+            {/* 明細品項加上是哪一筆（task#112） */}
+            <span className="app-field-label m-0 block">{row.expenseName ? `${row.expenseName}・${date(row.date)}` : date(row.date)}</span>
           </span>
           <span className="app-money">{format(row.shareMinor)}</span>
         </li>
