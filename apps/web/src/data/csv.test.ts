@@ -112,6 +112,24 @@ describe('buildCsvFiles', () => {
     expect(rows[2]).toContain('阿明 / 小美')
   })
 
+  // task#108：草稿照列出，多一欄標示，分析時可以篩掉
+  it('marks drafts in their own column instead of leaving them out', () => {
+    const files = buildCsvFiles(snap({ expenses: [makeExpense({ draft: true })], transfers: [makeTransfer({ draft: true })] }), names)
+    for (const file of [files['expenses.csv']!, files['transfers.csv']!]) {
+      const [header, row] = lines(file)
+      expect(row!.split(',')[header!.split(',').indexOf('draft')]).toBe('yes')
+    }
+    const [header, row] = lines(buildCsvFiles(snap(), names)['expenses.csv']!)
+    expect(row!.split(',')[header!.split(',').indexOf('draft')]).toBe('')
+  })
+
+  // task#117：名稱解析拿得到那一筆所屬的旅程，旅程專用的類別與付款方式才解得出名字
+  it('passes each record’s trip to the name lookups', () => {
+    const seen: (string | undefined)[] = []
+    buildCsvFiles(snap(), { category: (id, trip) => (seen.push(trip?.id), id), paymentMethod: (id) => id })
+    expect(seen).toEqual(['t1'])
+  })
+
   it('writes transfers with names on both ends', () => {
     const [, row] = lines(buildCsvFiles(snap(), names)['transfers.csv']!)
     expect(row).toContain('小美,阿明')

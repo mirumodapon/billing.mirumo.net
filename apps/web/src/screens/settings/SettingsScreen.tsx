@@ -1,13 +1,14 @@
 import { AppBar } from '@billing/ui'
 import { useNavigate } from 'react-router'
 import { useI18n } from '../../i18n/useI18n'
+import { BackupSection } from './BackupSection'
 import { CategoriesSection } from './CategoriesSection'
 import { LanguageSection } from './LanguageSection'
 import { PaymentMethodsSection } from './PaymentMethodsSection'
 import { ThemeSection } from './ThemeSection'
 import { useRecordUsage } from './useRecordUsage'
 
-/** 全域設定（規格 4.8）。匯出、匯入、儲存用量、錯誤記錄隨第 9 階段加入（Plan 6 D7） */
+/** 全域設定（規格 4.8）。備份、儲存用量、錯誤記錄與版本資訊在 Plan 10 加入 */
 export function SettingsScreen() {
   const { t } = useI18n()
   const navigate = useNavigate()
@@ -20,6 +21,7 @@ export function SettingsScreen() {
         <ThemeSection />
         <CategoriesSection usage={usage} />
         <PaymentMethodsSection usage={usage} />
+        <BackupSection />
       </div>
     </div>
   )

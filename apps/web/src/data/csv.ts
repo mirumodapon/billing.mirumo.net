@@ -27,10 +27,13 @@ export function toCsv(header: readonly string[], rows: readonly (readonly (strin
   return BOM + lines.join('\r\n') + '\r\n'
 }
 
-/** 把 id 換成人看得懂的名字。內建類別的名稱要走 i18n，所以由呼叫端提供 */
+/**
+ * 把 id 換成人看得懂的名字。內建類別的名稱要走 i18n，所以由呼叫端提供。
+ * 帶上那一筆所屬的旅程：旅程專用的類別與付款方式（task#92、#114）只在那趟旅程裡查得到（task#117）
+ */
 export interface CsvNames {
-  category: (id: string) => string
-  paymentMethod: (id: string) => string
+  category: (id: string, trip: Trip | undefined) => string
+  paymentMethod: (id: string, trip: Trip | undefined) => string
 }
 
 const memberName = (trip: Trip | undefined, id: string) => trip?.members.find((m) => m.id === id)?.name ?? id
@@ -59,15 +62,15 @@ export function buildCsvFiles(snapshot: Snapshot, names: CsvNames): Record<strin
 
   const expenses = live(snapshot.expenses)
   const expensesCsv = toCsv(
-    ['trip', 'date', 'description', 'category', 'payment_method', 'paid_by', 'amount', 'currency', 'exchange_rate', 'base_amount', 'base_currency', 'split_mode', 'participants'],
+    ['trip', 'date', 'description', 'category', 'payment_method', 'paid_by', 'amount', 'currency', 'exchange_rate', 'base_amount', 'base_currency', 'split_mode', 'participants', 'draft'],
     expenses.map((e) => {
       const trip = trips.get(e.tripId)
       return [
         trip?.name ?? e.tripId,
         e.date,
         e.description,
-        names.category(e.categoryId),
-        names.paymentMethod(e.paymentMethodId),
+        names.category(e.categoryId, trip),
+        names.paymentMethod(e.paymentMethodId, trip),
         memberName(trip, e.paidBy),
         e.amount,
         e.currency,
@@ -76,6 +79,8 @@ export function buildCsvFiles(snapshot: Snapshot, names: CsvNames): Record<strin
         trip?.baseCurrency ?? '',
         e.split.mode,
         participantsOf(e).map((id) => memberName(trip, id)).join(' / '),
+        // task#108：草稿照列出，另外標示；它不算進 app 裡的任何總額
+        e.draft ? 'yes' : '',
       ]
     }),
   )
@@ -99,7 +104,7 @@ export function buildCsvFiles(snapshot: Snapshot, names: CsvNames): Record<strin
   )
 
   const transfersCsv = toCsv(
-    ['trip', 'date', 'from', 'to', 'amount', 'currency', 'exchange_rate', 'base_amount', 'base_currency', 'kind', 'note'],
+    ['trip', 'date', 'from', 'to', 'amount', 'currency', 'exchange_rate', 'base_amount', 'base_currency', 'kind', 'note', 'draft'],
     live(snapshot.transfers).map((t) => {
       const trip = trips.get(t.tripId)
       return [
@@ -114,6 +119,7 @@ export function buildCsvFiles(snapshot: Snapshot, names: CsvNames): Record<strin
         trip?.baseCurrency ?? '',
         t.kind,
         t.note,
+        t.draft ? 'yes' : '',
       ]
     }),
   )
