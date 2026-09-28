@@ -4,6 +4,7 @@ import { clearSession } from '../../data/session'
 import { makeExpense, makeTrip } from '../../data/testing/fixtures'
 import { t } from '../../i18n'
 import { currentRoute, makeStores, renderApp } from '../../test/renderApp'
+import { pickCategory } from '../../test/pickCategory'
 
 beforeEach(() => clearSession())
 
@@ -70,7 +71,8 @@ describe('ExpenseFormScreen: acceptance and memory', () => {
    * 規格 §10 第 6 階段的驗收條件：記一筆最少三個動作。
    * 輸入金額 → 輸入說明 → 儲存，不展開任何區塊；分攤是全員均分、匯率是旅程匯率表帶入的值。
    */
-  it('records an expense in three actions: amount, description, save', async () => {
+  // 類別不再帶入（使用者要求）：規格 4.4 的「最少三個動作」多了選類別這一步
+  it('records an expense in four actions: amount, description, category, save', async () => {
     const stores = await tripWithJapan()
     const { user } = await renderApp('/trip/t1/expenses', stores)
     await user.click(screen.getByRole('button', { name: t('expenses.add') }))
@@ -79,13 +81,15 @@ describe('ExpenseFormScreen: acceptance and memory', () => {
     // 2. 說明
     await user.click(screen.getByLabelText(t('expense.description')))
     await user.type(screen.getByLabelText(t('expense.description')), '豚骨拉麵')
-    // 3. 儲存
+    // 3. 類別
+    await pickCategory(user)
+    // 4. 儲存
     await user.click(screen.getByRole('button', { name: t('form.save') }))
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
     expect(await screen.findByRole('button', { name: /^豚骨拉麵/ })).toBeInTheDocument()
     const created = (await stores.repo.listExpenses('t1')).find((e) => e.description === '豚骨拉麵')!
-    // 沒有上一筆的付款方式 → 第一個（現金）→ 匯率先取「日圓×現金」（規格 4.4 的帶入順序）
-    expect(created).toMatchObject({ amount: 3800, currency: 'JPY', exchangeRate: 0.215, paidBy: 'a', split: { mode: 'even', participants: ['a', 'b', 'c'] } })
+    // 沒有上一筆的付款方式 → 第一個（現金）→ 匯率先取「日圓×現金」（規格 4.4 的帶入順序）；分攤預設只有付款人（task#121）
+    expect(created).toMatchObject({ amount: 3800, currency: 'JPY', exchangeRate: 0.215, paidBy: 'a', split: { mode: 'even', participants: ['a'] } })
     for (const header of [t('expense.details'), t('split.title'), t('receipt.title')]) {
       expect(screen.queryByRole('button', { name: new RegExp(`^${header}`) })).not.toBeInTheDocument()
     }
@@ -101,7 +105,8 @@ describe('ExpenseFormScreen: acceptance and memory', () => {
     expect(await stores.repo.listExpenses('t1')).toEqual([expect.objectContaining({ id: 'e1', paymentMethodId: 'pay.cash', exchangeRate: 0.2 })])
   })
 
-  it('offers the last category and payment method on the next new expense', async () => {
+  // 付款方式照樣帶入上一筆的；類別不帶入，每一筆自己選
+  it('offers the last payment method on the next new expense, but not the category', async () => {
     const stores = await tripWithJapan()
     const { user } = await renderApp('/trip/t1/expense/new', stores)
     for (const k of ['5', '0', '0']) await user.click(key(k))
@@ -115,7 +120,8 @@ describe('ExpenseFormScreen: acceptance and memory', () => {
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
     await user.click(await screen.findByRole('button', { name: t('expenses.add') }))
     await screen.findByRole('heading', { name: t('expense.new') })
-    expect(details()).toHaveTextContent(`${t('cat.transport')}・${t('pay.mobile')}`)
+    expect(details()).toHaveTextContent(t('pay.mobile'))
+    expect(details()).not.toHaveTextContent(t('cat.transport'))
   })
 
   it('does not change the defaults when editing an old expense', async () => {

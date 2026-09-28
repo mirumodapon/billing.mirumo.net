@@ -24,7 +24,10 @@ describe('TripPaymentMethodsSection (task#92)', () => {
     const { user, panel, stores } = await setup()
     await user.type(panel.getByLabelText(t('tripMethods.newName')), 'ICOCA')
     await user.click(panel.getByRole('button', { name: t('tripMethods.add') }))
-    await waitFor(async () => expect((await methods(stores))?.map((m) => m.name)).toEqual(['Suica', 'ICOCA']))
+    // 舊旅程第一次改清單時才複製一份全域的（task#120），這趟的 Suica 接在後面
+    await waitFor(async () => expect((await methods(stores))?.map((m) => m.id).slice(0, 4)).toEqual(['pay.cash', 'pay.credit', 'pay.mobile', 'suica']))
+    expect((await methods(stores))?.at(-1)?.name).toBe('ICOCA')
+    expect((await stores.repo.getTrip('t1'))?.ownLists).toBe(true)
     // 全域設定不受影響
     expect((await stores.repo.getSettings()).paymentMethods.map((m) => m.id)).toEqual(['pay.cash', 'pay.credit', 'pay.mobile'])
   })
@@ -34,20 +37,43 @@ describe('TripPaymentMethodsSection (task#92)', () => {
     const field = panel.getByLabelText(t('settings.paymentMethodName', { name: 'Suica' }))
     await user.type(field, ' 卡')
     await user.tab()
-    await waitFor(async () => expect((await methods(stores))?.[0]?.name).toBe('Suica 卡'))
+    await waitFor(async () => expect((await methods(stores))?.find((m) => m.id === 'suica')?.name).toBe('Suica 卡'))
   })
 
   it('removes one nobody uses, but keeps one this trip’s expenses use', async () => {
     const unused = await setup()
     await unused.user.click(unused.panel.getByRole('button', { name: t('settings.removeItem', { name: 'Suica' }) }))
     await confirmDelete(unused.user, 'Suica')
-    await waitFor(async () => expect(await methods(unused.stores)).toEqual([]))
+    await waitFor(async () => expect((await methods(unused.stores))?.map((m) => m.id)).toEqual(['pay.cash', 'pay.credit', 'pay.mobile']))
   })
 
   it('says how many expenses use one it will not remove', async () => {
     const { panel } = await setup({ used: true })
     expect(panel.queryByRole('button', { name: t('settings.removeItem', { name: 'Suica' }) })).not.toBeInTheDocument()
     expect(panel.getByText(tPlural('settings.usedBy', { count: 1 }))).toBeInTheDocument()
+  })
+
+  // task#120：旅程的清單是完整的一份，內建項目也在，名稱不能改，但這趟用不到可以刪
+  it('lists the built-in ones too, read-only, and removes one from this trip only', async () => {
+    const { user, panel, stores } = await setup()
+    const cash = t('pay.cash')
+    expect(panel.queryByLabelText(t('settings.paymentMethodName', { name: cash }))).not.toBeInTheDocument()
+    expect(panel.getByTestId('method-pay.cash')).toHaveTextContent(cash)
+    await user.click(panel.getByRole('button', { name: t('settings.removeItem', { name: cash }) }))
+    await confirmDelete(user, cash)
+    await waitFor(async () => expect((await methods(stores))?.map((m) => m.id)).toEqual(['pay.credit', 'pay.mobile', 'suica']))
+    expect((await methods(stores))?.[0]).toEqual({ id: 'pay.credit', builtin: true })
+    expect((await stores.repo.getSettings()).paymentMethods.map((m) => m.id)).toContain('pay.cash')
+  })
+
+  it('shows only the trip’s own list once it has one, whatever the global settings say', async () => {
+    const stores = await makeStores()
+    await stores.repo.saveTrip(makeTrip({ id: 't1', ownLists: true, paymentMethods: [{ id: 'suica', name: 'Suica' }] }))
+    const { user } = await renderApp('/trip/t1/setup', stores)
+    await user.click(screen.getByRole('button', { name: new RegExp(`^${t('tripMethods.title')}`) }))
+    const panel = within(screen.getByTestId('section-trip-methods-panel'))
+    expect(panel.getByLabelText(t('settings.paymentMethodName', { name: 'Suica' }))).toBeInTheDocument()
+    expect(panel.queryByTestId('method-pay.cash')).not.toBeInTheDocument()
   })
 
   it('is offered in the expense form and the rate table of this trip', async () => {

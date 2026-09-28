@@ -24,6 +24,7 @@ import { ReceiptSection } from './ReceiptSection'
 import { SplitSection } from './SplitSection'
 import { FormShell } from '../forms/FormShell'
 import { useFormDraft } from '../forms/useFormDraft'
+import { tripMethodName } from '../../domain/paymentMethods'
 
 /** 新增（/expense/new）或編輯（/expense/:id）支出的全螢幕表單（規格 4.4） */
 export function ExpenseFormScreen() {
@@ -60,7 +61,7 @@ function ExpenseForm({ trip, existing }: { trip: Trip; existing?: Expense }) {
     const stored = storedMethodIds(trip)
     const payWith = stored.has(base.paymentMethodId) ? (settings.getState().settings.paymentMethods[0]?.id ?? base.paymentMethodId) : base.paymentMethodId
     return withAutoRate(
-      { ...base, topUpFor: card.id, currency: card.storedValue.currency, paymentMethodId: payWith, description: t('topUp.title', { name: card.name }) },
+      { ...base, topUpFor: card.id, currency: card.storedValue.currency, paymentMethodId: payWith, description: t('topUp.title', { name: tripMethodName(card) }) },
       trip,
     )
   })
@@ -77,12 +78,13 @@ function ExpenseForm({ trip, existing }: { trip: Trip; existing?: Expense }) {
   const save = async () => {
     const saved = await trips.getState().saveExpense(toExpense(draft, trip.id, storedMethodIds(trip)))
     if (!saved) return false
-    // 規格 4.4 的「上一筆用的類別／付款方式」。只在新增時記：打開舊帳改個錯字不該改掉下一筆的預設值。
+    // 規格 4.4 的「上一筆用的幣別／付款方式」。只在新增時記：打開舊帳改個錯字不該改掉下一筆的預設值。
     // 失敗只影響下一筆的預設值，支出本身已經存好了
     if (!existing) {
       void settings.getState().update((s) => ({
         ...s,
-        lastUsed: { currency: saved.currency, categoryId: saved.categoryId, paymentMethodId: saved.paymentMethodId },
+        // 類別不再帶入（每一筆自己選），所以不記
+        lastUsed: { currency: saved.currency, paymentMethodId: saved.paymentMethodId },
       }))
     }
     return true
@@ -90,8 +92,8 @@ function ExpenseForm({ trip, existing }: { trip: Trip; existing?: Expense }) {
 
   return (
     <FormShell
-      title={card ? t('topUp.title', { name: card.name }) : existing ? t('expense.edit') : t('expense.new')}
-      incomplete={problemsOf(draft).length > 0}
+      title={card ? t('topUp.title', { name: tripMethodName(card) }) : existing ? t('expense.edit') : t('expense.new')}
+      incomplete={problemsOf(draft, storedMethodIds(trip)).length > 0}
       isDraft={draft.isDraft === true}
       onDraftChange={(isDraft) => change((d) => ({ ...d, isDraft }))}
       onSave={save}
@@ -103,7 +105,7 @@ function ExpenseForm({ trip, existing }: { trip: Trip; existing?: Expense }) {
           {/* 儲值是真的花費；之後用卡付的只扣餘額——在這裡講清楚，免得以為會重複算 */}
           {card ? (
             <p className="app-field-label m-0" data-testid="topup-hint">
-              {t('topUp.hint', { name: card.name })}
+              {t('topUp.hint', { name: tripMethodName(card) })}
             </p>
           ) : null}
           <MoneyInput
@@ -115,6 +117,8 @@ function ExpenseForm({ trip, existing }: { trip: Trip; existing?: Expense }) {
             onAmount={(amount) => change((d) => ({ ...d, amount }))}
             onCurrency={(currency) => change((d) => withAutoRate({ ...d, currency }, trip))}
             onManualRate={(rate) => change((d) => withManualRate(d, rate))}
+            // 用預存卡付的不算進合計，不需要匯率（task#119）
+            rateOptional={!draft.topUpFor && storedMethodIds(trip).has(draft.paymentMethodId)}
           />
           <TextField label={t('expense.description')} value={draft.description} onChange={(description) => change((d) => ({ ...d, description }))} />
           <DetailsSection trip={trip} draft={draft} change={change} open={sections.open === 'details'} onToggle={() => sections.toggle('details')} />

@@ -11,7 +11,6 @@ import {
   type Trip,
 } from '@billing/core'
 import type { AppSettings } from '../data/types'
-import { categoriesFor } from './categories'
 import { paymentMethodsFor } from './paymentMethods'
 
 /**
@@ -70,6 +69,7 @@ export interface DraftContext {
 export type DraftProblem =
   | 'amountRequired'
   | 'descriptionRequired'
+  | 'categoryRequired'
   | 'rateRequired'
   | 'noParticipants'
   | 'exactUnbalanced'
@@ -93,7 +93,6 @@ export function newDraft({ trip, expenses, settings, today }: DraftContext): Exp
   const currency = latest?.currency ?? settings.lastUsed.currency ?? trip.baseCurrency
   // 上一筆用的項目後來被刪了，就退回第一個：不能帶入一個不存在的 id
   const pick = (id: string | undefined, list: { id: string }[]) => (id && list.some((x) => x.id === id) ? id : (list[0]?.id ?? ''))
-  const categoryId = pick(settings.lastUsed.categoryId, categoriesFor(settings.categories, trip))
   // 旅程專用的付款方式也算（task#92）：上一筆用的是它的話照樣帶入
   const paymentMethodId = pick(settings.lastUsed.paymentMethodId, paymentMethodsFor(settings.paymentMethods, trip))
   return {
@@ -103,10 +102,12 @@ export function newDraft({ trip, expenses, settings, today }: DraftContext): Exp
     rateTouched: false,
     description: '',
     date: today >= trip.startDate && today <= trip.endDate ? today : trip.startDate,
-    categoryId,
+    // 類別不帶入：每一筆都自己選（使用者要求）。沒選之前算沒填完，存下去是草稿
+    categoryId: '',
     paymentMethodId,
     paidBy: trip.selfMemberId,
-    split: { mode: 'even', participants: memberOrder(trip) },
+    // task#121：預設只有付款人自己分攤；要分給別人再加（分攤區塊有「全選」）
+    split: { mode: 'even', participants: [trip.selfMemberId] },
     attachments: [],
     isDraft: false,
   }
@@ -140,6 +141,15 @@ export function draftFromExpense(e: Expense): ExpenseDraft {
   }
 }
 
+/**
+ * 換付款人（task#121）。分攤還是預設的「只有原付款人」時跟著換成新的付款人；
+ * 使用者動過分攤（加了人、換了模式）就不碰，免得蓋掉他的選擇。
+ */
+export function withPayer(d: ExpenseDraft, paidBy: string): ExpenseDraft {
+  const untouched = d.split.mode === 'even' && d.split.participants.length === 1 && d.split.participants[0] === d.paidBy
+  return untouched ? { ...d, paidBy, split: { mode: 'even', participants: [paidBy] } } : { ...d, paidBy }
+}
+
 export function withAutoRate(d: ExpenseDraft, trip: Trip): ExpenseDraft {
   return d.rateTouched ? d : { ...d, exchangeRate: autoRate(trip, d.currency, d.paymentMethodId) }
 }
@@ -162,11 +172,22 @@ export function itemsTotals(d: ExpenseDraft): { itemsTotal: number; overflow: nu
   return { itemsTotal: fromMinor(itemsMinor, decimals), overflow: fromMinor(minor(d.amount, d.currency) - itemsMinor, decimals) }
 }
 
-export function problemsOf(d: ExpenseDraft): DraftProblem[] {
+/** 用預存卡付款（不是儲值）：只扣餘額、不算進任何合計（task#115） */
+function isCardPayment(d: ExpenseDraft, storedMethods: ReadonlySet<string>): boolean {
+  return !d.topUpFor && storedMethods.has(d.paymentMethodId)
+}
+
+/**
+ * 還沒填完的欄位。storedMethods 是這趟旅程的預存卡：用卡付的不算進合計，
+ * 換成本位幣沒有意義，所以不要求匯率（task#119）
+ */
+export function problemsOf(d: ExpenseDraft, storedMethods: ReadonlySet<string> = new Set()): DraftProblem[] {
   const problems: DraftProblem[] = []
   if (minor(d.amount, d.currency) <= 0) problems.push('amountRequired')
   if (!d.description.trim()) problems.push('descriptionRequired')
-  if (d.exchangeRate === undefined || !(d.exchangeRate > 0)) problems.push('rateRequired')
+  if (!d.categoryId) problems.push('categoryRequired')
+  const hasRate = d.exchangeRate !== undefined && d.exchangeRate > 0
+  if (!hasRate && !isCardPayment(d, storedMethods)) problems.push('rateRequired')
   const split = d.split
   if (split.mode === 'even' && split.participants.length === 0) problems.push('noParticipants')
   if (split.mode === 'exact' && exactAllocation(d).remaining !== 0) problems.push('exactUnbalanced')
@@ -195,8 +216,8 @@ function toSplit(split: SplitDraft, currency: string): Split {
 }
 
 /** 使用者標了草稿，或還有欄位沒填完：存下去會是一筆草稿（task#96） */
-export function willSaveAsDraft(d: ExpenseDraft): boolean {
-  return d.isDraft === true || problemsOf(d).length > 0
+export function willSaveAsDraft(d: ExpenseDraft, storedMethods: ReadonlySet<string> = new Set()): boolean {
+  return d.isDraft === true || problemsOf(d, storedMethods).length > 0
 }
 
 /**
@@ -207,8 +228,8 @@ export function willSaveAsDraft(d: ExpenseDraft): boolean {
  */
 export function toExpense(d: ExpenseDraft, tripId: string, storedMethods: ReadonlySet<string> = new Set()): Expense {
   return {
-    ...(willSaveAsDraft(d) ? { draft: true } : {}),
-    ...(d.topUpFor ? { topUpFor: d.topUpFor } : storedMethods.has(d.paymentMethodId) ? { fromBalance: true } : {}),
+    ...(willSaveAsDraft(d, storedMethods) ? { draft: true } : {}),
+    ...(d.topUpFor ? { topUpFor: d.topUpFor } : isCardPayment(d, storedMethods) ? { fromBalance: true } : {}),
     id: d.id ?? crypto.randomUUID(),
     tripId,
     date: d.date,

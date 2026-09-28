@@ -67,13 +67,18 @@ export function validateSnapshot(input: unknown): SnapshotCheck {
     for (const id of duplicates(members.map((m) => m.id))) problems.push(`${at}: member ${id} appears more than once`)
     const ids = new Set(members.map((m) => m.id))
     if (!ids.has(trip.selfMemberId)) problems.push(`${at}: selfMemberId ${trip.selfMemberId} is not a member`)
-    // task#92：旅程專用的付款方式是選填的；有的話每一筆都要有 id 與名稱，id 不能重複
+    // task#120：旅程自己一份清單的旗標
+    if (trip.ownLists !== undefined && typeof trip.ownLists !== 'boolean') problems.push(`${at}: ownLists must be true or false`)
+    // 自訂項目要有名稱；從全域複製來的內建項目（builtin）沒有，名稱由 app 依語系翻譯（task#120）
+    const named = (item: { name?: unknown; builtin?: unknown }) =>
+      (item.builtin === undefined || typeof item.builtin === 'boolean') && (item.builtin === true || typeof item.name === 'string')
+    // task#92：旅程專用的付款方式是選填的；有的話每一筆都要有 id，id 不能重複
     if (trip.paymentMethods !== undefined) {
       const methods = Array.isArray(trip.paymentMethods) ? trip.paymentMethods : []
       // 預存卡（task#115）要帶幣別
       const badStored = (m: { storedValue?: unknown }) =>
         m.storedValue !== undefined && (!isObject(m.storedValue) || !isText((m.storedValue as { currency?: unknown }).currency))
-      if (!Array.isArray(trip.paymentMethods) || methods.some((m) => !isText(m?.id) || typeof m?.name !== 'string' || badStored(m))) {
+      if (!Array.isArray(trip.paymentMethods) || methods.some((m) => !isText(m?.id) || !named(m) || badStored(m))) {
         problems.push(`${at}: malformed payment methods`)
       }
       for (const id of duplicates(methods.map((m) => m?.id))) problems.push(`${at}: payment method ${id} appears more than once`)
@@ -83,7 +88,7 @@ export function validateSnapshot(input: unknown): SnapshotCheck {
       const categories = Array.isArray(trip.categories) ? trip.categories : []
       if (
         !Array.isArray(trip.categories) ||
-        categories.some((c) => !isText(c?.id) || typeof c?.name !== 'string' || typeof c?.icon !== 'string' || typeof c?.colorKey !== 'string')
+        categories.some((c) => !isText(c?.id) || !named(c) || typeof c?.icon !== 'string' || typeof c?.colorKey !== 'string')
       ) {
         problems.push(`${at}: malformed categories`)
       }
@@ -95,9 +100,10 @@ export function validateSnapshot(input: unknown): SnapshotCheck {
   const checkRecord = (at: string, record: Expense | Transfer, referenced: Set<string>) => {
     if (!isValidIso(record.date)) problems.push(`${at}: invalid date`)
     if (!isAmount(record.amount)) problems.push(`${at}: amount is not a number`)
-    // 草稿可以還沒有匯率（存成 0，task#96）；完成的紀錄一定要有
+    // 草稿可以還沒有匯率（存成 0，task#96），用預存卡付的也不需要（不算進合計，task#119）；其餘一定要有
     if (record.draft !== undefined && typeof record.draft !== 'boolean') problems.push(`${at}: draft must be true or false`)
-    if (!isRate(record.exchangeRate) && !(record.draft === true && record.exchangeRate === 0)) {
+    const rateOptional = record.draft === true || (record as Partial<Expense>).fromBalance === true
+    if (!isRate(record.exchangeRate) && !(rateOptional && record.exchangeRate === 0)) {
       problems.push(`${at}: exchange rate must be a positive number`)
     }
     const members = membersByTrip.get(record.tripId)
@@ -121,7 +127,9 @@ export function validateSnapshot(input: unknown): SnapshotCheck {
     checkRecord(at, expense, membersOfExpense(expense))
     // 旅程專用的類別也算，但只限這筆支出自己的旅程（task#114）
     const tripCategories = trips.find((trip) => trip.id === expense.tripId)?.categories ?? []
-    if (!categoryIds.has(expense.categoryId) && !tripCategories.some((c) => c?.id === expense.categoryId)) {
+    // 類別不帶入之後，還沒選類別的草稿類別是空字串；完成的紀錄一定要有
+    const unchosenDraft = expense.draft === true && expense.categoryId === ''
+    if (!unchosenDraft && !categoryIds.has(expense.categoryId) && !tripCategories.some((c) => c?.id === expense.categoryId)) {
       problems.push(`${at}: category ${expense.categoryId} does not exist`)
     }
     // task#115：用預存卡付的旗標；儲值的對象必須是這趟旅程的預存卡

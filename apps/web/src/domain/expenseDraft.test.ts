@@ -13,6 +13,7 @@ import {
   problemsOf,
   toExpense,
   withAutoRate,
+  withPayer,
   willSaveAsDraft,
   withManualRate,
   type DraftContext,
@@ -32,7 +33,7 @@ function ctx(overrides: Partial<DraftContext> = {}): DraftContext {
 
 /** 一張填好、可以存的草稿 */
 function filled(overrides: Partial<ExpenseDraft> = {}): ExpenseDraft {
-  return { ...newDraft(ctx()), amount: 3000, currency: 'JPY', exchangeRate: 0.21, description: '拉麵', ...overrides }
+  return { ...newDraft(ctx()), amount: 3000, currency: 'JPY', exchangeRate: 0.21, description: '拉麵', categoryId: 'cat.food', ...overrides }
 }
 
 describe('newDraft: defaults (spec 4.4)', () => {
@@ -63,21 +64,38 @@ describe('newDraft: defaults (spec 4.4)', () => {
     expect(newDraft(ctx({ today: '2026-03-01' })).date).toBe('2026-03-14')
   })
 
-  it('reuses the last category and payment method', () => {
+  // 類別不帶入（使用者要求）：每一筆都要自己選，上一筆的類別不代表這一筆
+  it('leaves the category unchosen but reuses the last payment method', () => {
     const settings = { ...defaultSettings(), lastUsed: { categoryId: 'cat.transport', paymentMethodId: 'pay.credit' } }
-    expect(newDraft(ctx({ settings }))).toMatchObject({ categoryId: 'cat.transport', paymentMethodId: 'pay.credit' })
+    expect(newDraft(ctx({ settings }))).toMatchObject({ categoryId: '', paymentMethodId: 'pay.credit' })
+  })
+
+  it('counts a missing category as unfinished, so the form saves a draft', () => {
+    expect(problemsOf(filled({ categoryId: '' }))).toContain('categoryRequired')
+    expect(problemsOf(filled())).not.toContain('categoryRequired')
   })
 
   // 上一筆用的自訂類別後來被刪了：不能帶入一個不存在的 id
   it('falls back to the first option when the last one no longer exists', () => {
-    const settings = { ...defaultSettings(), lastUsed: { categoryId: 'gone', paymentMethodId: 'gone' } }
-    expect(newDraft(ctx({ settings }))).toMatchObject({ categoryId: 'cat.food', paymentMethodId: 'pay.cash' })
+    const settings = { ...defaultSettings(), lastUsed: { paymentMethodId: 'gone' } }
+    expect(newDraft(ctx({ settings }))).toMatchObject({ paymentMethodId: 'pay.cash' })
   })
 
-  it('is paid by me and split evenly among everyone, in member order', () => {
+  // task#121：預設只有付款人自己分攤，要分給別人再加
+  it('is paid by me and shared by me alone', () => {
     const d = newDraft(ctx())
     expect(d.paidBy).toBe('a')
-    expect(d.split).toEqual({ mode: 'even', participants: ['a', 'b', 'c'] })
+    expect(d.split).toEqual({ mode: 'even', participants: ['a'] })
+  })
+
+  // 分攤還是預設的「只有付款人」時，換付款人就跟著換；動過分攤就不碰
+  it('moves the default split along with the payer, but leaves an edited split alone', () => {
+    const d = newDraft(ctx())
+    expect(withPayer(d, 'b')).toMatchObject({ paidBy: 'b', split: { mode: 'even', participants: ['b'] } })
+    const edited = { ...d, split: { mode: 'even' as const, participants: ['a', 'c'] } }
+    expect(withPayer(edited, 'b')).toMatchObject({ paidBy: 'b', split: { mode: 'even', participants: ['a', 'c'] } })
+    const exact = { ...d, split: { mode: 'exact' as const, amounts: { a: 100 } } }
+    expect(withPayer(exact, 'b').split).toEqual({ mode: 'exact', amounts: { a: 100 } })
   })
 
   it('starts empty, with no photos and an untouched rate', () => {
@@ -376,5 +394,23 @@ describe('stored-value cards (task#115)', () => {
     expect(d.topUpFor).toBe('suica')
     expect(isExpenseDraft(d)).toBe(true)
     expect(isExpenseDraft({ ...d, topUpFor: 3 })).toBe(false)
+  })
+})
+
+describe('card payments without a rate (task#119)', () => {
+  const stored = new Set(['suica'])
+
+  // 用預存卡付的不算進任何合計，換成本位幣沒有意義：沒有匯率也算填完
+  it('does not ask for a rate when paying with a stored-value card', () => {
+    const d = filled({ paymentMethodId: 'suica', exchangeRate: undefined })
+    expect(problemsOf(d, stored)).not.toContain('rateRequired')
+    expect(willSaveAsDraft(d, stored)).toBe(false)
+    expect(toExpense(d, 't1', stored)).toMatchObject({ fromBalance: true, exchangeRate: 0 })
+    expect(toExpense(d, 't1', stored)).not.toHaveProperty('draft')
+  })
+
+  it('still asks for a rate for a top-up and for any other payment', () => {
+    expect(problemsOf(filled({ paymentMethodId: 'pay.cash', exchangeRate: undefined }), stored)).toContain('rateRequired')
+    expect(problemsOf(filled({ paymentMethodId: 'pay.credit', topUpFor: 'suica', exchangeRate: undefined }), stored)).toContain('rateRequired')
   })
 })

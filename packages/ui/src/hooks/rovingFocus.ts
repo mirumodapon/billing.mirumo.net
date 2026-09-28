@@ -61,13 +61,16 @@ export function useRovingFocus<T extends string>({
     elements.current.get(target)?.focus()
   }
 
+  // 還沒選任何一個時，第一個留在 Tab 順序裡：否則整組都是 -1，鍵盤進不來（WAI-ARIA 單選群組）
+  const tabStop = values.includes(value) ? value : values[0]
+
   function itemProps(item: T) {
     return {
       ref: (el: HTMLElement | null) => {
         if (el) elements.current.set(item, el)
         else elements.current.delete(item)
       },
-      tabIndex: (item === value ? 0 : -1) as 0 | -1,
+      tabIndex: (item === tabStop ? 0 : -1) as 0 | -1,
     }
   }
 

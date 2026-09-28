@@ -29,7 +29,7 @@ describe('TripCategoriesSection (task#114)', () => {
     await user.type(sheet.getByLabelText(t('settings.categoryName')), '滑雪')
     await user.click(sheet.getByRole('radio', { name: t('icon.Gift') }))
     await user.click(sheet.getByRole('button', { name: t('settings.save') }))
-    await waitFor(async () => expect((await own(stores))?.map((c) => c.name)).toEqual(['溫泉', '滑雪']))
+    await waitFor(async () => expect((await own(stores))?.at(-1)?.name).toBe('滑雪'))
     expect((await own(stores))?.at(-1)).toMatchObject({ icon: 'IconGift' })
     // 全域設定不受影響
     expect((await stores.repo.getSettings()).categories.some((c) => c.name === '滑雪')).toBe(false)
@@ -39,7 +39,19 @@ describe('TripCategoriesSection (task#114)', () => {
     const { user, panel, stores } = await setup()
     await user.click(panel.getByRole('button', { name: t('settings.removeItem', { name: '溫泉' }) }))
     await confirmDelete(user, '溫泉')
-    await waitFor(async () => expect(await own(stores)).toEqual([]))
+    await waitFor(async () => expect((await own(stores))?.some((c) => c.id === 'onsen')).toBe(false))
+  })
+
+  // task#120：內建類別也在這趟的清單裡；改圖示只改這一趟，全域設定不受影響
+  it('restyles a built-in category for this trip only', async () => {
+    const { user, panel, stores } = await setup()
+    await user.click(panel.getByRole('button', { name: new RegExp(`^${t('cat.food')}`) }))
+    const sheet = within(screen.getByRole('dialog'))
+    await user.click(sheet.getByRole('radio', { name: t('icon.Gift') }))
+    await user.click(sheet.getByRole('button', { name: t('settings.save') }))
+    await waitFor(async () => expect((await own(stores))?.find((c) => c.id === 'cat.food')).toMatchObject({ builtin: true, icon: 'IconGift' }))
+    expect((await own(stores))?.find((c) => c.id === 'cat.food')?.name).toBeUndefined()
+    expect((await stores.repo.getSettings()).categories.find((c) => c.id === 'cat.food')?.icon).not.toBe('IconGift')
   })
 
   it('keeps one this trip’s expenses use, and says how many', async () => {

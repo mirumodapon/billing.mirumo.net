@@ -25,7 +25,10 @@ export interface ExchangeRateTable {
  */
 export interface TripPaymentMethod {
   id: string
-  name: string
+  /** 自訂項目的名稱。內建項目（builtin）沒有：名稱由 app 依語系翻譯 */
+  name?: string
+  /** 從全域設定複製來的內建項目（task#120），例如「現金」 */
+  builtin?: boolean
   /** 預存卡（task#115），例如 Suica：可以儲值、用它付款只扣餘額。餘額以這個幣別計 */
   storedValue?: { currency: string }
 }
@@ -36,7 +39,10 @@ export interface TripPaymentMethod {
  */
 export interface TripCategory {
   id: string
-  name: string
+  /** 自訂類別的名稱。內建類別（builtin）沒有：名稱由 app 依語系翻譯 */
+  name?: string
+  /** 從全域設定複製來的內建類別（task#120），例如「餐飲」 */
+  builtin?: boolean
   icon: string
   colorKey: AccentKey
 }
@@ -65,6 +71,11 @@ export interface Trip {
   paymentMethods?: TripPaymentMethod[]
   /** 這趟旅程專用的類別；選填，舊資料沒有這個欄位（task#114） */
   categories?: TripCategory[]
+  /**
+   * task#120：true 時 categories 與 paymentMethods 是這趟旅程完整的清單（建立時從全域設定複製），
+   * 全域設定之後怎麼改都不影響它。沒有這個旗標的舊旅程，清單是「全域 + 旅程專用」
+   */
+  ownLists?: boolean
   /** ISO 8601 UTC，如 `2026-03-15T08:30:00.000Z`。儲存層與匯出格式都依賴這個形狀 */
   createdAt: string
   updatedAt: string

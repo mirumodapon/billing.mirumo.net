@@ -4,6 +4,7 @@ import { IconDots, IconPaperclip, IconTrash } from '@tabler/icons-react'
 import type { Category } from '../../data/types'
 import { useI18n } from '../../i18n/useI18n'
 import { DraftTag } from '../forms/DraftTag'
+import { tripMethodName } from '../../domain/paymentMethods'
 
 export interface ExpenseRowProps {
   expense: Expense
@@ -27,7 +28,8 @@ export function ExpenseRow({ expense, trip, category, onOpen, onDelete, showBase
         : t('split.summaryExact')
   const name = expense.description.trim() || t('expense.untitled')
   const cardId = expense.topUpFor ?? (expense.fromBalance ? expense.paymentMethodId : undefined)
-  const cardName = cardId ? trip.paymentMethods?.find((m) => m.id === cardId)?.name : undefined
+  const card = cardId ? trip.paymentMethods?.find((m) => m.id === cardId) : undefined
+  const cardName = card ? tripMethodName(card) : undefined
   const foreign = expense.currency !== trip.baseCurrency
   const original = money(toMinor(expense.amount, decimalsOf(expense.currency)), expense.currency)
   // 草稿可能還沒有匯率（存成 0）：那時換算不出本位幣，只顯示原幣

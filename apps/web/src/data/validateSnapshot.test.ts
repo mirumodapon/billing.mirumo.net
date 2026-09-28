@@ -245,3 +245,38 @@ describe('validateSnapshot: stored-value cards (task#115)', () => {
     expect(problemsOf(snapshot({ expenses: [odd] }))).toContain('expense e1: fromBalance must be true or false')
   })
 })
+
+describe('validateSnapshot: drafts without a category', () => {
+  // 類別不再帶入：沒選類別就存下去的是草稿，匯出後要能匯回來；完成的紀錄仍要有類別
+  it('accepts a draft with no category yet, but not a finished expense', () => {
+    expect(validateSnapshot(snapshot({ expenses: [makeExpense({ draft: true, categoryId: '' })] }))).toMatchObject({ ok: true })
+    expect(problemsOf(snapshot({ expenses: [makeExpense({ categoryId: '' })] }))).toContain('expense e1: category  does not exist')
+  })
+})
+
+describe('validateSnapshot: card payments without a rate (task#119)', () => {
+  it('accepts a card payment with no rate, but not an ordinary expense', () => {
+    const trip = makeTrip({ paymentMethods: [{ id: 'suica', name: 'Suica', storedValue: { currency: 'JPY' } }] })
+    const ride = makeExpense({ id: 'ride', paymentMethodId: 'suica', fromBalance: true, exchangeRate: 0 })
+    expect(validateSnapshot(snapshot({ trips: [trip], expenses: [ride] }))).toMatchObject({ ok: true })
+    expect(problemsOf(snapshot({ expenses: [makeExpense({ exchangeRate: 0 })] }))).toContain('expense e1: exchange rate must be a positive number')
+  })
+})
+
+describe('validateSnapshot: trips with their own lists (task#120)', () => {
+  it('accepts copied built-in items, which have no name of their own', () => {
+    const trip = makeTrip({
+      ownLists: true,
+      categories: [{ id: 'cat.food', builtin: true, icon: 'IconToolsKitchen2', colorKey: 'accent1' }],
+      paymentMethods: [{ id: 'pay.cash', builtin: true }],
+    })
+    expect(validateSnapshot(snapshot({ trips: [trip] }))).toMatchObject({ ok: true })
+  })
+
+  it('still needs a name on a custom item, and a true or false ownLists', () => {
+    const nameless = makeTrip({ paymentMethods: [{ id: 'mine' }] })
+    expect(problemsOf(snapshot({ trips: [nameless] }))).toContain('trip t1: malformed payment methods')
+    const odd = { ...makeTrip(), ownLists: 'yes' } as unknown as ReturnType<typeof makeTrip>
+    expect(problemsOf(snapshot({ trips: [odd] }))).toContain('trip t1: ownLists must be true or false')
+  })
+})

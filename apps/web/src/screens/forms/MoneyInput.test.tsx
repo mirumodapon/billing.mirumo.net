@@ -7,6 +7,7 @@ import { makeTrip } from '../../data/testing/fixtures'
 import { formatMoney } from '../../i18n/format'
 import { t } from '../../i18n'
 import { makeStores, renderApp } from '../../test/renderApp'
+import { pickCategory } from '../../test/pickCategory'
 
 beforeEach(() => clearSession())
 
@@ -40,13 +41,14 @@ describe('AmountSection', () => {
     expect(screen.getByText(/^≈/)).toHaveTextContent(plain(t('expense.converted', { amount: formatMoney(convertToBaseMinor(2800, 0.21, 'TWD'), 'TWD') })))
   })
 
-  // 典型三個動作：輸入金額 → 輸入說明 → 儲存。沒按「完成」直接去打說明，金額不能不見
+  // 典型動作：輸入金額 → 輸入說明 → 選類別 → 儲存。沒按「完成」直接去打說明，金額不能不見
   it('keeps the amount when the user moves on without pressing done', async () => {
     const { user } = await openNew()
     for (const k of ['3', '8', '0', '0']) await user.click(key(k))
     await user.click(screen.getByLabelText(t('expense.description')))
     expect(screen.queryByRole('button', { name: t('keypad.done') })).not.toBeInTheDocument()
     await user.type(screen.getByLabelText(t('expense.description')), '一蘭拉麵')
+    await pickCategory(user)
     expect(screen.getByRole('button', { name: t('form.save') })).toBeEnabled()
   })
 

@@ -22,9 +22,11 @@ async function openNew() {
 
 describe('DetailsSection', () => {
   // 預設值夠準才不必展開：收折時就要看得到帶入了什麼
-  it('summarises the category, payment method and payer while closed', async () => {
+  // 類別不帶入（每一筆自己選）：收折時的摘要只有帶入的付款方式與付款人
+  it('summarises the payment method and payer while closed, with no category chosen yet', async () => {
     const { header } = await openNew()
-    expect(header()).toHaveTextContent(`${t('cat.food')}・${t('pay.credit')}・阿明`)
+    expect(header()).toHaveTextContent(`${t('pay.credit')}・阿明`)
+    expect(header()).not.toHaveTextContent(t('cat.food'))
   })
 
   it('re-applies the rate for the chosen payment method', async () => {
@@ -48,7 +50,8 @@ describe('DetailsSection', () => {
     await user.type(screen.getByLabelText(t('expense.description')), '地鐵')
     await user.click(screen.getByRole('button', { name: t('form.save') }))
     await waitFor(() => expect(currentRoute()).toBe('/trip/t1/expenses'))
-    expect((await stores.repo.listExpenses('t1'))[0]).toMatchObject({ paidBy: 'b', date: '2026-03-16', categoryId: 'cat.transport' })
+    // task#121：分攤還是預設的「只有付款人」，換付款人就跟著換成小美
+    expect((await stores.repo.listExpenses('t1'))[0]).toMatchObject({ paidBy: 'b', date: '2026-03-16', categoryId: 'cat.transport', split: { mode: 'even', participants: ['b'] } })
   })
 
   it('opens one section at a time', async () => {

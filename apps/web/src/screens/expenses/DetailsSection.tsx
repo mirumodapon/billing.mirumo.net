@@ -1,8 +1,8 @@
 import type { Expense } from '@billing/core'
 import { Accordion, ChipGroup } from '@billing/ui'
-import { withAutoRate } from '../../domain/expenseDraft'
+import { withAutoRate, withPayer } from '../../domain/expenseDraft'
 import { displayName } from '../../domain/names'
-import { paymentMethodsFor } from '../../domain/paymentMethods'
+import { paymentMethodsFor, tripMethodName } from '../../domain/paymentMethods'
 import { useI18n } from '../../i18n/useI18n'
 import { useSettings, useTrips } from '../../stores/StoresProvider'
 import { DateField } from '../forms/DateField'
@@ -62,7 +62,7 @@ export function DetailsSection({ trip, draft, change, open, onToggle }: FormSect
           />
           {card && balance ? (
             <p className="app-field-label m-0 mt-2" data-testid="stored-note">
-              {t('stored.fromBalance', { name: card.name, amount: money(balance.minor, balance.currency) })}
+              {t('stored.fromBalance', { name: tripMethodName(card), amount: money(balance.minor, balance.currency) })}
             </p>
           ) : null}
         </div>
@@ -72,7 +72,8 @@ export function DetailsSection({ trip, draft, change, open, onToggle }: FormSect
             ariaLabel={t('expense.paidBy')}
             value={draft.paidBy}
             options={trip.members.map((m) => ({ value: m.id, label: m.name, colorKey: m.colorKey }))}
-            onChange={(paidBy) => change((d) => ({ ...d, paidBy }))}
+            // 分攤還是預設的「只有付款人」時跟著換（task#121）
+            onChange={(paidBy) => change((d) => withPayer(d, paidBy))}
           />
         </div>
         <DateField label={t('expense.date')} value={draft.date} onChange={(iso) => change((d) => ({ ...d, date: iso }))} />
