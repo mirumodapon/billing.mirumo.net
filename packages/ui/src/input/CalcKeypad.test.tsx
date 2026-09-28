@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
@@ -130,6 +130,24 @@ describe('CalcKeypad', () => {
     field.focus()
     await tap('7')
     expect(field).toHaveFocus()
+  })
+
+  /*
+   * task#135：連點時手指常落在鍵與鍵之間的縫、或顯示區上。那些地方原本不擋焦點，
+   * 金額欄位一失焦鍵盤就收起來。整個鍵盤的按下都不能搶走焦點
+   */
+  it('keeps focus when a press lands between keys or on the display', () => {
+    render(<Harness />)
+    for (const target of [screen.getByTestId('calc-expression'), document.querySelector('.bi-keypad__grid')!]) {
+      // fireEvent 回傳 false 代表預設動作（移動焦點）被擋下
+      expect(fireEvent.pointerDown(target)).toBe(false)
+    }
+  })
+
+  // 連點不能被當成「點兩下放大」：放大會讓畫面移動，下一下就點到鍵盤外面
+  it('turns off double-tap zoom on the keypad', () => {
+    const css = readFileSync(join(import.meta.dirname, 'CalcKeypad.css'), 'utf8')
+    expect(css).toMatch(/\.bi-keypad\s*{[^}]*touch-action:\s*manipulation/)
   })
 
   it('announces the result politely as it changes', () => {

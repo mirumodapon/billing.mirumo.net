@@ -67,7 +67,8 @@ export function CalcKeypad({
 
   return createPortal(
     <SafeArea edges={['bottom', 'left', 'right']} data-testid="keypad-safe">
-      <div className="bi-keypad">
+      {/* 整個鍵盤的按下都擋焦點，不只按鍵本身：連點時常落在縫或顯示區上（task#135） */}
+      <div className="bi-keypad" onPointerDown={keepFocus}>
         {header ? <div className="bi-keypad__header">{header}</div> : null}
         <div className="bi-keypad__display">
           <div className="bi-keypad__expression" data-testid="calc-expression">
@@ -87,7 +88,6 @@ export function CalcKeypad({
                   className="bi-keypad__key"
                   data-kind="done"
                   disabled={blocked}
-                  onPointerDown={keepFocus}
                   onClick={done}
                 >
                   {labels.done}
@@ -102,7 +102,6 @@ export function CalcKeypad({
                   type="button"
                   className="bi-keypad__key"
                   data-kind="op"
-                  onPointerDown={keepFocus}
                   onClick={() => {
                     if (result.ok) onExpressionChange(String(result.value))
                   }}
@@ -118,7 +117,6 @@ export function CalcKeypad({
                   type="button"
                   className="bi-keypad__key"
                   data-kind="fn"
-                  onPointerDown={keepFocus}
                   onClick={() => press('back')}
                 >
                   <Icon glyph={IconBackspace} size="lg" ariaLabel={labels.backspace} />
@@ -133,7 +131,6 @@ export function CalcKeypad({
                 className="bi-keypad__key"
                 data-kind={isOp ? 'op' : key === 'clear' ? 'fn' : 'digit'}
                 disabled={key === '.' && decimals === 0}
-                onPointerDown={keepFocus}
                 onClick={() => press(key)}
               >
                 {key === 'clear' ? labels.clear : key}
